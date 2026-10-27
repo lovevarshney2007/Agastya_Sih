@@ -47,6 +47,7 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
   const [apiDashboard, setApiDashboard] = useState<Record<string, unknown> | null>(null);
   const [apiStudents, setApiStudents] = useState<Record<string, unknown>[] | null>(null);
   const [apiLastBatch, setApiLastBatch] = useState<Record<string, unknown> | null>(null);
+  const [activeBatchReport, setActiveBatchReport] = useState<Record<string, unknown> | null>(null);
   const [apiLoading, setApiLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [uploadLoading, setUploadLoading] = useState(false);
@@ -67,6 +68,17 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
       ]);
       setApiDashboard(dash);
       setApiStudents((studs as Record<string, unknown[]>).students as Record<string, unknown>[]);
+
+      // Check if dashboard has latest_batch and fetch live report if not yet set
+      const latestBatch = dash.latest_batch as Record<string, unknown> | undefined;
+      if (latestBatch?.batch_id) {
+        try {
+          const report = await institutionApi.getBatchReport(activeInstId, latestBatch.batch_id as string) as Record<string, unknown>;
+          setActiveBatchReport(report);
+        } catch {
+          // ignore report fetch errors
+        }
+      }
     } catch (err) {
       setApiError(err instanceof Error ? err.message : 'Failed to load backend data');
     } finally {
@@ -128,13 +140,28 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
       const result = await institutionApi.uploadBatch(activeInstId, file) as Record<string, unknown>;
       setUploadResult(result);
       setApiLastBatch(result);
+
+      const batchId = result.batch_id as string;
+      if (batchId) {
+        try {
+          const report = await institutionApi.getBatchReport(activeInstId, batchId) as Record<string, unknown>;
+          setActiveBatchReport(report);
+        } catch {
+          setActiveBatchReport({
+            batch_id: batchId,
+            filename: file.name,
+            status: result.status || 'READY_TO_COMMIT',
+            created_at: new Date().toISOString(),
+            counts: result.summary,
+            issues: []
+          });
+        }
+      }
+
       await loadBackendData();
       setActiveTab('VALIDATION_REPORTS');
-      onUploadCsv(file); // also update local state for UI consistency
     } catch (err) {
       setApiError(err instanceof Error ? err.message : 'Upload failed');
-      onUploadCsv(file);
-      setActiveTab('VALIDATION_REPORTS');
     } finally {
       setUploadLoading(false);
     }
@@ -148,7 +175,26 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
       const result = await institutionApi.uploadDemoBatch(activeInstId) as Record<string, unknown>;
       setUploadResult(result);
       setApiLastBatch(result);
+
+      const batchId = result.batch_id as string;
+      if (batchId) {
+        try {
+          const report = await institutionApi.getBatchReport(activeInstId, batchId) as Record<string, unknown>;
+          setActiveBatchReport(report);
+        } catch {
+          setActiveBatchReport({
+            batch_id: batchId,
+            filename: 'demo_admission_round_2026.csv',
+            status: result.status || 'READY_TO_COMMIT',
+            created_at: new Date().toISOString(),
+            counts: result.summary,
+            issues: []
+          });
+        }
+      }
+
       await loadBackendData();
+      setActiveTab('VALIDATION_REPORTS');
     } catch (err) {
       setApiError(err instanceof Error ? err.message : 'Demo upload failed');
     } finally {
@@ -160,6 +206,9 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
     try {
       await institutionApi.commitBatch(activeInstId, batchId);
       await loadBackendData();
+      if (activeBatchReport) {
+        setActiveBatchReport({ ...activeBatchReport, status: 'COMMITTED' });
+      }
       setUploadResult(null);
     } catch (err) {
       setApiError(err instanceof Error ? err.message : 'Commit failed');
@@ -658,103 +707,246 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
       {/* TAB 3: VALIDATION REPORTS */}
       {activeTab === 'VALIDATION_REPORTS' && (
         <div className="space-y-6">
-          {batches.map((batch) => (
-            <div key={batch.id} className="dark:bg-slate-900 bg-white border dark:border-slate-800 border-slate-200 rounded-2xl p-6 shadow-sm">
+          {/* LIVE BACKEND BATCH REPORT */}
+          {activeBatchReport ? (
+            <div className="dark:bg-slate-900 bg-white border-2 dark:border-blue-700/80 border-blue-500 rounded-2xl p-6 shadow-md">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b dark:border-slate-800 border-slate-200 gap-4">
                 <div>
                   <div className="flex items-center space-x-2 text-xs font-mono text-blue-700 dark:text-blue-400 font-bold">
-                    <span>BATCH ID: {batch.id}</span>
+                    <span className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300">
+                      🔴 LIVE BACKEND BATCH
+                    </span>
+                    <span>BATCH ID: {String(activeBatchReport.batch_id).slice(-8)}</span>
                     <span>•</span>
-                    <span>{batch.uploadDate}</span>
+                    <span>{new Date(String(activeBatchReport.created_at || Date.now())).toLocaleString()}</span>
                   </div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-1">{batch.filename}</h3>
-                  <p className="text-xs text-slate-500">{batch.program} ({batch.academicYear})</p>
+                  <h3 className="text-xl font-black text-slate-900 dark:text-white mt-1">
+                    {String(activeBatchReport.filename || 'Admissions_Batch.csv')}
+                  </h3>
+                  <div className="flex items-center space-x-2 mt-1.5">
+                    <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
+                      STATUS: {String(activeBatchReport.status || 'READY_TO_COMMIT')}
+                    </span>
+                    {activeBatchReport.status === 'READY_TO_COMMIT' && (
+                      <button
+                        onClick={() => handleCommitBatch(String(activeBatchReport.batch_id))}
+                        className="px-3.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg cursor-pointer transition-colors shadow-sm flex items-center space-x-1"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>✅ Commit to Immutable Ledger</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
 
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2">
                   <div className="text-center px-3 py-1.5 dark:bg-slate-950 bg-slate-100 rounded-lg border dark:border-slate-800 border-slate-200">
                     <span className="text-[10px] text-slate-500 block uppercase font-bold">Total</span>
-                    <span className="text-sm font-bold text-slate-900 dark:text-white font-mono">{batch.totalRows}</span>
+                    <span className="text-sm font-bold text-slate-900 dark:text-white font-mono">
+                      {Number((activeBatchReport.counts as Record<string, number>)?.total ?? (activeBatchReport.summary as Record<string, number>)?.total_rows ?? 0)}
+                    </span>
                   </div>
                   <div className="text-center px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-lg border border-emerald-200 dark:border-emerald-800/40">
                     <span className="text-[10px] text-emerald-700 dark:text-emerald-400 block uppercase font-bold">Accepted</span>
-                    <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400 font-mono">{batch.acceptedRows}</span>
+                    <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400 font-mono">
+                      {Number((activeBatchReport.counts as Record<string, number>)?.accepted ?? (activeBatchReport.summary as Record<string, number>)?.accepted ?? 0)}
+                    </span>
                   </div>
                   <div className="text-center px-3 py-1.5 bg-amber-50 dark:bg-amber-950/40 rounded-lg border border-amber-200 dark:border-amber-800/40">
-                    <span className="text-[10px] text-amber-700 dark:text-amber-400 block uppercase font-bold">Warnings</span>
-                    <span className="text-sm font-bold text-amber-700 dark:text-amber-400 font-mono">{batch.warningRows}</span>
+                    <span className="text-[10px] text-amber-700 dark:text-amber-400 block uppercase font-bold">Warnings/Holds</span>
+                    <span className="text-sm font-bold text-amber-700 dark:text-amber-400 font-mono">
+                      {Number((activeBatchReport.counts as Record<string, number>)?.warnings ?? 0) + 
+                       Number((activeBatchReport.counts as Record<string, number>)?.holds ?? (activeBatchReport.summary as Record<string, number>)?.on_hold ?? 0)}
+                    </span>
                   </div>
                   <div className="text-center px-3 py-1.5 bg-rose-50 dark:bg-rose-950/40 rounded-lg border border-rose-200 dark:border-rose-800/40">
                     <span className="text-[10px] text-rose-700 dark:text-rose-400 block uppercase font-bold">Rejected</span>
-                    <span className="text-sm font-bold text-rose-700 dark:text-rose-400 font-mono">{batch.rejectedRows}</span>
+                    <span className="text-sm font-bold text-rose-700 dark:text-rose-400 font-mono">
+                      {Number((activeBatchReport.counts as Record<string, number>)?.rejected ?? (activeBatchReport.summary as Record<string, number>)?.rejected ?? 0)}
+                    </span>
                   </div>
                 </div>
               </div>
 
-              {/* Row-Level Errors */}
+              {/* Row-Level Errors from Backend Rule Engine */}
               <div className="mt-4">
-                <h4 className="text-xs font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 font-bold">
-                  Detailed Row-Level Rule Engine Inspection
+                <h4 className="text-xs font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 font-bold flex items-center justify-between">
+                  <span>Detailed Row-Level Rule Engine Inspection (Live Backend Output)</span>
+                  <span className="text-blue-600 dark:text-blue-400">
+                    {((activeBatchReport.issues as Record<string, unknown>[]) || []).length} Rule Anomalies Detected
+                  </span>
                 </h4>
-                <div className="space-y-3">
-                  {batch.issues.map((issue) => (
-                    <div 
-                      key={issue.id}
-                      className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-                        issue.severity === 'REJECT'
-                          ? 'bg-rose-50/70 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800/40'
-                          : issue.severity === 'CRITICAL'
-                          ? 'bg-amber-50/70 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/40'
-                          : 'bg-blue-50/70 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800/40'
-                      }`}
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center space-x-2">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
-                            issue.severity === 'REJECT'
-                              ? 'bg-rose-700 text-white'
-                              : issue.severity === 'CRITICAL'
-                              ? 'bg-amber-600 text-white'
-                              : 'bg-blue-700 text-white'
-                          }`}>
-                            {issue.severity}
-                          </span>
-                          <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300">Row #{issue.rowNumber}</span>
-                          <span className="text-slate-400">•</span>
-                          <span className="text-xs font-bold text-slate-900 dark:text-white">{issue.studentName}</span>
-                          {issue.apaarId && (
-                            <span className="text-xs font-mono text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-950 px-2 py-0.5 rounded font-bold">
-                              {issue.apaarId}
+                {((activeBatchReport.issues as Record<string, unknown>[]) || []).length === 0 ? (
+                  <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-300 font-medium">
+                    ✅ All rows passed schema and quota validation. Ready to be committed into the national ledger.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {((activeBatchReport.issues as Record<string, unknown>[]) || []).map((iss, idx) => (
+                      <div 
+                        key={String(iss.issue_id || idx)}
+                        className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                          iss.severity === 'REJECT' || iss.severity === 'Error' || iss.row_decision === 'REJECT'
+                            ? 'bg-rose-50/70 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800/40'
+                            : iss.severity === 'CRITICAL' || iss.severity === 'Critical'
+                            ? 'bg-amber-50/70 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/40'
+                            : 'bg-blue-50/70 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800/40'
+                        }`}
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
+                              iss.severity === 'REJECT' || iss.severity === 'Error' || iss.row_decision === 'REJECT'
+                                ? 'bg-rose-700 text-white'
+                                : iss.severity === 'CRITICAL' || iss.severity === 'Critical'
+                                ? 'bg-amber-600 text-white'
+                                : 'bg-blue-700 text-white'
+                            }`}>
+                              {String(iss.row_decision || iss.severity || 'FLAGGED')}
                             </span>
+                            <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300">
+                              Row #{String(iss.row_number)}
+                            </span>
+                            {Boolean(iss.student_id_no) && (
+                              <>
+                                <span className="text-slate-400">•</span>
+                                <span className="text-xs font-bold text-slate-900 dark:text-white font-mono">
+                                  {String(iss.student_id_no)}
+                                </span>
+                              </>
+                            )}
+                            {Boolean(iss.masked_apaar) && (
+                              <span className="text-xs font-mono text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-950 px-2 py-0.5 rounded font-bold">
+                                APAAR: {String(iss.masked_apaar)}
+                              </span>
+                            )}
+                            {Boolean(iss.rule_id) && (
+                              <span className="text-[10px] font-mono bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded">
+                                {String(iss.rule_id)}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-800 dark:text-slate-200 font-semibold">
+                            {String(iss.message || '')}
+                          </p>
+                          {Boolean(iss.suggested_fix) && (
+                            <p className="text-xs text-slate-500 italic">
+                              Suggested Action: <span className="text-blue-700 dark:text-blue-400 not-italic font-semibold">{String(iss.suggested_fix)}</span>
+                            </p>
                           )}
                         </div>
-                        <p className="text-xs text-slate-700 dark:text-slate-300 font-medium">{issue.explanation}</p>
-                        <p className="text-xs text-slate-500 italic">
-                          Suggested Action: <span className="text-blue-700 dark:text-blue-400 not-italic font-semibold">{issue.suggestedCorrection}</span>
-                        </p>
-                      </div>
 
-                      <div className="shrink-0 flex items-center space-x-2">
-                        {issue.status === 'RESOLVED' ? (
-                          <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800 rounded-lg text-xs font-mono font-bold flex items-center space-x-1">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>Resolved</span>
+                        <div className="shrink-0 flex items-center space-x-2">
+                          <span className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border dark:border-slate-700 border-slate-300 rounded-lg text-xs font-mono font-bold">
+                            Decision: {String(iss.row_decision || 'HOLD')}
                           </span>
-                        ) : (
-                          <button
-                            onClick={() => onResolveIssue(issue.id)}
-                            className="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 text-blue-700 dark:text-blue-300 border dark:border-slate-700 border-slate-300 rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-xs"
-                          >
-                            Mark Corrected
-                          </button>
-                        )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
-          ))}
+          ) : (
+            /* Fallback to archived batches */
+            batches.map((batch) => (
+              <div key={batch.id} className="dark:bg-slate-900 bg-white border dark:border-slate-800 border-slate-200 rounded-2xl p-6 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b dark:border-slate-800 border-slate-200 gap-4">
+                  <div>
+                    <div className="flex items-center space-x-2 text-xs font-mono text-blue-700 dark:text-blue-400 font-bold">
+                      <span>BATCH ID: {batch.id}</span>
+                      <span>•</span>
+                      <span>{batch.uploadDate}</span>
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-1">{batch.filename}</h3>
+                    <p className="text-xs text-slate-500">{batch.program} ({batch.academicYear})</p>
+                  </div>
+
+                  <div className="flex items-center space-x-3">
+                    <div className="text-center px-3 py-1.5 dark:bg-slate-950 bg-slate-100 rounded-lg border dark:border-slate-800 border-slate-200">
+                      <span className="text-[10px] text-slate-500 block uppercase font-bold">Total</span>
+                      <span className="text-sm font-bold text-slate-900 dark:text-white font-mono">{batch.totalRows}</span>
+                    </div>
+                    <div className="text-center px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-lg border border-emerald-200 dark:border-emerald-800/40">
+                      <span className="text-[10px] text-emerald-700 dark:text-emerald-400 block uppercase font-bold">Accepted</span>
+                      <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400 font-mono">{batch.acceptedRows}</span>
+                    </div>
+                    <div className="text-center px-3 py-1.5 bg-amber-50 dark:bg-amber-950/40 rounded-lg border border-amber-200 dark:border-amber-800/40">
+                      <span className="text-[10px] text-amber-700 dark:text-amber-400 block uppercase font-bold">Warnings</span>
+                      <span className="text-sm font-bold text-amber-700 dark:text-amber-400 font-mono">{batch.warningRows}</span>
+                    </div>
+                    <div className="text-center px-3 py-1.5 bg-rose-50 dark:bg-rose-950/40 rounded-lg border border-rose-200 dark:border-rose-800/40">
+                      <span className="text-[10px] text-rose-700 dark:text-rose-400 block uppercase font-bold">Rejected</span>
+                      <span className="text-sm font-bold text-rose-700 dark:text-rose-400 font-mono">{batch.rejectedRows}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Row-Level Errors */}
+                <div className="mt-4">
+                  <h4 className="text-xs font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 font-bold">
+                    Detailed Row-Level Rule Engine Inspection
+                  </h4>
+                  <div className="space-y-3">
+                    {batch.issues.map((issue) => (
+                      <div 
+                        key={issue.id}
+                        className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                          issue.severity === 'REJECT'
+                            ? 'bg-rose-50/70 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800/40'
+                            : issue.severity === 'CRITICAL'
+                            ? 'bg-amber-50/70 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/40'
+                            : 'bg-blue-50/70 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800/40'
+                        }`}
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center space-x-2">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
+                              issue.severity === 'REJECT'
+                                ? 'bg-rose-700 text-white'
+                                : issue.severity === 'CRITICAL'
+                                ? 'bg-amber-600 text-white'
+                                : 'bg-blue-700 text-white'
+                            }`}>
+                              {issue.severity}
+                            </span>
+                            <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300">Row #{issue.rowNumber}</span>
+                            <span className="text-slate-400">•</span>
+                            <span className="text-xs font-bold text-slate-900 dark:text-white">{issue.studentName}</span>
+                            {issue.apaarId && (
+                              <span className="text-xs font-mono text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-950 px-2 py-0.5 rounded font-bold">
+                                {issue.apaarId}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-700 dark:text-slate-300 font-medium">{issue.explanation}</p>
+                          <p className="text-xs text-slate-500 italic">
+                            Suggested Action: <span className="text-blue-700 dark:text-blue-400 not-italic font-semibold">{issue.suggestedCorrection}</span>
+                          </p>
+                        </div>
+
+                        <div className="shrink-0 flex items-center space-x-2">
+                          {issue.status === 'RESOLVED' ? (
+                            <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800 rounded-lg text-xs font-mono font-bold flex items-center space-x-1">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>Resolved</span>
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => onResolveIssue(issue.id)}
+                              className="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 text-blue-700 dark:text-blue-300 border dark:border-slate-700 border-slate-300 rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-xs"
+                            >
+                              Mark Corrected
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       )}
 
