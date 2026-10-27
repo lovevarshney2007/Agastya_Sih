@@ -17,10 +17,11 @@ import {
   ShieldAlert
 } from 'lucide-react';
 import { UserRole } from '../types';
+import { authApi, tokenStore, userStore } from '../api/client';
 
 interface LoginPageProps {
   initialRole?: UserRole;
-  onLoginSuccess: (role: UserRole) => void;
+  onLoginSuccess: (role: UserRole, user?: object) => void;
   theme: 'dark' | 'light';
 }
 
@@ -38,15 +39,19 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [useOtpFlow, setUseOtpFlow] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
+  // Mapping frontend role → backend persona ID & demo credentials
   const roleConfigs = {
     INSTITUTION: {
       title: 'Institution / College Admin Login',
       badge: 'College Level (Single-Institution Scope)',
       icon: Building2,
-      defaultUser: 'registrar@diet.ac.in',
+      defaultUser: 'registrar@coep.ac.in',
+      defaultPassword: 'coep@2026',
+      personaId: 'INSTITUTION_REGISTRAR',
       idFieldLabel: 'AICTE Permanent Institute ID or Official Email',
-      idPlaceholder: 'e.g. 1-33249011 or registrar@diet.ac.in',
+      idPlaceholder: 'e.g. 1-33249011 or registrar@coep.ac.in',
       hint: 'Only authorised Registrars/Nodal Officers can upload batch admissions.',
       color: 'blue'
     },
@@ -54,9 +59,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       title: 'AICTE Officer Command Desk',
       badge: 'Regional & National Regulatory Directorate',
       icon: ShieldCheck,
-      defaultUser: 'dr.skmurthy@aicte-india.org',
+      defaultUser: 'aicte.maker@gov.in',
+      defaultPassword: 'aicte@2026',
+      personaId: 'AICTE_MAKER',
       idFieldLabel: 'Government Official Email (@gov.in / @aicte-india.org)',
-      idPlaceholder: 'officer@aicte-india.org',
+      idPlaceholder: 'aicte.maker@gov.in',
       hint: 'Requires AICTE VPN / SSO Two-Factor Government Authentication.',
       color: 'indigo'
     },
@@ -64,9 +71,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       title: 'Super-Administrator Core Sign-In',
       badge: 'Root Platform Governance & Rule Engine',
       icon: KeyRound,
-      defaultUser: 'superadmin@aicte-ledger.gov.in',
+      defaultUser: 'aicte.checker@gov.in',
+      defaultPassword: 'aicte@2026',
+      personaId: 'AICTE_CHECKER',
       idFieldLabel: 'Root Administrator Identity Key',
-      idPlaceholder: 'superadmin@aicte-ledger.gov.in',
+      idPlaceholder: 'aicte.checker@gov.in',
       hint: 'FIDO2 / Hardware Security Token & Cryptographic Key Enforced.',
       color: 'rose'
     },
@@ -74,9 +83,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       title: 'Authorized Verifier Portal Sign-In',
       badge: 'Recruiters, Background Checkers, Embassies',
       icon: UserCheck,
-      defaultUser: 'verifier.tcs@tcs.com',
+      defaultUser: 'verifier@tcs.com',
+      defaultPassword: 'tcs@2026',
+      personaId: 'VERIFIER',
       idFieldLabel: 'Corporate / Agency Work Email',
-      idPlaceholder: 'hr.background@company.com',
+      idPlaceholder: 'verifier@tcs.com',
       hint: 'Subject to candidate DPDP consent validation at every lookup.',
       color: 'emerald'
     },
@@ -84,9 +95,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       title: 'Student Sovereign Passport Login',
       badge: 'Student Self-Service Portal (DigiLocker / APAAR)',
       icon: GraduationCap,
-      defaultUser: '892019482019',
-      idFieldLabel: '12-Digit APAAR ID or Linked Mobile OTP',
-      idPlaceholder: '12-digit APAAR ID (e.g. 892019482019)',
+      defaultUser: 'priya.nair@student.aicte.gov.in',
+      defaultPassword: 'student@2026',
+      personaId: 'STUDENT',
+      idFieldLabel: '12-Digit APAAR ID or Registered Student Email',
+      idPlaceholder: 'priya.nair@student.aicte.gov.in',
       hint: 'Zero Aadhaar stored. Authenticated via DigiLocker / ABC API.',
       color: 'cyan'
     }
@@ -96,32 +109,53 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   React.useEffect(() => {
     if (initialRole && roleConfigs[initialRole as keyof typeof roleConfigs]) {
       setSelectedRole(initialRole);
-      setUsername(roleConfigs[initialRole as keyof typeof roleConfigs].defaultUser);
+      const cfg = roleConfigs[initialRole as keyof typeof roleConfigs];
+      setUsername(cfg.defaultUser);
+      setPassword(cfg.defaultPassword);
     }
   }, [initialRole]);
 
   const handleRoleTabChange = (role: UserRole) => {
     setSelectedRole(role);
+    setLoginError(null);
     if (roleConfigs[role as keyof typeof roleConfigs]) {
-      setUsername(roleConfigs[role as keyof typeof roleConfigs].defaultUser);
+      const cfg = roleConfigs[role as keyof typeof roleConfigs];
+      setUsername(cfg.defaultUser);
+      setPassword(cfg.defaultPassword);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setTimeout(() => {
+    setLoginError(null);
+    try {
+      const res = await authApi.login(username, password);
+      tokenStore.set(res.access_token);
+      userStore.set({ ...res.user, institution_id: res.user.institution_id });
+      onLoginSuccess(selectedRole, res.user);
+    } catch (err: unknown) {
+      setLoginError(err instanceof Error ? err.message : 'Login failed. Check credentials.');
+    } finally {
       setIsSubmitting(false);
-      onLoginSuccess(selectedRole);
-    }, 400);
+    }
   };
 
-  const handleInstantDemoLogin = () => {
+  const handleInstantDemoLogin = async () => {
     setIsSubmitting(true);
-    setTimeout(() => {
+    setLoginError(null);
+    const cfg = roleConfigs[selectedRole as keyof typeof roleConfigs];
+    if (!cfg) return;
+    try {
+      const res = await authApi.quickLogin(cfg.personaId);
+      tokenStore.set(res.access_token);
+      userStore.set({ ...res.user, institution_id: res.user.institution_id });
+      onLoginSuccess(selectedRole, res.user);
+    } catch (err: unknown) {
+      setLoginError(err instanceof Error ? err.message : 'Demo login failed.');
+    } finally {
       setIsSubmitting(false);
-      onLoginSuccess(selectedRole);
-    }, 300);
+    }
   };
 
   const activeConfig = roleConfigs[selectedRole as keyof typeof roleConfigs] || roleConfigs.INSTITUTION;
@@ -204,16 +238,24 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               type="button"
               onClick={() => {
                 setUsername(activeConfig.defaultUser);
-                setPassword('••••••••••••');
+                setPassword(activeConfig.defaultPassword);
+                setLoginError(null);
               }}
               className="text-xs px-3 py-1.5 rounded-lg border font-mono font-semibold dark:bg-slate-800 bg-slate-100 dark:border-slate-700 border-slate-300 text-blue-700 dark:text-blue-400 hover:underline cursor-pointer"
             >
-              Auto-fill Credentials
+              Auto-fill Demo Credentials
             </button>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-5 max-w-xl mx-auto">
+          {/* Error Banner */}
+          {loginError && (
+            <div className="flex items-center space-x-2 p-3 rounded-xl bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-xs text-red-800 dark:text-red-300">
+              <ShieldAlert className="w-4 h-4 shrink-0" />
+              <span className="font-semibold">{loginError}</span>
+            </div>
+          )}
           {/* Identity/Username Field */}
           <div>
             <label className="block text-xs font-mono font-bold text-slate-700 dark:text-slate-300 mb-1.5">

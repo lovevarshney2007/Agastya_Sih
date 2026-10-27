@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   UserCheck, 
   Search, 
@@ -6,9 +6,12 @@ import {
   AlertCircle, 
   CheckCircle2, 
   Lock, 
-  Download
+  Download,
+  Loader2,
+  RefreshCw
 } from 'lucide-react';
 import { StudentRecord } from '../types';
+import { verifierApi } from '../api/client';
 
 interface VerifierPortalProps {
   students: StudentRecord[];
@@ -25,17 +28,52 @@ export const VerifierPortal: React.FC<VerifierPortalProps> = ({
   const [verificationResult, setVerificationResult] = useState<StudentRecord | null>(null);
   const [searchAttempted, setSearchAttempted] = useState(false);
 
-  const handleSearch = (e: React.FormEvent) => {
+  // Backend state
+  const [apiLoading, setApiLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [apiResult, setApiResult] = useState<Record<string, unknown> | null>(null);
+  const [tracker, setTracker] = useState<Record<string, unknown> | null>(null);
+  const [credentialData, setCredentialData] = useState<Record<string, unknown> | null>(null);
+
+  // Load tracker on mount
+  useEffect(() => {
+    verifierApi.tracker()
+      .then(data => setTracker(data as Record<string, unknown>))
+      .catch(() => {}); // silent – tracker is supplemental
+  }, []);
+
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     setSearchAttempted(true);
+    setApiError(null);
+    setApiResult(null);
+    setCredentialData(null);
     const cleaned = apaarInput.replace(/\s+/g, '');
-    const found = students.find(s => s.apaarId === cleaned);
 
-    if (found) {
-      setVerificationResult(found);
-      onLogVerification(found.apaarId, verifierName, purpose);
-    } else {
-      setVerificationResult(null);
+    // Try real API first
+    setApiLoading(true);
+    try {
+      const res = await verifierApi.submitRequest(cleaned, purpose) as Record<string, unknown>;
+      setApiResult(res);
+      onLogVerification(cleaned, verifierName, purpose);
+
+      // If status is VALID, fetch the full credential with QR codes
+      if (res.status === 'VALID' && res.token) {
+        const cred = await verifierApi.getCredential(res.token as string) as Record<string, unknown>;
+        setCredentialData(cred);
+      }
+    } catch (err) {
+      // Fallback to local mock search
+      const found = students.find(s => s.apaarId === cleaned);
+      if (found) {
+        setVerificationResult(found);
+        onLogVerification(found.apaarId, verifierName, purpose);
+      } else {
+        setVerificationResult(null);
+        setApiError(err instanceof Error ? err.message : 'Verification failed');
+      }
+    } finally {
+      setApiLoading(false);
     }
   };
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ShieldCheck, 
   AlertOctagon, 
@@ -7,9 +7,12 @@ import {
   ArrowUpRight,
   Download,
   AlertTriangle,
-  CheckCircle2
+  CheckCircle2,
+  Loader2,
+  RefreshCw
 } from 'lucide-react';
 import { Institution, StudentRecord, ViolationCase } from '../types';
+import { aicteApi, reportsApi } from '../api/client';
 
 interface AictePortalProps {
   institutions: Institution[];
@@ -29,6 +32,68 @@ export const AictePortal: React.FC<AictePortalProps> = ({
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('ALL');
   const [selectedViolation, setSelectedViolation] = useState<ViolationCase | null>(null);
   const [resolutionNote, setResolutionNote] = useState('');
+
+  // Backend state
+  const [apiDashboard, setApiDashboard] = useState<Record<string, unknown> | null>(null);
+  const [apiViolations, setApiViolations] = useState<Record<string, unknown>[] | null>(null);
+  const [apiLoading, setApiLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [makerAction, setMakerAction] = useState('');
+  const [makerReason, setMakerReason] = useState('');
+  const [checkerName, setCheckerName] = useState('');
+  const [actionMsg, setActionMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [selectedApiCaseId, setSelectedApiCaseId] = useState<string | null>(null);
+  const [auditData, setAuditData] = useState<Record<string, unknown> | null>(null);
+  const [chainResult, setChainResult] = useState<Record<string, unknown> | null>(null);
+  const [tamperResult, setTamperResult] = useState<Record<string, unknown> | null>(null);
+
+  useEffect(() => {
+    setApiLoading(true);
+    Promise.all([
+      aicteApi.dashboard() as Promise<Record<string, unknown>>,
+      aicteApi.violations() as Promise<Record<string, unknown>[]>,
+      aicteApi.auditLedger() as Promise<Record<string, unknown>>,
+    ])
+      .then(([dash, viols, audit]) => {
+        setApiDashboard(dash);
+        setApiViolations(viols);
+        setAuditData(audit);
+      })
+      .catch(err => setApiError(err instanceof Error ? err.message : 'Backend load failed'))
+      .finally(() => setApiLoading(false));
+  }, []);
+
+  const handleProposeAction = async (caseId: string) => {
+    setActionMsg(null);
+    try {
+      await aicteApi.proposeAction(caseId, makerAction, 'Rajesh Verma (AICTE Officer)', makerReason);
+      setActionMsg({ ok: true, text: 'Proposal submitted. Awaiting Checker approval.' });
+      const updated = await aicteApi.violations() as Record<string, unknown>[];
+      setApiViolations(updated);
+    } catch (err) {
+      setActionMsg({ ok: false, text: err instanceof Error ? err.message : 'Propose failed' });
+    }
+  };
+
+  const handleCheckerApprove = async (caseId: string, approve: boolean) => {
+    setActionMsg(null);
+    try {
+      await aicteApi.approveAction(caseId, checkerName || 'Dr. Abhay Jere', approve);
+      setActionMsg({ ok: true, text: approve ? 'Action approved & resolved.' : 'Proposal rejected.' });
+      const updated = await aicteApi.violations() as Record<string, unknown>[];
+      setApiViolations(updated);
+    } catch (err) {
+      setActionMsg({ ok: false, text: err instanceof Error ? err.message : 'Approve failed' });
+    }
+  };
+
+  const handleVerifyChain = async () => {
+    try { setChainResult(await aicteApi.verifyChain() as Record<string, unknown>); } catch {}
+  };
+
+  const handleSimulateTamper = async () => {
+    try { setTamperResult(await aicteApi.simulateTamper() as Record<string, unknown>); } catch {}
+  };
 
   const totalApprovedIntake = institutions.reduce((acc, curr) => acc + curr.approvedIntake, 0);
   const totalActualEnrolled = institutions.reduce((acc, curr) => acc + curr.currentEnrolment, 0);

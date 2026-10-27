@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   GraduationCap, 
   Download, 
@@ -7,21 +7,53 @@ import {
   History, 
   ToggleLeft, 
   ToggleRight, 
-  QrCode 
+  QrCode,
+  Loader2
 } from 'lucide-react';
 import { StudentRecord } from '../types';
+import { studentApi } from '../api/client';
 
 interface StudentPortalProps {
   students: StudentRecord[];
   onToggleConsent: (studentId: string) => void;
+  studentToken: string | null;
 }
 
 export const StudentPortal: React.FC<StudentPortalProps> = ({
   students,
-  onToggleConsent
+  onToggleConsent,
+  studentToken
 }) => {
   const [selectedStudentId, setSelectedStudentId] = useState<string>('std-101');
   const currentStudent = students.find(s => s.id === selectedStudentId) || students[0];
+
+  // Backend consent state
+  const [apiConsents, setApiConsents] = useState<Record<string, unknown> | null>(null);
+  const [consentLoading, setConsentLoading] = useState(false);
+  const [consentMsg, setConsentMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  useEffect(() => {
+    if (!studentToken) return;
+    setConsentLoading(true);
+    studentApi.getConsents(studentToken)
+      .then(data => setApiConsents(data as Record<string, unknown>))
+      .catch(() => {})
+      .finally(() => setConsentLoading(false));
+  }, [studentToken]);
+
+  const handleConsentAction = async (consentId: string, action: 'APPROVE' | 'REVOKE') => {
+    setConsentMsg(null);
+    try {
+      await studentApi.updateConsent(consentId, action);
+      setConsentMsg({ ok: true, text: action === 'REVOKE' ? 'Consent revoked.' : 'Consent approved.' });
+      if (studentToken) {
+        const updated = await studentApi.getConsents(studentToken) as Record<string, unknown>;
+        setApiConsents(updated);
+      }
+    } catch (err) {
+      setConsentMsg({ ok: false, text: err instanceof Error ? err.message : 'Action failed' });
+    }
+  };
 
   return (
     <div className="space-y-6">

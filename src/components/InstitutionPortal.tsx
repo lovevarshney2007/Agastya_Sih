@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Building2, 
   Upload, 
@@ -11,9 +11,12 @@ import {
   Download, 
   Building,
   UserCheck,
-  AlertOctagon
+  AlertOctagon,
+  RefreshCw,
+  Loader2
 } from 'lucide-react';
 import { StudentRecord, Institution, UploadBatch } from '../types';
+import { institutionApi, reportsApi } from '../api/client';
 
 interface InstitutionPortalProps {
   students: StudentRecord[];
@@ -22,6 +25,7 @@ interface InstitutionPortalProps {
   onUploadCsv: (file: File) => void;
   onAddStudent: (newStudent: Partial<StudentRecord>) => void;
   onResolveIssue: (issueId: string) => void;
+  institutionId: string | null;
 }
 
 export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
@@ -30,7 +34,8 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
   batches,
   onUploadCsv,
   onAddStudent,
-  onResolveIssue
+  onResolveIssue,
+  institutionId
 }) => {
   const [selectedInstId, setSelectedInstId] = useState<string>('inst-1');
   const [activeTab, setActiveTab] = useState<'REGISTRY' | 'UPLOAD_WIZARD' | 'VALIDATION_REPORTS' | 'COMPLIANCE'>('REGISTRY');
@@ -38,14 +43,46 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
   const [filterBranch, setFilterBranch] = useState('ALL');
   const [showAddModal, setShowAddModal] = useState(false);
 
+  // ── Backend state ─────────────────────────────────────────────────────────
+  const [apiDashboard, setApiDashboard] = useState<Record<string, unknown> | null>(null);
+  const [apiStudents, setApiStudents] = useState<Record<string, unknown>[] | null>(null);
+  const [apiLastBatch, setApiLastBatch] = useState<Record<string, unknown> | null>(null);
+  const [apiLoading, setApiLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadResult, setUploadResult] = useState<Record<string, unknown> | null>(null);
+  const [enrollLoading, setEnrollLoading] = useState(false);
+  const [enrollMsg, setEnrollMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  // Load dashboard and student list from backend on mount (or when institutionId changes)
+  const loadBackendData = useCallback(async () => {
+    if (!institutionId) return;
+    setApiLoading(true);
+    setApiError(null);
+    try {
+      const [dash, studs] = await Promise.all([
+        institutionApi.dashboard(institutionId) as Promise<Record<string, unknown>>,
+        institutionApi.getStudents(institutionId) as Promise<Record<string, unknown>>,
+      ]);
+      setApiDashboard(dash);
+      setApiStudents((studs as Record<string, unknown[]>).students as Record<string, unknown>[]);
+    } catch (err) {
+      setApiError(err instanceof Error ? err.message : 'Failed to load backend data');
+    } finally {
+      setApiLoading(false);
+    }
+  }, [institutionId]);
+
+  useEffect(() => { loadBackendData(); }, [loadBackendData]);
+  // ─────────────────────────────────────────────────────────────────────────
+
   // New Student Form State
   const [formData, setFormData] = useState({
     name: '',
     apaarId: '',
     dob: '',
     gender: 'M',
-    program: 'B.Tech Computer Science & Engineering',
-    branch: 'CSE',
+    course: 'Computer Science and Engineering',
     studentIdNo: '',
     seatCategory: 'General',
   });
@@ -65,55 +102,120 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
   const verifiedCount = institutionStudents.filter(s => s.verificationStatus === 'Verified').length;
   const flaggedCount = institutionStudents.filter(s => s.verificationStatus === 'Flagged').length;
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
+  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      onUploadCsv(e.dataTransfer.files[0]);
-      setActiveTab('VALIDATION_REPORTS');
+      const file = e.dataTransfer.files[0];
+      if (institutionId) {
+        await handleApiUpload(file);
+      } else {
+        onUploadCsv(file);
+        setActiveTab('VALIDATION_REPORTS');
+      }
     }
   };
 
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      onUploadCsv(e.target.files[0]);
-      setActiveTab('VALIDATION_REPORTS');
+      const file = e.target.files[0];
+      if (institutionId) {
+        await handleApiUpload(file);
+      } else {
+        onUploadCsv(file);
+        setActiveTab('VALIDATION_REPORTS');
+      }
     }
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleApiUpload = async (file: File) => {
+    if (!institutionId) return;
+    setUploadLoading(true);
+    setUploadResult(null);
+    setApiError(null);
+    try {
+      const result = await institutionApi.uploadBatch(institutionId, file) as Record<string, unknown>;
+      setUploadResult(result);
+      setApiLastBatch(result);
+      setActiveTab('VALIDATION_REPORTS');
+      onUploadCsv(file); // also update local state for UI consistency
+    } catch (err) {
+      setApiError(err instanceof Error ? err.message : 'Upload failed');
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
+  const handleCommitBatch = async (batchId: string) => {
+    if (!institutionId) return;
+    try {
+      await institutionApi.commitBatch(institutionId, batchId);
+      await loadBackendData();
+      setUploadResult(null);
+    } catch (err) {
+      setApiError(err instanceof Error ? err.message : 'Commit failed');
+    }
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onAddStudent({
-      name: formData.name,
-      apaarId: formData.apaarId,
-      dob: formData.dob,
-      gender: formData.gender as 'M' | 'F' | 'O',
-      collegeId: currentInstitution.id,
-      collegeName: currentInstitution.name,
-      program: formData.program,
-      branch: formData.branch,
-      academicYear: '2025-26',
-      seatCategory: formData.seatCategory as any,
-      enrolmentStatus: 'Active',
-      verificationStatus: formData.apaarId.length === 12 ? 'Verified' : 'Flagged',
-      duplicateRisk: 'NONE',
-      admissionDate: new Date().toISOString().split('T')[0],
-      studentIdNo: formData.studentIdNo,
-      aadhaarStatus: 'Not Stored (Privacy Preserved)',
-      consentGranted: true,
-      version: 1
-    });
-    setShowAddModal(false);
+    setEnrollLoading(true);
+    setEnrollMsg(null);
+    if (institutionId) {
+      // Real API enrolment
+      try {
+        const result = await institutionApi.enrollStudent(institutionId, {
+          apaar_id: formData.apaarId,
+          student_id_no: formData.studentIdNo,
+          name: formData.name,
+          dob: formData.dob,
+          course: formData.course,
+          year_of_study: 1,
+          mode: 'FULL_TIME',
+          seat_category: formData.seatCategory,
+          is_supernumerary: false,
+          nationality: 'Indian',
+        }) as Record<string, unknown>;
+        setEnrollMsg({ ok: true, text: (result.message as string) || 'Student enrolled successfully!' });
+        await loadBackendData();
+        setTimeout(() => { setShowAddModal(false); setEnrollMsg(null); }, 2000);
+      } catch (err) {
+        setEnrollMsg({ ok: false, text: err instanceof Error ? err.message : 'Enrolment failed' });
+      } finally {
+        setEnrollLoading(false);
+      }
+    } else {
+      // Fallback: local mock
+      onAddStudent({
+        name: formData.name,
+        apaarId: formData.apaarId,
+        dob: formData.dob,
+        gender: 'M',
+        collegeId: currentInstitution.id,
+        collegeName: currentInstitution.name,
+        program: formData.course,
+        branch: 'CSE',
+        academicYear: '2025-26',
+        seatCategory: formData.seatCategory as StudentRecord['seatCategory'],
+        enrolmentStatus: 'Active',
+        verificationStatus: formData.apaarId.length === 12 ? 'Verified' : 'Flagged',
+        duplicateRisk: 'NONE',
+        admissionDate: new Date().toISOString().split('T')[0],
+        studentIdNo: formData.studentIdNo,
+        aadhaarStatus: 'Not Stored (Privacy Preserved)',
+        consentGranted: true,
+        version: 1
+      });
+      setEnrollLoading(false);
+      setShowAddModal(false);
+    }
     setFormData({
       name: '',
       apaarId: '',
       dob: '',
       gender: 'M',
-      program: 'B.Tech Computer Science & Engineering',
-      branch: 'CSE',
+      course: 'Computer Science and Engineering',
       studentIdNo: '',
       seatCategory: 'General',
     });
@@ -152,6 +254,50 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
           </select>
         </div>
       </div>
+
+      {/* ── Live Backend Data Banner ─────────────────────────────────────────── */}
+      {institutionId && (
+        <div className={`rounded-xl border px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono ${
+          apiError
+            ? 'bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300'
+            : apiLoading
+            ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300'
+            : 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
+        }`}>
+          <div className="flex items-center space-x-2">
+            {apiLoading
+              ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /><span>Loading live data from backend…</span></>
+              : apiError
+              ? <><AlertOctagon className="w-3.5 h-3.5" /><span>Backend error: {apiError} — showing mock data</span></>
+              : <><CheckCircle2 className="w-3.5 h-3.5" /><span>✅ Live data from <strong>sih.monu14.me</strong> · {(apiDashboard?.as_of as string) || ''}</span></>
+            }
+          </div>
+          <button onClick={loadBackendData} className="flex items-center space-x-1 px-3 py-1 rounded-lg bg-white/60 dark:bg-slate-800/60 border border-current hover:opacity-80 cursor-pointer transition-opacity">
+            <RefreshCw className="w-3 h-3" /><span>Refresh</span>
+          </button>
+        </div>
+      )}
+
+      {/* ── Upload Result Banner ──────────────────────────────────────────────── */}
+      {uploadResult && (
+        <div className="rounded-xl border bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800 px-4 py-3 text-xs">
+          <div className="flex items-center justify-between">
+            <span className="font-bold text-blue-800 dark:text-blue-300 font-mono">📤 Batch #{(uploadResult.batch_id as string)?.slice(-8)} — {uploadResult.status as string}</span>
+            {uploadResult.status === 'READY_TO_COMMIT' && uploadResult.batch_id && (
+              <button onClick={() => handleCommitBatch(uploadResult.batch_id as string)} className="px-4 py-1.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-lg cursor-pointer transition-colors">
+                ✅ Commit to Ledger
+              </button>
+            )}
+          </div>
+          {uploadResult.summary && (
+            <div className="mt-2 flex flex-wrap gap-3 text-slate-700 dark:text-slate-300">
+              {Object.entries(uploadResult.summary as Record<string, number>).map(([k, v]) => (
+                <span key={k}><span className="text-slate-500 font-normal capitalize">{k.replace(/_/g, ' ')}: </span><strong>{v}</strong></span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Metric Cards Banner */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -460,14 +606,16 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
               />
               <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center">
                 <div className="w-16 h-16 rounded-2xl bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-400 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-                  <Upload className="w-8 h-8" />
+                  {uploadLoading ? <Loader2 className="w-8 h-8 animate-spin" /> : <Upload className="w-8 h-8" />}
                 </div>
-                <h4 className="text-base font-bold text-slate-900 dark:text-white">Click to upload or drag & drop CSV / Excel file</h4>
+                <h4 className="text-base font-bold text-slate-900 dark:text-white">
+                  {uploadLoading ? 'Uploading & validating…' : 'Click to upload or drag & drop CSV / Excel file'}
+                </h4>
                 <p className="text-xs text-slate-500 mt-1 max-w-md">
                   Supported formats: CSV, XLSX (Up to 10MB per batch). Automated background queue processes batches up to 50,000 rows.
                 </p>
                 <div className="mt-4 px-3 py-1 bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-full text-xs font-mono font-bold">
-                  Upload triggers automatic row validation report
+                  {institutionId ? '🔴 LIVE — will POST to sih.monu14.me API' : 'Upload triggers automatic row validation report'}
                 </div>
               </label>
             </div>
@@ -720,6 +868,26 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
                 </div>
               </div>
 
+              {/* Course input */}
+              <div>
+                <label className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">Course / Program</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.course}
+                  onChange={(e) => setFormData({...formData, course: e.target.value})}
+                  placeholder="e.g. Computer Science and Engineering"
+                  className="w-full dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg px-3 py-2 text-xs dark:text-white text-slate-900 focus:outline-none focus:border-blue-700 font-medium"
+                />
+              </div>
+
+              {/* Enroll Message */}
+              {enrollMsg && (
+                <div className={`px-3 py-2 rounded-lg text-xs font-bold ${enrollMsg.ok ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800' : 'bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-300 dark:border-red-800'}`}>
+                  {enrollMsg.text}
+                </div>
+              )}
+
               <div className="flex justify-end space-x-3 pt-3 border-t dark:border-slate-800 border-slate-200">
                 <button
                   type="button"
@@ -730,9 +898,11 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-bold cursor-pointer shadow-sm"
+                  disabled={enrollLoading}
+                  className="px-5 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-bold cursor-pointer shadow-sm flex items-center space-x-1.5 disabled:opacity-70"
                 >
-                  Verify & Store Enrolment
+                  {enrollLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{enrollLoading ? 'Enrolling…' : 'Verify & Store Enrolment'}</span>
                 </button>
               </div>
             </form>

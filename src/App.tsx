@@ -23,6 +23,7 @@ import {
   INITIAL_VIOLATIONS, 
   INITIAL_AUDIT_LOGS 
 } from './data/mockData';
+import { tokenStore, userStore, type AuthUser } from './api/client';
 
 export function App() {
   const [currentRole, setCurrentRole] = useState<UserRole>('INSTITUTION');
@@ -35,12 +36,36 @@ export function App() {
   // Option A: Authentication state
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [currentUserRole, setCurrentUserRole] = useState<UserRole | null>(null);
+  // Backend user from JWT
+  const [sessionUser, setSessionUser] = useState<AuthUser | null>(() => userStore.get());
 
   const [institutions, setInstitutions] = useState<Institution[]>(INITIAL_INSTITUTIONS);
   const [students, setStudents] = useState<StudentRecord[]>(INITIAL_STUDENTS);
   const [batches, setBatches] = useState<UploadBatch[]>(INITIAL_BATCHES);
   const [violations, setViolations] = useState<ViolationCase[]>(INITIAL_VIOLATIONS);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(INITIAL_AUDIT_LOGS);
+
+  // Restore session from localStorage on first load
+  useEffect(() => {
+    const savedUser = userStore.get();
+    const savedToken = tokenStore.get();
+    if (savedUser && savedToken) {
+      setIsAuthenticated(true);
+      setSessionUser(savedUser);
+      // Map backend role to frontend UserRole
+      const roleMap: Record<string, UserRole> = {
+        'INSTITUTION_REGISTRAR': 'INSTITUTION',
+        'AICTE_MAKER': 'AICTE_OFFICER',
+        'AICTE_CHECKER': 'AICTE_SUPER_ADMIN',
+        'VERIFIER': 'VERIFIER',
+        'STUDENT': 'STUDENT',
+      };
+      const mapped = roleMap[savedUser.role] || 'INSTITUTION';
+      setCurrentUserRole(mapped);
+      setCurrentRole(mapped);
+      setActiveNavPage('PORTALS');
+    }
+  }, []);
 
   // Toggle Theme handler
   const handleToggleTheme = () => {
@@ -65,10 +90,14 @@ export function App() {
   }, [theme]);
 
   // Login handler
-  const handleLoginSuccess = (role: UserRole) => {
+  const handleLoginSuccess = (role: UserRole, user?: object) => {
     setIsAuthenticated(true);
     setCurrentUserRole(role);
     setCurrentRole(role);
+    if (user) {
+      setSessionUser(user as AuthUser);
+      userStore.set(user);
+    }
     setActiveNavPage('PORTALS');
   };
 
@@ -76,6 +105,9 @@ export function App() {
   const handleLogout = () => {
     setIsAuthenticated(false);
     setCurrentUserRole(null);
+    setSessionUser(null);
+    tokenStore.clear();
+    userStore.clear();
     setActiveNavPage('HOME');
   };
 
@@ -380,6 +412,7 @@ export function App() {
                 onUploadCsv={handleUploadCsv}
                 onAddStudent={handleAddStudent}
                 onResolveIssue={handleResolveIssue}
+                institutionId={sessionUser?.institution_id || null}
               />
             )}
 
@@ -411,6 +444,7 @@ export function App() {
               <StudentPortal 
                 students={students}
                 onToggleConsent={handleToggleConsent}
+                studentToken={sessionUser?.institution_id || null}
               />
             )}
 

@@ -6,27 +6,40 @@ import {
   XCircle, 
   AlertTriangle, 
   ShieldCheck, 
-  Lock
+  Lock,
+  Loader2
 } from 'lucide-react';
 import { StudentRecord } from '../types';
+import { publicApi } from '../api/client';
 
 interface PublicVerifyProps {
   students: StudentRecord[];
 }
 
 export const PublicVerify: React.FC<PublicVerifyProps> = ({ students }) => {
-  const [inputToken, setInputToken] = useState('892019482019');
-  const [result, setResult] = useState<StudentRecord | null>(
-    students.find(s => s.apaarId === '892019482019') || null
-  );
-  const [hasSearched, setHasSearched] = useState(true);
+  const [inputToken, setInputToken] = useState('');
+  const [hasSearched, setHasSearched] = useState(false);
+  const [apiLoading, setApiLoading] = useState(false);
+  const [apiResult, setApiResult] = useState<Record<string, unknown> | null>(null);
+  const [localResult, setLocalResult] = useState<StudentRecord | null>(null);
 
-  const handleVerify = (e: React.FormEvent) => {
+  const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     setHasSearched(true);
     const cleaned = inputToken.replace(/\s+/g, '');
-    const found = students.find(s => s.apaarId === cleaned || s.digitalCredentialId === cleaned);
-    setResult(found || null);
+    setApiLoading(true);
+    setApiResult(null);
+    setLocalResult(null);
+    try {
+      const res = await publicApi.verifyToken(cleaned) as Record<string, unknown>;
+      setApiResult(res);
+    } catch {
+      // Fallback: search local students
+      const found = students.find(s => s.apaarId === cleaned || s.digitalCredentialId === cleaned);
+      setLocalResult(found || null);
+    } finally {
+      setApiLoading(false);
+    }
   };
 
   return (
