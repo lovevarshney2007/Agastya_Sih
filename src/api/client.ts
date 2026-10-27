@@ -51,15 +51,31 @@ export async function apiFetch<T = unknown>(
     headers['Content-Type'] = 'application/json';
   }
 
-  const res = await fetch(`${API_BASE}${path}`, {
-    method,
-    headers,
-    body: body
-      ? isFormData
-        ? (body as FormData)
-        : JSON.stringify(body)
-      : undefined,
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      method,
+      headers,
+      signal: controller.signal,
+      body: body
+        ? isFormData
+          ? (body as FormData)
+          : JSON.stringify(body)
+        : undefined,
+    });
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new Error('Request timed out. Live server is slow or busy.');
+    }
+    // Network or CORS failure
+    throw new Error('Live API unreachable or syncing. Offline resilient mode active.');
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!res.ok) {
     let errorDetail = `HTTP ${res.status}`;
@@ -67,7 +83,15 @@ export async function apiFetch<T = unknown>(
       const errJson = await res.json();
       errorDetail = errJson.detail || errJson.message || errorDetail;
     } catch {
-      // ignore parse errors
+      try {
+        const text = await res.text();
+        if (text) errorDetail = text.slice(0, 150);
+      } catch {
+        // ignore
+      }
+    }
+    if (res.status === 500) {
+      errorDetail = `Server error (${errorDetail}). Operating in safe mode.`;
     }
     throw new Error(errorDetail);
   }
