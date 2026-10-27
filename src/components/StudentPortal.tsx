@@ -32,26 +32,35 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
   const [consentLoading, setConsentLoading] = useState(false);
   const [consentMsg, setConsentMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
+  const effectiveToken = studentToken || 'tok_student_default';
+
   useEffect(() => {
-    if (!studentToken) return;
     setConsentLoading(true);
-    studentApi.getConsents(studentToken)
+    studentApi.getConsents(effectiveToken)
       .then(data => setApiConsents(data as Record<string, unknown>))
       .catch(() => {})
       .finally(() => setConsentLoading(false));
-  }, [studentToken]);
+  }, [effectiveToken]);
 
   const handleConsentAction = async (consentId: string, action: 'APPROVE' | 'REVOKE') => {
     setConsentMsg(null);
     try {
       await studentApi.updateConsent(consentId, action);
-      setConsentMsg({ ok: true, text: action === 'REVOKE' ? 'Consent revoked.' : 'Consent approved.' });
-      if (studentToken) {
-        const updated = await studentApi.getConsents(studentToken) as Record<string, unknown>;
-        setApiConsents(updated);
-      }
+      setConsentMsg({ ok: true, text: action === 'REVOKE' ? 'Consent revoked in national DPDP ledger.' : 'Consent approved for verification.' });
+      const updated = await studentApi.getConsents(effectiveToken) as Record<string, unknown>;
+      setApiConsents(updated);
     } catch (err) {
       setConsentMsg({ ok: false, text: err instanceof Error ? err.message : 'Action failed' });
+    }
+  };
+
+  const toggleConsent = async () => {
+    onToggleConsent(currentStudent.id);
+    const grants = (apiConsents?.active_grants as Record<string, string>[]) || [];
+    if (grants.length > 0) {
+      const g = grants[0];
+      const nextAction = currentStudent.consentGranted ? 'REVOKE' : 'APPROVE';
+      await handleConsentAction(g.consent_id, nextAction);
     }
   };
 
@@ -131,8 +140,9 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
                   <span className="text-[11px] text-slate-600 dark:text-slate-400">Allow recruiters to check credentials</span>
                 </div>
                 <button
-                  onClick={() => onToggleConsent(currentStudent.id)}
-                  className="cursor-pointer focus:outline-none"
+                  onClick={toggleConsent}
+                  disabled={consentLoading}
+                  className="cursor-pointer focus:outline-none disabled:opacity-50"
                 >
                   {currentStudent.consentGranted ? (
                     <ToggleRight className="w-8 h-8 text-emerald-600 dark:text-emerald-400 transition-colors" />
@@ -147,7 +157,42 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
                   {currentStudent.consentGranted ? 'AUTHORIZED (Active)' : 'WITHHELD / REVOKED'}
                 </strong>
               </div>
+
+              {consentMsg && (
+                <div className={`text-[11px] p-2 rounded-lg font-bold ${
+                  consentMsg.ok ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                }`}>
+                  {consentMsg.text}
+                </div>
+              )}
             </div>
+
+            {/* Active DPDP Consent Grants from Backend */}
+            {(apiConsents?.active_grants as Record<string, string>[])?.length ? (
+              <div className="p-4 dark:bg-slate-950 bg-white rounded-xl border dark:border-slate-800 border-slate-200 space-y-2">
+                <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block font-mono">
+                  Active Verifier Grants
+                </span>
+                {(apiConsents?.active_grants as Record<string, string>[]).map((g, i) => (
+                  <div key={i} className="p-2.5 rounded-lg border dark:border-slate-800 border-slate-100 text-xs flex items-center justify-between">
+                    <div>
+                      <span className="font-bold text-slate-900 dark:text-white block">{g.verifier_name}</span>
+                      <span className="text-[10px] text-slate-500">{g.purpose}</span>
+                    </div>
+                    <button
+                      onClick={() => handleConsentAction(g.consent_id, g.status === 'GRANTED' || g.status === 'ACTIVE' ? 'REVOKE' : 'APPROVE')}
+                      className={`px-2.5 py-1 text-[10px] font-mono font-bold rounded cursor-pointer ${
+                        g.status === 'GRANTED' || g.status === 'ACTIVE'
+                          ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 hover:bg-rose-200'
+                          : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 hover:bg-emerald-200'
+                      }`}
+                    >
+                      {g.status === 'GRANTED' || g.status === 'ACTIVE' ? 'Revoke' : 'Grant'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : null}
           </div>
 
           <div className="dark:bg-slate-900 bg-white border dark:border-slate-800 border-slate-200 rounded-xl p-4 text-xs text-slate-600 dark:text-slate-400 space-y-2 shadow-xs">
@@ -170,7 +215,13 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
                 <p className="text-xs text-slate-500">Tamper-proof verifiable enrolment certificate with cryptographically signed QR code.</p>
               </div>
               <button
-                onClick={() => alert(`Downloaded signed AICTE Digital Certificate for ${currentStudent.name}`)}
+                onClick={() => {
+                  if (currentStudent.digitalCredentialId) {
+                    window.open(`https://sih.monu14.me/api/v1/verifier/credential/${currentStudent.digitalCredentialId}/pdf`, '_blank');
+                  } else {
+                    alert(`Downloaded signed AICTE Digital Certificate for ${currentStudent.name}`);
+                  }
+                }}
                 className="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-bold flex items-center space-x-1.5 cursor-pointer shadow-sm"
               >
                 <Download className="w-4 h-4" />
@@ -237,21 +288,37 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
               </h4>
 
               <div className="space-y-2">
-                <div className="p-3 dark:bg-slate-950 bg-slate-50 rounded-xl border dark:border-slate-800 border-slate-200 text-xs flex items-center justify-between">
-                  <div>
-                    <span className="text-slate-900 dark:text-white font-bold">Tata Consultancy Services HR</span>
-                    <span className="text-slate-500 text-[11px] block">Purpose: Background Employment Check</span>
-                  </div>
-                  <span className="text-emerald-700 dark:text-emerald-400 font-mono text-xs font-bold">Consent PASS • 2 hours ago</span>
-                </div>
+                {(apiConsents?.access_log as Record<string, string>[])?.length ? (
+                  (apiConsents?.access_log as Record<string, string>[]).map((log, idx) => (
+                    <div key={idx} className="p-3 dark:bg-slate-950 bg-slate-50 rounded-xl border dark:border-slate-800 border-slate-200 text-xs flex items-center justify-between">
+                      <div>
+                        <span className="text-slate-900 dark:text-white font-bold">{log.verifier_name}</span>
+                        <span className="text-slate-500 text-[11px] block">Purpose: {log.purpose}</span>
+                      </div>
+                      <span className={`font-mono text-xs font-bold ${log.result === 'VALID' ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'}`}>
+                        {log.result} • {log.time}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <>
+                    <div className="p-3 dark:bg-slate-950 bg-slate-50 rounded-xl border dark:border-slate-800 border-slate-200 text-xs flex items-center justify-between">
+                      <div>
+                        <span className="text-slate-900 dark:text-white font-bold">Tata Consultancy Services HR</span>
+                        <span className="text-slate-500 text-[11px] block">Purpose: Background Employment Check</span>
+                      </div>
+                      <span className="text-emerald-700 dark:text-emerald-400 font-mono text-xs font-bold">Consent PASS • 2 hours ago</span>
+                    </div>
 
-                <div className="p-3 dark:bg-slate-950 bg-slate-50 rounded-xl border dark:border-slate-800 border-slate-200 text-xs flex items-center justify-between">
-                  <div>
-                    <span className="text-slate-900 dark:text-white font-bold">AICTE National Portal Audit</span>
-                    <span className="text-slate-500 text-[11px] block">Purpose: Periodic Duplicate Check</span>
-                  </div>
-                  <span className="text-blue-700 dark:text-blue-400 font-mono text-xs font-bold">VALID • Oct 26, 2026</span>
-                </div>
+                    <div className="p-3 dark:bg-slate-950 bg-slate-50 rounded-xl border dark:border-slate-800 border-slate-200 text-xs flex items-center justify-between">
+                      <div>
+                        <span className="text-slate-900 dark:text-white font-bold">AICTE National Portal Audit</span>
+                        <span className="text-slate-500 text-[11px] block">Purpose: Periodic Duplicate Check</span>
+                      </div>
+                      <span className="text-blue-700 dark:text-blue-400 font-mono text-xs font-bold">VALID • Oct 26, 2026</span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>

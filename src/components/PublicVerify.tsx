@@ -42,14 +42,17 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({ students }) => {
     }
   };
 
-  const result = localResult || (apiResult ? {
-    name: (apiResult.student_name as string) || (apiResult.name as string) || 'Verified Student',
-    collegeName: (apiResult.institution_name as string) || (apiResult.college_name as string) || 'Approved Institution',
-    program: (apiResult.program as string) || (apiResult.course as string) || 'B.Tech Program',
-    academicYear: (apiResult.academic_year as string) || '2025-2026',
-    enrolmentStatus: (apiResult.enrolment_status as string) || (apiResult.valid ? 'Active' : 'Inactive'),
-    verificationStatus: (apiResult.verification_status as string) || (apiResult.valid ? 'Verified' : 'Flagged'),
-    digitalCredentialId: (apiResult.credential_id as string) || (apiResult.token as string) || inputToken,
+  const claims = (apiResult?.claims as Record<string, unknown>) || null;
+  const isApiValid = apiResult?.status === 'VALID';
+
+  const result = localResult || (apiResult && isApiValid && claims ? {
+    name: (claims.name as string) || (claims.student_name as string) || 'Authenticated Candidate',
+    collegeName: (claims.institution as string) || (claims.institution_name as string) || 'Approved AICTE Institution',
+    program: (claims.course as string) || (claims.program as string) || 'Degree Program',
+    academicYear: String(claims.academic_year || '2025-2026'),
+    enrolmentStatus: (claims.status as string) || 'Active',
+    verificationStatus: 'Verified',
+    digitalCredentialId: inputToken,
   } : null);
 
   return (

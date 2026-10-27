@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Building2, 
   FileSpreadsheet, 
@@ -13,9 +13,11 @@ import {
   Layers,
   CheckCircle2,
   AlertOctagon,
-  Download
+  Download,
+  RefreshCw
 } from 'lucide-react';
 import { Institution, StudentRecord, AuditLog } from '../types';
+import { aicteApi, reportsApi } from '../api/client';
 
 interface SuperAdminDashboardProps {
   institutions?: Institution[];
@@ -26,6 +28,54 @@ interface SuperAdminDashboardProps {
 
 export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [apiDashboard, setApiDashboard] = useState<Record<string, unknown> | null>(null);
+  const [apiViolations, setApiViolations] = useState<Record<string, unknown>[] | null>(null);
+  const [apiAuditLogs, setApiAuditLogs] = useState<Record<string, unknown>[] | null>(null);
+  const [chainVerification, setChainVerification] = useState<Record<string, unknown> | null>(null);
+  const [isVerifyingChain, setIsVerifyingChain] = useState(false);
+  const [tamperAlert, setTamperAlert] = useState<string | null>(null);
+
+  useEffect(() => {
+    Promise.all([
+      aicteApi.dashboard() as Promise<Record<string, unknown>>,
+      aicteApi.violations() as Promise<Record<string, unknown>[]>,
+      aicteApi.auditLedger() as Promise<Record<string, unknown>>,
+    ])
+      .then(([dash, viols, audit]) => {
+        setApiDashboard(dash);
+        setApiViolations(viols);
+        if (audit && Array.isArray((audit as Record<string, unknown>).events)) {
+          setApiAuditLogs((audit as Record<string, unknown>).events as Record<string, unknown>[]);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleVerifyChain = async () => {
+    setIsVerifyingChain(true);
+    setTamperAlert(null);
+    try {
+      const res = await aicteApi.verifyChain() as Record<string, unknown>;
+      setChainVerification(res);
+    } catch (err) {
+      setChainVerification({ valid: false, message: 'Chain validation failed' });
+    } finally {
+      setIsVerifyingChain(false);
+    }
+  };
+
+  const handleSimulateTamper = async () => {
+    try {
+      const res = await aicteApi.simulateTamper() as Record<string, unknown>;
+      setTamperAlert((res.message as string) || 'Tamper simulation triggered: Merkle root mismatch detected!');
+      const verifyRes = await aicteApi.verifyChain() as Record<string, unknown>;
+      setChainVerification(verifyRes);
+    } catch {
+      setTamperAlert('Tamper detected: Block hash broken.');
+    }
+  };
+
+  const kpis = (apiDashboard?.kpis as Record<string, unknown>) || null;
 
   // Default state-wise data exactly matching the screenshot
   const stateData = [
@@ -187,18 +237,18 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = () => {
 
         <div className="flex flex-wrap items-center gap-2.5">
           <button 
-            onClick={() => alert('Exporting National Compliance Report (.xlsx)...')}
+            onClick={() => window.open(reportsApi.nationalCsvUrl(), '_blank')}
             className="flex items-center space-x-2 px-3.5 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs shadow-xs transition-all cursor-pointer"
           >
             <FileSpreadsheet className="w-4 h-4" />
-            <span>Export National Compliance Report (.xlsx)</span>
+            <span>Export National Compliance Report (.csv)</span>
           </button>
           <button 
-            onClick={() => alert('Generating PDF Report...')}
+            onClick={() => window.open(reportsApi.admissionTemplateUrl(), '_blank')}
             className="flex items-center space-x-2 px-3.5 py-2 rounded-lg bg-[#0b2559] hover:bg-[#113880] text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
           >
-            <FileText className="w-4 h-4" />
-            <span>Export PDF Report</span>
+            <Download className="w-4 h-4" />
+            <span>Download CSV Template</span>
           </button>
         </div>
       </div>
@@ -211,10 +261,10 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = () => {
             APPROVED INSTITUTIONS
           </p>
           <h2 className="text-3xl font-black text-[#0b2559] dark:text-white mt-1 tracking-tight">
-            9,840
+            {kpis?.approved_institutions ? String(kpis.approved_institutions) : '9,840'}
           </h2>
           <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mt-2 flex items-center space-x-1">
-            <span>All 28 States & UTs Active</span>
+            <span>All 28 States & UTs Monitored</span>
           </p>
         </div>
 
@@ -224,7 +274,7 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = () => {
             NATIONAL ENROLMENTS
           </p>
           <h2 className="text-3xl font-black text-[#0b2559] dark:text-white mt-1 tracking-tight">
-            34.6 L
+            {kpis?.total_students_enrolled ? String(kpis.total_students_enrolled) : '34.6 L'}
           </h2>
           <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 mt-2">
             Sanctioned: 34.2 L (+1.1%)
@@ -237,10 +287,10 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = () => {
             APAAR VERIFIED RECORDS
           </p>
           <h2 className="text-3xl font-black text-[#0b2559] dark:text-white mt-1 tracking-tight">
-            31.1 L
+            {kpis?.identity_verified_pct ? `${kpis.identity_verified_pct}%` : '89.8%'}
           </h2>
           <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mt-2">
-            89.8% Synced with DigiLocker
+            Validated via DigiLocker / UIDAI
           </p>
         </div>
 
@@ -250,10 +300,10 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = () => {
             DUPLICATES INTERCEPTED
           </p>
           <h2 className="text-3xl font-black text-[#0b2559] dark:text-white mt-1 tracking-tight">
-            14,210
+            {kpis?.duplicates_intercepted ? String(kpis.duplicates_intercepted) : '14,210'}
           </h2>
           <p className="text-xs font-semibold text-rose-600 dark:text-rose-400 mt-2">
-            Kafka Risk Engine Flags
+            Cross-College Real-time Block
           </p>
         </div>
       </div>
@@ -454,66 +504,164 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = () => {
           </div>
 
           <div className="space-y-3 flex-1">
-            {kafkaAnomalies.map((item, idx) => (
-              <div 
-                key={idx}
-                className="p-3.5 rounded-xl border border-rose-200/70 dark:border-rose-900/50 bg-[#fffbfa] dark:bg-rose-950/20 text-xs space-y-1"
-              >
-                <div className="flex items-center space-x-2">
-                  <span className="font-mono font-bold text-slate-900 dark:text-white">
-                    {item.id}
-                  </span>
-                  <span className="font-bold text-rose-600 dark:text-rose-400">
-                    ({item.severity})
-                  </span>
+            {apiViolations && apiViolations.length > 0 ? (
+              apiViolations.slice(0, 4).map((v, idx) => (
+                <div 
+                  key={idx}
+                  className="p-3.5 rounded-xl border border-rose-200/70 dark:border-rose-900/50 bg-[#fffbfa] dark:bg-rose-950/20 text-xs space-y-1"
+                >
+                  <div className="flex items-center space-x-2">
+                    <span className="font-mono font-bold text-slate-900 dark:text-white">
+                      {(v.case_number as string) || (v.case_id as string)}
+                    </span>
+                    <span className="font-bold text-rose-600 dark:text-rose-400">
+                      ({(v.severity as string) || 'CRITICAL'})
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      APAAR: {(v.masked_apaar as string) || '••••••••'}
+                    </span>
+                  </div>
+                  <p className="text-slate-800 dark:text-slate-200 text-xs font-semibold">
+                    {(v.conflict_type as string) || 'Dual Admission Intercepted'}
+                  </p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                    Colleges: {Array.isArray(v.institutions_involved) ? (v.institutions_involved as string[]).join(' ↔ ') : 'Multi-College Conflict'}
+                  </p>
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-[10px] font-mono text-slate-500">
+                      Status: <strong className="text-blue-700 dark:text-blue-400">{v.status as string}</strong>
+                    </span>
+                    <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+                      Streamed via Kafka Broker
+                    </span>
+                  </div>
                 </div>
-                <p className="text-slate-800 dark:text-slate-200 text-xs">
-                  {item.msg}
-                </p>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                  {item.sub}
-                </p>
-              </div>
-            ))}
+              ))
+            ) : (
+              kafkaAnomalies.map((item, idx) => (
+                <div 
+                  key={idx}
+                  className="p-3.5 rounded-xl border border-rose-200/70 dark:border-rose-900/50 bg-[#fffbfa] dark:bg-rose-950/20 text-xs space-y-1"
+                >
+                  <div className="flex items-center space-x-2">
+                    <span className="font-mono font-bold text-slate-900 dark:text-white">
+                      {item.id}
+                    </span>
+                    <span className="font-bold text-rose-600 dark:text-rose-400">
+                      ({item.severity})
+                    </span>
+                  </div>
+                  <p className="text-slate-800 dark:text-slate-200 text-xs">
+                    {item.msg}
+                  </p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                    {item.sub}
+                  </p>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
         {/* Right: Immutable System Audit Ledger */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
             <div className="flex items-center space-x-2">
               <span className="text-base">📜</span>
               <h4 className="text-sm font-bold text-slate-900 dark:text-white">
                 Immutable System Audit Ledger
               </h4>
             </div>
-            <span className="text-[10px] font-mono font-bold text-blue-600 dark:text-blue-400">
-              JPA AUDIT LOGS
-            </span>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleVerifyChain}
+                disabled={isVerifyingChain}
+                className="px-2.5 py-1 text-[10px] font-mono font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 cursor-pointer flex items-center space-x-1"
+              >
+                {isVerifyingChain ? <RefreshCw className="w-3 h-3 animate-spin" /> : <ShieldCheck className="w-3 h-3" />}
+                <span>Verify Chain</span>
+              </button>
+              <button
+                onClick={handleSimulateTamper}
+                className="px-2.5 py-1 text-[10px] font-mono font-bold bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800 rounded-lg hover:bg-rose-100 cursor-pointer"
+              >
+                Simulate Tamper
+              </button>
+            </div>
           </div>
 
+          {chainVerification && (
+            <div className={`mb-3 p-2.5 rounded-xl border text-xs font-mono font-bold flex items-center space-x-2 ${
+              chainVerification.valid !== false
+                ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
+                : 'bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-800'
+            }`}>
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <span>
+                {(chainVerification.message as string) || (chainVerification.valid ? 'SHA-256 Hash Chain Integrity VERIFIED (All blocks unbroken)' : 'Tamper detected!')}
+              </span>
+            </div>
+          )}
+
+          {tamperAlert && (
+            <div className="mb-3 p-2.5 rounded-xl border bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-800 text-xs font-mono font-bold flex items-center space-x-2">
+              <AlertOctagon className="w-4 h-4 shrink-0 text-rose-600" />
+              <span>{tamperAlert}</span>
+            </div>
+          )}
+
           <div className="space-y-3 flex-1">
-            {auditLedger.map((log, idx) => (
-              <div 
-                key={idx}
-                className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 text-xs space-y-1"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400">
-                    {log.time}
-                  </span>
-                  <span className="font-mono text-[10px] font-bold text-slate-700 dark:text-slate-300">
-                    {log.tag}
-                  </span>
+            {apiAuditLogs && apiAuditLogs.length > 0 ? (
+              apiAuditLogs.slice(0, 4).map((log, idx) => (
+                <div 
+                  key={idx}
+                  className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 text-xs space-y-1"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400">
+                      {(log.occurred_at as string) || 'Recent'}
+                    </span>
+                    <span className="font-mono text-[10px] font-bold text-blue-700 dark:text-blue-400">
+                      {log.action as string}
+                    </span>
+                  </div>
+                  <p className="font-mono text-slate-900 dark:text-white text-xs font-semibold">
+                    Entity: {log.entity as string} • ID: {String(log.entity_id || '')}
+                  </p>
+                  <div className="flex items-center justify-between text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                    <span>Actor: {log.actor_id as string}</span>
+                    <span className="text-[10px] text-slate-400">Seq #{String(log.seq || idx)}</span>
+                  </div>
+                  {Boolean(log.hash) && (
+                    <div className="text-[10px] font-mono text-slate-400 truncate">
+                      SHA-256: <span className="text-emerald-700 dark:text-emerald-400">{String(log.hash).substring(0, 24)}...</span>
+                    </div>
+                  )}
                 </div>
-                <p className="font-mono text-slate-900 dark:text-white text-xs font-semibold">
-                  {log.detail}
-                </p>
-                <p className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
-                  {log.actor}
-                </p>
-              </div>
-            ))}
+              ))
+            ) : (
+              auditLedger.map((log, idx) => (
+                <div 
+                  key={idx}
+                  className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 text-xs space-y-1"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400">
+                      {log.time}
+                    </span>
+                    <span className="font-mono text-[10px] font-bold text-slate-700 dark:text-slate-300">
+                      {log.tag}
+                    </span>
+                  </div>
+                  <p className="font-mono text-slate-900 dark:text-white text-xs font-semibold">
+                    {log.detail}
+                  </p>
+                  <p className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                    {log.actor}
+                  </p>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
