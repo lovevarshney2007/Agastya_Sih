@@ -6,14 +6,11 @@ import {
   UserCheck, 
   GraduationCap, 
   QrCode, 
-  Layers, 
-  Database,
   Lock,
   Sun,
   Moon,
   ChevronRight,
   ChevronDown,
-  Shield,
   LogIn,
   LogOut,
   User,
@@ -25,7 +22,8 @@ import {
   Home,
   BarChart3,
   FileText,
-  BookOpen
+  BookOpen,
+  AlertCircle
 } from 'lucide-react';
 import { UserRole, MainNavPage } from '../types';
 import { Language, TRANSLATIONS } from '../data/translations';
@@ -160,7 +158,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span className="hidden sm:inline">{currentDateStr}</span>
           <span className="hidden sm:inline">|</span>
           <span className="inline sm:hidden flex items-center space-x-1 font-bold text-amber-300">
-            <span>🇮🇳</span>
             <span>AICTE</span>
           </span>
           <span className="hidden md:inline">
@@ -368,13 +365,13 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* 4. SOLID NAVY MENU RIBBON (Clean Educational Navigation without duplicate login clutter) */}
       <div className="hidden lg:block bg-[#0b2559] text-white px-4 sm:px-6 lg:px-8 border-y border-blue-900 shadow-inner w-full">
         <div className="w-full flex items-center justify-between">
-          <nav className="flex items-center space-x-1 text-xs font-bold">
+          <nav className="flex items-center text-xs font-bold">
             <button
               onClick={() => onSelectNavPage('HOME')}
-              className={`px-4 py-2.5 transition-colors cursor-pointer whitespace-nowrap ${
+              className={`px-4 py-2.5 transition-colors cursor-pointer whitespace-nowrap border-b-2 ${
                 activeNavPage === 'HOME'
-                  ? 'bg-[#15469e] text-white shadow-inner font-extrabold'
-                  : 'text-slate-200 hover:bg-[#113880] hover:text-white'
+                  ? 'border-amber-400 text-white bg-[#15469e]/60'
+                  : 'border-transparent text-slate-200 hover:bg-[#113880] hover:text-white'
               }`}
             >
               {t.home}
@@ -389,9 +386,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onSelectNavPage('HOME');
                 }
               }}
-              className="px-4 py-2.5 text-slate-200 hover:bg-[#113880] hover:text-white transition-colors cursor-pointer whitespace-nowrap"
+              className="px-4 py-2.5 border-b-2 border-transparent text-slate-200 hover:bg-[#113880] hover:text-white transition-colors cursor-pointer whitespace-nowrap"
             >
-              {language === 'HI' ? 'प्रक्रिया (How It Works)' : 'How It Works'}
+              {language === 'HI' ? 'प्रक्रिया' : 'How It Works'}
             </button>
 
             <button
@@ -403,42 +400,45 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onSelectNavPage('HOME');
                 }
               }}
-              className="px-4 py-2.5 text-slate-200 hover:bg-[#113880] hover:text-white transition-colors cursor-pointer whitespace-nowrap"
+              className="px-4 py-2.5 border-b-2 border-transparent text-slate-200 hover:bg-[#113880] hover:text-white transition-colors cursor-pointer whitespace-nowrap"
             >
-              {language === 'HI' ? 'विशेषताएं (Features)' : 'Platform Features'}
+              {language === 'HI' ? 'विशेषताएं' : 'Features'}
             </button>
 
             <button
               onClick={() => onSelectNavPage('ANALYTICS')}
-              className={`px-4 py-2.5 flex items-center space-x-1 transition-colors cursor-pointer whitespace-nowrap ${
+              className={`px-4 py-2.5 flex items-center space-x-1.5 border-b-2 transition-colors cursor-pointer whitespace-nowrap ${
                 activeNavPage === 'ANALYTICS'
-                  ? 'bg-[#15469e] text-white font-extrabold'
-                  : 'text-slate-200 hover:bg-[#113880] hover:text-white'
+                  ? 'border-amber-400 text-white bg-[#15469e]/60'
+                  : 'border-transparent text-slate-200 hover:bg-[#113880] hover:text-white'
               }`}
             >
-              <span>📊 {t.analytics}</span>
+              <BarChart3 className="w-3.5 h-3.5" />
+              <span>{t.analytics}</span>
             </button>
 
             <button
               onClick={() => onSelectNavPage('COMPLIANCE_STANDARDS')}
-              className={`px-4 py-2.5 flex items-center space-x-1 transition-colors cursor-pointer whitespace-nowrap ${
+              className={`px-4 py-2.5 flex items-center space-x-1.5 border-b-2 transition-colors cursor-pointer whitespace-nowrap ${
                 activeNavPage === 'COMPLIANCE_STANDARDS'
-                  ? 'bg-[#15469e] text-white font-extrabold'
-                  : 'text-slate-200 hover:bg-[#113880] hover:text-white'
+                  ? 'border-amber-400 text-white bg-[#15469e]/60'
+                  : 'border-transparent text-slate-200 hover:bg-[#113880] hover:text-white'
               }`}
             >
-              <span>📜 {t.aphRules}</span>
+              <FileText className="w-3.5 h-3.5" />
+              <span>{t.aphRules}</span>
             </button>
 
             <button
               onClick={() => onSelectNavPage('DOCUMENTATION')}
-              className={`px-4 py-2.5 flex items-center space-x-1 transition-colors cursor-pointer whitespace-nowrap ${
+              className={`px-4 py-2.5 flex items-center space-x-1.5 border-b-2 transition-colors cursor-pointer whitespace-nowrap ${
                 activeNavPage === 'DOCUMENTATION'
-                  ? 'bg-[#15469e] text-white font-extrabold'
-                  : 'text-slate-200 hover:bg-[#113880] hover:text-white'
+                  ? 'border-amber-400 text-white bg-[#15469e]/60'
+                  : 'border-transparent text-slate-200 hover:bg-[#113880] hover:text-white'
               }`}
             >
-              <span>📖 {t.docsSpec}</span>
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>{t.docsSpec}</span>
             </button>
           </nav>
 
@@ -447,9 +447,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             {openViolationsCount > 0 && (
               <button
                 onClick={() => handlePortalNavigation('AICTE_OFFICER')}
-                className="flex items-center space-x-1 px-2.5 py-1 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-mono text-[11px] font-bold transition-colors cursor-pointer"
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-md bg-rose-600 hover:bg-rose-700 text-white font-mono text-[11px] font-bold transition-colors cursor-pointer"
               >
-                <span>⚠️ {openViolationsCount} Regulatory Alerts</span>
+                <AlertCircle className="w-3.5 h-3.5" />
+                <span>{openViolationsCount} Regulatory Alerts</span>
               </button>
             )}
           </div>

@@ -374,7 +374,7 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
               ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /><span>Loading live data from backend…</span></>
               : apiError
               ? <><AlertOctagon className="w-3.5 h-3.5" /><span>Backend error: {apiError} — showing mock data</span></>
-              : <><CheckCircle2 className="w-3.5 h-3.5" /><span>✅ Live data from <strong>sih.monu14.me</strong> · {(apiDashboard?.as_of as string) || ''}</span></>
+              : <><CheckCircle2 className="w-3.5 h-3.5" /><span>Live data from <strong>sih.monu14.me</strong> · {(apiDashboard?.as_of as string) || ''}</span></>
             }
           </div>
           <button onClick={loadBackendData} className="flex items-center space-x-1 px-3 py-1 rounded-lg bg-white/60 dark:bg-slate-800/60 border border-current hover:opacity-80 cursor-pointer transition-opacity">
@@ -387,10 +387,14 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
       {uploadResult && (
         <div className="rounded-xl border bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800 px-4 py-3 text-xs">
           <div className="flex items-center justify-between">
-            <span className="font-bold text-blue-800 dark:text-blue-300 font-mono">📤 Batch #{(uploadResult.batch_id as string)?.slice(-8)} — {uploadResult.status as string}</span>
+            <span className="font-bold text-blue-800 dark:text-blue-300 font-mono flex items-center space-x-1.5">
+              <Upload className="w-3.5 h-3.5" />
+              <span>Batch #{(uploadResult.batch_id as string)?.slice(-8)} — {uploadResult.status as string}</span>
+            </span>
             {uploadResult.status === 'READY_TO_COMMIT' && Boolean(uploadResult.batch_id) && (
-              <button onClick={() => handleCommitBatch(uploadResult.batch_id as string)} className="px-4 py-1.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-lg cursor-pointer transition-colors">
-                ✅ Commit to Ledger
+              <button onClick={() => handleCommitBatch(uploadResult.batch_id as string)} className="flex items-center space-x-1.5 px-4 py-1.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-lg cursor-pointer transition-colors">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>Commit to Ledger</span>
               </button>
             )}
           </div>
@@ -471,50 +475,52 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex items-center space-x-2 border-b dark:border-slate-800 border-slate-200 pb-2">
-        <button
-          onClick={() => setActiveTab('REGISTRY')}
-          className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
-            activeTab === 'REGISTRY'
-              ? 'bg-blue-700 text-white'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'
-          }`}
-        >
-          {t.instTabRegistry || 'Student Registry'} ({filteredStudents.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('UPLOAD_WIZARD')}
-          className={`px-4 py-2 text-xs font-bold rounded-lg flex items-center space-x-1.5 transition-colors cursor-pointer ${
-            activeTab === 'UPLOAD_WIZARD'
-              ? 'bg-blue-700 text-white'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'
-          }`}
-        >
-          <Upload className="w-4 h-4" />
-          <span>{t.instTabUpload || 'Upload Wizard (CSV/XLSX)'}</span>
-        </button>
-        <button
-          onClick={() => setActiveTab('VALIDATION_REPORTS')}
-          className={`px-4 py-2 text-xs font-bold rounded-lg flex items-center space-x-1.5 transition-colors cursor-pointer ${
-            activeTab === 'VALIDATION_REPORTS'
-              ? 'bg-blue-700 text-white'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'
-          }`}
-        >
-          <FileSpreadsheet className="w-4 h-4" />
-          <span>{t.instTabValidation || 'Batch Validation Reports'} ({batches[0]?.issues.length || 0})</span>
-        </button>
-        <button
-          onClick={() => setActiveTab('COMPLIANCE')}
-          className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
-            activeTab === 'COMPLIANCE'
-              ? 'bg-blue-700 text-white'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'
-          }`}
-        >
-          {t.instTabCompliance || 'Intake & Quota Compliance'}
-        </button>
+      {/* Tabs — horizontally scrollable on small screens */}
+      <div className="overflow-x-auto -mx-1">
+        <div className="flex items-center space-x-1 border-b dark:border-slate-800 border-slate-200 pb-0 min-w-max px-1">
+          <button
+            onClick={() => setActiveTab('REGISTRY')}
+            className={`px-4 py-2.5 text-xs font-bold whitespace-nowrap transition-colors cursor-pointer border-b-2 ${
+              activeTab === 'REGISTRY'
+                ? 'border-blue-600 text-blue-700 dark:text-blue-400'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:border-slate-300'
+            }`}
+          >
+            {t.instTabRegistry || 'Student Registry'} ({filteredStudents.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('UPLOAD_WIZARD')}
+            className={`px-4 py-2.5 text-xs font-bold whitespace-nowrap flex items-center space-x-1.5 transition-colors cursor-pointer border-b-2 ${
+              activeTab === 'UPLOAD_WIZARD'
+                ? 'border-blue-600 text-blue-700 dark:text-blue-400'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:border-slate-300'
+            }`}
+          >
+            <Upload className="w-3.5 h-3.5" />
+            <span>{t.instTabUpload || 'Batch Upload'}</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('VALIDATION_REPORTS')}
+            className={`px-4 py-2.5 text-xs font-bold whitespace-nowrap flex items-center space-x-1.5 transition-colors cursor-pointer border-b-2 ${
+              activeTab === 'VALIDATION_REPORTS'
+                ? 'border-blue-600 text-blue-700 dark:text-blue-400'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:border-slate-300'
+            }`}
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <span>{t.instTabValidation || 'Validation Reports'} ({batches[0]?.issues.length || 0})</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('COMPLIANCE')}
+            className={`px-4 py-2.5 text-xs font-bold whitespace-nowrap transition-colors cursor-pointer border-b-2 ${
+              activeTab === 'COMPLIANCE'
+                ? 'border-blue-600 text-blue-700 dark:text-blue-400'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:border-slate-300'
+            }`}
+          >
+            {t.instTabCompliance || 'Compliance'}
+          </button>
+        </div>
       </div>
 
       {/* TAB 1: STUDENT REGISTRY */}
@@ -592,8 +598,8 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
                   filteredStudents.map((student) => (
                     <tr key={student.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="py-3 px-4">
-                        <div className="font-bold text-slate-900 dark:text-white">{student.name}</div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">{student.studentIdNo} • DOB: {student.dob}</div>
+                        <div className="font-bold text-slate-900 dark:text-white text-[13px]">{student.name}</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5 truncate max-w-[180px]">{student.studentIdNo}</div>
                       </td>
                       <td className="py-3 px-4">
                         <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-md dark:bg-slate-800 bg-blue-50 border dark:border-slate-700 border-blue-200 text-blue-700 dark:text-blue-300 font-mono font-bold">

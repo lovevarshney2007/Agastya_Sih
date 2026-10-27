@@ -77,6 +77,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
   const stateAggregates = dynamicStateAggs;
 
   // 2. Dynamic Data for Category Distribution Pie Chart (calculated from actual student records)
+  // Build category counts from actual student records
   const catCounts: Record<string, number> = {
     'General': 0,
     'OBC': 0,
@@ -92,13 +93,22 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
     else if (cat.includes('TFW') || cat.includes('Supernumerary')) catCounts['TFW']++;
     else catCounts['General']++;
   });
-  const totalStudentCount = students.length || 1;
+
+  // Use real counts if available, otherwise fall back to representative national figures
+  // IMPORTANT: compute percentages from the SAME denominator used for the actual display values
+  const hasRealData = students.length > 5; // meaningful sample
+  const displayCounts = hasRealData
+    ? { General: catCounts['General'], OBC: catCounts['OBC'], SC_ST: catCounts['SC_ST'], EWS: catCounts['EWS'], TFW: catCounts['TFW'] }
+    : { General: 42, OBC: 17, SC_ST: 16, EWS: 8, TFW: 7 };
+
+  const displayTotal = Object.values(displayCounts).reduce((s, v) => s + v, 0) || 100;
+
   const categoryData = [
-    { label: 'General / Open', count: catCounts['General'] || 42, color: '#3B82F6', percentage: Math.round(((catCounts['General'] || 42) / (totalStudentCount > 0 ? totalStudentCount : 100)) * 100) },
-    { label: 'OBC (Non-Creamy)', count: catCounts['OBC'] || 27, color: '#10B981', percentage: Math.round(((catCounts['OBC'] || 27) / (totalStudentCount > 0 ? totalStudentCount : 100)) * 100) },
-    { label: 'SC / ST Category', count: catCounts['SC_ST'] || 16, color: '#F59E0B', percentage: Math.round(((catCounts['SC_ST'] || 16) / (totalStudentCount > 0 ? totalStudentCount : 100)) * 100) },
-    { label: 'EWS (Economically Weaker)', count: catCounts['EWS'] || 8, color: '#8B5CF6', percentage: Math.round(((catCounts['EWS'] || 8) / (totalStudentCount > 0 ? totalStudentCount : 100)) * 100) },
-    { label: 'TFW / Supernumerary', count: catCounts['TFW'] || 7, color: '#EC4899', percentage: Math.round(((catCounts['TFW'] || 7) / (totalStudentCount > 0 ? totalStudentCount : 100)) * 100) },
+    { label: 'General / Open',           count: displayCounts.General, color: '#3B82F6', percentage: Math.round((displayCounts.General / displayTotal) * 100) },
+    { label: 'OBC (Non-Creamy)',          count: displayCounts.OBC,     color: '#10B981', percentage: Math.round((displayCounts.OBC     / displayTotal) * 100) },
+    { label: 'SC / ST Category',          count: displayCounts.SC_ST,   color: '#F59E0B', percentage: Math.round((displayCounts.SC_ST   / displayTotal) * 100) },
+    { label: 'EWS (Economically Weaker)', count: displayCounts.EWS,     color: '#8B5CF6', percentage: Math.round((displayCounts.EWS     / displayTotal) * 100) },
+    { label: 'TFW / Supernumerary',       count: displayCounts.TFW,     color: '#EC4899', percentage: Math.round((displayCounts.TFW     / displayTotal) * 100) },
   ];
 
   // 3. Data for Verification Status Donut Chart
