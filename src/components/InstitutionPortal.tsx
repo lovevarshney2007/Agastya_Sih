@@ -147,6 +147,23 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
     }
   };
 
+  const handleDemoBatchUpload = async () => {
+    if (!institutionId) return;
+    setUploadLoading(true);
+    setUploadResult(null);
+    setApiError(null);
+    try {
+      const result = await institutionApi.uploadDemoBatch(institutionId) as Record<string, unknown>;
+      setUploadResult(result);
+      setApiLastBatch(result);
+      await loadBackendData();
+    } catch (err) {
+      setApiError(err instanceof Error ? err.message : 'Demo upload failed');
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
   const handleCommitBatch = async (batchId: string) => {
     if (!institutionId) return;
     try {
@@ -619,6 +636,30 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
                 </div>
               </label>
             </div>
+
+            {/* Quick Demo Batch Upload for Evaluators */}
+            {institutionId && (
+              <div className="mt-4 p-4 rounded-xl dark:bg-slate-950/80 bg-blue-50/70 border border-blue-200 dark:border-blue-900 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="text-left">
+                  <h4 className="text-xs font-bold text-blue-900 dark:text-blue-200 flex items-center space-x-1.5">
+                    <span>⚡ Quick Evaluator Demo Batch Upload</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-blue-200 dark:bg-blue-800 text-blue-900 dark:text-blue-100 font-mono">POST /upload-demo</span>
+                  </h4>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
+                    No CSV file ready? 1-Click test: Streams 11 admission records through the backend ledger, runs quota checks and duplicate detection.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  disabled={uploadLoading}
+                  onClick={handleDemoBatchUpload}
+                  className="shrink-0 px-4 py-2.5 bg-blue-700 hover:bg-blue-800 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-sm transition-all cursor-pointer flex items-center space-x-1.5 whitespace-nowrap"
+                >
+                  {uploadLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                  <span>Run 1-Click Demo Upload</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

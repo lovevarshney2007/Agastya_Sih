@@ -222,64 +222,97 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>{t.verifyApaarId}</span>
             </button>
 
-            {/* UNIFIED LOGIN DROPDOWN BUTTON (Replaces all cluttered login buttons) */}
-            <div className="relative" ref={dropdownRef}>
-              <button
-                type="button"
-                onClick={() => setLoginDropdownOpen(prev => !prev)}
-                className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-[#0B2559] hover:bg-[#113880] text-white text-xs sm:text-sm font-bold flex items-center space-x-2 shadow-md transition-all cursor-pointer"
-              >
-                <LogIn className="w-4 h-4 text-amber-300" />
-                <span>{language === 'HI' ? 'लॉगिन पोर्टल' : 'Portal Login'}</span>
-                <ChevronDown className={`w-3.5 h-3.5 text-slate-300 transition-transform ${loginDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
+            {/* UNIFIED LOGIN / LOGOUT BUTTON (Only show Login when NOT authenticated) */}
+            {isAuthenticated ? (
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (currentUserRole) onSelectRole(currentUserRole);
+                    onSelectNavPage('PORTALS');
+                  }}
+                  className="hidden sm:flex items-center space-x-2 px-3 py-2 rounded-xl bg-blue-50 dark:bg-slate-800 border border-blue-200 dark:border-slate-700 text-xs font-bold text-blue-900 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                >
+                  <User className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                  <span className="truncate max-w-[130px] font-mono">
+                    {currentUserRole === 'INSTITUTION' && 'COEP Registrar'}
+                    {currentUserRole === 'AICTE_OFFICER' && 'AICTE Maker'}
+                    {currentUserRole === 'AICTE_SUPER_ADMIN' && 'AICTE Checker'}
+                    {currentUserRole === 'VERIFIER' && 'Verifier (TCS)'}
+                    {currentUserRole === 'STUDENT' && 'Priya Nair'}
+                    {!currentUserRole && 'Active Portal'}
+                  </span>
+                </button>
 
-              {/* Login Dropdown Menu */}
-              {loginDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-72 sm:w-80 rounded-2xl dark:bg-slate-900 bg-white border-2 dark:border-slate-700 border-slate-200 shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                  <div className="px-3 py-2 border-b dark:border-slate-800 border-slate-100 mb-1">
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block">
-                      Select Access Level
-                    </span>
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">
-                      Sign in to your designated portal
-                    </span>
-                  </div>
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs sm:text-sm font-bold flex items-center space-x-1.5 shadow-md transition-all cursor-pointer"
+                  title="Logout from session"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>{language === 'HI' ? 'लॉगआउट' : 'Logout'}</span>
+                </button>
+              </div>
+            ) : (
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setLoginDropdownOpen(prev => !prev)}
+                  className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-[#0B2559] hover:bg-[#113880] text-white text-xs sm:text-sm font-bold flex items-center space-x-2 shadow-md transition-all cursor-pointer"
+                >
+                  <LogIn className="w-4 h-4 text-amber-300" />
+                  <span>{language === 'HI' ? 'लॉगिन पोर्टल' : 'Portal Login'}</span>
+                  <ChevronDown className={`w-3.5 h-3.5 text-slate-300 transition-transform ${loginDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
 
-                  <div className="space-y-1">
-                    {loginOptions.map((opt) => (
-                      <button
-                        key={opt.role}
-                        type="button"
-                        onClick={() => handlePortalNavigation(opt.role)}
-                        className="w-full p-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/80 text-left transition-colors flex items-center justify-between group cursor-pointer"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <span className="text-lg shrink-0">{opt.icon}</span>
-                          <div>
-                            <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 block">
-                              {opt.title}
-                            </span>
-                            <span className="text-[10px] text-slate-500 block truncate max-w-[200px]">
-                              {opt.desc}
-                            </span>
+                {/* Login Dropdown Menu */}
+                {loginDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-72 sm:w-80 rounded-2xl dark:bg-slate-900 bg-white border-2 dark:border-slate-700 border-slate-200 shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="px-3 py-2 border-b dark:border-slate-800 border-slate-100 mb-1">
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block">
+                        Select Access Level
+                      </span>
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">
+                        Sign in to your designated portal
+                      </span>
+                    </div>
+
+                    <div className="space-y-1">
+                      {loginOptions.map((opt) => (
+                        <button
+                          key={opt.role}
+                          type="button"
+                          onClick={() => handlePortalNavigation(opt.role)}
+                          className="w-full p-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/80 text-left transition-colors flex items-center justify-between group cursor-pointer"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <span className="text-lg shrink-0">{opt.icon}</span>
+                            <div>
+                              <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 block">
+                                {opt.title}
+                              </span>
+                              <span className="text-[10px] text-slate-500 block truncate max-w-[200px]">
+                                {opt.desc}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                        <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-1 group-hover:text-blue-600 transition-all shrink-0 ml-2" />
-                      </button>
-                    ))}
-                  </div>
+                          <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-1 group-hover:text-blue-600 transition-all shrink-0 ml-2" />
+                        </button>
+                      ))}
+                    </div>
 
-                  <div className="pt-2 mt-1 border-t dark:border-slate-800 border-slate-100 px-3 py-1 flex items-center justify-between text-[10px] text-slate-400">
-                    <span className="flex items-center space-x-1">
-                      <Lock className="w-3 h-3 text-emerald-500" />
-                      <span>Encrypted TLS 1.3</span>
-                    </span>
-                    <span className="font-mono text-blue-600 dark:text-blue-400 font-bold">2FA Ready</span>
+                    <div className="pt-2 mt-1 border-t dark:border-slate-800 border-slate-100 px-3 py-1 flex items-center justify-between text-[10px] text-slate-400">
+                      <span className="flex items-center space-x-1">
+                        <Lock className="w-3 h-3 text-emerald-500" />
+                        <span>Encrypted TLS 1.3</span>
+                      </span>
+                      <span className="font-mono text-blue-600 dark:text-blue-400 font-bold">2FA Ready</span>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
             {/* Mobile Hamburger Menu Toggle */}
             <div className="flex lg:hidden items-center shrink-0">
@@ -435,19 +468,45 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           </div>
 
-          <div className="pt-2 space-y-1">
-            <span className="text-[10px] font-mono text-slate-400 uppercase font-bold px-3">Quick Login</span>
-            {loginOptions.map((opt) => (
+          {isAuthenticated ? (
+            <div className="pt-2 space-y-2">
               <button
-                key={opt.role}
-                onClick={() => handlePortalNavigation(opt.role)}
-                className="w-full text-left px-3 py-2 rounded-lg text-xs font-bold text-slate-200 hover:bg-blue-900/80 flex items-center justify-between"
+                onClick={() => {
+                  if (currentUserRole) onSelectRole(currentUserRole);
+                  onSelectNavPage('PORTALS');
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full text-left px-3 py-2 rounded-lg text-xs font-bold text-white bg-blue-800 hover:bg-blue-700 flex items-center justify-between"
               >
-                <span>{opt.icon} {opt.title}</span>
-                <ChevronRight className="w-4 h-4 text-slate-400" />
+                <span>🚀 {language === 'HI' ? 'सक्रिय पोर्टल खोलें' : 'Open Active Portal'}</span>
+                <ChevronRight className="w-4 h-4 text-slate-300" />
               </button>
-            ))}
-          </div>
+              <button
+                onClick={() => {
+                  onLogout();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full text-left px-3 py-2 rounded-lg text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 flex items-center space-x-2"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>{language === 'HI' ? 'लॉगआउट करें' : 'Log Out'}</span>
+              </button>
+            </div>
+          ) : (
+            <div className="pt-2 space-y-1">
+              <span className="text-[10px] font-mono text-slate-400 uppercase font-bold px-3">Quick Login</span>
+              {loginOptions.map((opt) => (
+                <button
+                  key={opt.role}
+                  onClick={() => handlePortalNavigation(opt.role)}
+                  className="w-full text-left px-3 py-2 rounded-lg text-xs font-bold text-slate-200 hover:bg-blue-900/80 flex items-center justify-between"
+                >
+                  <span>{opt.icon} {opt.title}</span>
+                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </header>
