@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   Building2, 
   Upload, 
@@ -113,7 +113,37 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
   const currentInstitution = institutions.find(i => i.id === selectedInstId) || institutions[0];
   const institutionStudents = students.filter(s => s.collegeId === currentInstitution.id);
 
-  const filteredStudents = institutionStudents.filter(s => {
+  // Merge live API students with mock fallback
+  const displayStudents = useMemo<StudentRecord[]>(() => {
+    if (apiStudents && apiStudents.length > 0) {
+      return apiStudents.map((s, idx) => ({
+        id: (s.enrolment_id as string) || `api-${idx}`,
+        apaarId: (s.masked_apaar as string) || '••••••••0000',
+        name: (s.student_id_no as string) ? `Student (${s.student_id_no})` : 'Enrolled Student',
+        dob: 'Verified in Vault',
+        gender: ((s.gender as 'M' | 'F' | 'O') || 'M'),
+        collegeId: activeInstId || 'inst',
+        collegeName: (apiDashboard?.institution as Record<string, string>)?.name || currentInstitution.name,
+        program: (s.course as string) || 'Engineering & Technology',
+        branch: ((s.course as string) || '').includes('AI') ? 'AI-DS' : ((s.course as string) || '').includes('Computer') ? 'CSE' : 'Engineering',
+        academicYear: String(s.academic_year || '2026'),
+        seatCategory: ((s.seat_category as StudentRecord['seatCategory']) || 'General'),
+        enrolmentStatus: (s.status as string) === 'ACTIVE' ? 'Active' as const : 'Disputed' as const,
+        verificationStatus: (s.identity_status as string) === 'VERIFIED' ? 'Verified' as const : 'Flagged' as const,
+        duplicateRisk: (s.identity_status as string) === 'FLAGGED' ? 'CROSS_INSTITUTION' as const : 'NONE' as const,
+        admissionDate: '2026-08-15',
+        studentIdNo: (s.student_id_no as string) || `STU-${idx}`,
+        aadhaarStatus: 'Not Stored (Privacy Preserved)',
+        consentGranted: true,
+        version: Number(s.version || 1),
+        digitalCredentialId: `AICTE-VC-${String(s.enrolment_id || idx).slice(0, 8).toUpperCase()}`,
+        isSupernumerary: Boolean(s.is_supernumerary)
+      }));
+    }
+    return institutionStudents;
+  }, [apiStudents, institutionStudents, activeInstId, apiDashboard, currentInstitution]);
+
+  const filteredStudents = displayStudents.filter(s => {
     const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           s.apaarId.includes(searchQuery) || 
                           s.studentIdNo.toLowerCase().includes(searchQuery.toLowerCase());
@@ -121,9 +151,14 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
     return matchesSearch && matchesBranch;
   });
 
-  const totalEnrolled = institutionStudents.length;
-  const verifiedCount = institutionStudents.filter(s => s.verificationStatus === 'Verified').length;
-  const flaggedCount = institutionStudents.filter(s => s.verificationStatus === 'Flagged').length;
+  const kpiData = (apiDashboard?.kpis as Record<string, number>) || null;
+  const totalApprovedIntake = kpiData?.approved_intake ?? currentInstitution.approvedIntake;
+  const totalEnrolled = kpiData?.total_enrolled ?? displayStudents.length;
+  const verifiedCount = kpiData 
+    ? Math.round(((kpiData.identity_verified_pct ?? 100) / 100) * totalEnrolled)
+    : displayStudents.filter(s => s.verificationStatus === 'Verified').length;
+  const flaggedCount = kpiData?.open_issues_count ?? displayStudents.filter(s => s.verificationStatus === 'Flagged').length;
+  const supernumeraryUsed = kpiData?.supernumerary_count ?? currentInstitution.supernumeraryUsed;
 
   const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); };
 
@@ -374,9 +409,9 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
         <div className="dark:bg-slate-900/90 bg-white p-5 rounded-xl border dark:border-slate-800 border-slate-200 shadow-sm flex items-center justify-between">
           <div>
             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Approved Intake</p>
-            <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{currentInstitution.approvedIntake} <span className="text-xs text-slate-500 font-normal">seats</span></p>
+            <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{totalApprovedIntake} <span className="text-xs text-slate-500 font-normal">seats</span></p>
             <div className="mt-2 text-xs text-blue-700 dark:text-blue-400 font-mono font-bold">
-              Enrolled: {totalEnrolled} / {currentInstitution.approvedIntake}
+              Enrolled: {totalEnrolled} / {totalApprovedIntake}
             </div>
           </div>
           <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-700 dark:text-blue-400">
@@ -427,7 +462,7 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
               </span>
             </div>
             <p className="mt-2 text-xs text-slate-600 dark:text-slate-400 font-mono">
-              NRI/Supernumerary: {currentInstitution.supernumeraryUsed}/{currentInstitution.supernumeraryQuota}
+              NRI/Supernumerary: {supernumeraryUsed}/{currentInstitution.supernumeraryQuota}
             </p>
           </div>
           <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400">
@@ -510,6 +545,17 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
                 <option value="ME">ME</option>
                 <option value="CE">CE</option>
               </select>
+
+              {activeInstId && (
+                <button
+                  onClick={() => window.open(reportsApi.institutionCsvUrl(activeInstId), '_blank')}
+                  className="flex items-center space-x-1.5 px-3 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-lg shadow-sm transition-all cursor-pointer whitespace-nowrap"
+                  title="Export official compliance report CSV from backend"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Export Compliance CSV</span>
+                </button>
+              )}
 
               <button
                 onClick={() => setShowAddModal(true)}
@@ -620,20 +666,11 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
                   <h4 className="text-sm font-bold text-slate-900 dark:text-slate-200">Download Template</h4>
                   <p className="text-xs text-slate-500 mt-1">Get pre-formatted CSV/XLSX with exact required schema headers.</p>
                   <button 
-                    onClick={() => {
-                      const csvContent = "data:text/csv;charset=utf-8,apaarId,name,dob,gender,program,branch,seatCategory,studentIdNo\n892019482019,Aarav Sharma,2004-05-14,M,B.Tech CSE,CSE,General,2025-CSE-042\n472910482910,Ananya Deshmukh,2004-11-20,F,B.Tech AI-DS,AI-DS,OBC,MIT-25-AI-014";
-                      const encodedUri = encodeURI(csvContent);
-                      const link = document.createElement("a");
-                      link.setAttribute("href", encodedUri);
-                      link.setAttribute("download", "AICTE_APAAR_Upload_Template.csv");
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                    }}
-                    className="mt-3 inline-flex items-center space-x-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 text-blue-700 dark:text-blue-400 rounded-lg text-xs font-bold border dark:border-slate-700 border-slate-300 cursor-pointer shadow-xs"
+                    onClick={() => window.open(reportsApi.admissionTemplateUrl(), '_blank')}
+                    className="mt-3 inline-flex items-center space-x-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 text-blue-700 dark:text-blue-400 rounded-lg text-xs font-bold border dark:border-slate-700 border-slate-300 cursor-pointer shadow-xs hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors"
                   >
                     <Download className="w-3.5 h-3.5" />
-                    <span>Download CSV Template</span>
+                    <span>Download Official CSV Template</span>
                   </button>
                 </div>
               </div>

@@ -11,7 +11,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { StudentRecord } from '../types';
-import { studentApi, authApi, userStore } from '../api/client';
+import { studentApi, authApi, verifierApi, userStore } from '../api/client';
 import { Language, TRANSLATIONS } from '../data/translations';
 
 interface StudentPortalProps {
@@ -34,6 +34,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
   // Backend consent state
   const [apiConsents, setApiConsents] = useState<Record<string, unknown> | null>(null);
   const [consentLoading, setConsentLoading] = useState(false);
+  const [smsLoading, setSmsLoading] = useState(false);
   const [consentMsg, setConsentMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   // Dynamic token resolution (BUG-005 fix)
@@ -229,6 +230,35 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
                 ))}
               </div>
             ) : null}
+
+            {/* Assisted SMS OTP (Rural DPDP Flow) */}
+            <div className="p-4 dark:bg-slate-950 bg-amber-50/40 rounded-xl border dark:border-slate-800 border-amber-200/80 space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold text-slate-900 dark:text-white block">Assisted SMS OTP Consent</span>
+                  <span className="text-[11px] text-slate-500">Simulate rural feature phone "REPLY YES 729104" flow</span>
+                </div>
+                <button
+                  onClick={async () => {
+                    try {
+                      setSmsLoading(true);
+                      const res = await studentApi.assistedSmsOtp(currentStudent.apaarId, '729104') as Record<string, string>;
+                      setConsentMsg({ ok: true, text: `SMS OTP simulated successfully! Grant status: ${res.status} (${res.channel})` });
+                      const updated = await studentApi.getConsents(effectiveToken) as Record<string, unknown>;
+                      setApiConsents(updated);
+                    } catch (err) {
+                      setConsentMsg({ ok: false, text: err instanceof Error ? err.message : 'SMS simulation failed' });
+                    } finally {
+                      setSmsLoading(false);
+                    }
+                  }}
+                  disabled={smsLoading}
+                  className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-mono font-bold cursor-pointer disabled:opacity-50 whitespace-nowrap"
+                >
+                  {smsLoading ? 'Simulating…' : 'Simulate SMS'}
+                </button>
+              </div>
+            </div>
           </div>
 
           <div className="dark:bg-slate-900 bg-white border dark:border-slate-800 border-slate-200 rounded-xl p-4 text-xs text-slate-600 dark:text-slate-400 space-y-2 shadow-xs">
@@ -253,7 +283,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
               <button
                 onClick={() => {
                   if (currentStudent.digitalCredentialId) {
-                    window.open(`https://sih.monu14.me/api/v1/verifier/credential/${currentStudent.digitalCredentialId}/pdf`, '_blank');
+                    window.open(verifierApi.downloadPdfUrl(currentStudent.digitalCredentialId), '_blank');
                   } else {
                     alert(`Downloaded signed AICTE Digital Certificate for ${currentStudent.name}`);
                   }

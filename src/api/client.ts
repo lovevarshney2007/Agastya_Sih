@@ -135,6 +135,44 @@ export const authApi = {
 
   /** List all demo personas */
   personas: () => apiFetch<object[]>('/auth/personas', { auth: false }),
+
+  /** AICTE Bureau Feature: Onboard newly approved technical institution into central registry */
+  onboardEoA: (data: {
+    aicte_permanent_id: string;
+    name: string;
+    state: string;
+    district: string;
+    inst_type?: string;
+    nodal_officer_name: string;
+    nodal_officer_email: string;
+    programs?: Array<{
+      academic_year?: number;
+      level?: string;
+      program?: string;
+      course: string;
+      approved_intake: number;
+      unfilled_vacancies_yr1?: number;
+    }>;
+  }) =>
+    apiFetch<object>('/auth/institution/onboard-eoa', {
+      method: 'POST',
+      body: data,
+      auth: false,
+    }),
+
+  /** First-time institution activation by verifying Nodal Officer email + OTP */
+  activateInstitution: (data: {
+    aicte_permanent_id: string;
+    nodal_officer_email: string;
+    otp: string;
+    password: string;
+    confirm_password: string;
+  }) =>
+    apiFetch<object>('/auth/institution/activate', {
+      method: 'POST',
+      body: data,
+      auth: false,
+    }),
 };
 
 // ── Institutions ──────────────────────────────────────────────────────────────
@@ -244,6 +282,10 @@ export const verifierApi = {
   /** Download PDF certificate */
   downloadPdf: (token: string) =>
     apiFetch<Blob>(`/verifier/credential/${token}/pdf`),
+
+  /** Direct download URL for PDF certificate */
+  downloadPdfUrl: (token: string) =>
+    `${API_BASE}/verifier/credential/${token}/pdf`,
 };
 
 // ── Student / Consent ─────────────────────────────────────────────────────────

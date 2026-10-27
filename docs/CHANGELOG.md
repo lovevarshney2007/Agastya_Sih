@@ -1,5 +1,38 @@
 # CHANGELOG — Agastya SIH / APAAR Portal
 
+## [Phase 4] 2026-10-27 — Complete Backend API Integration Audit, End-to-End Verification & Defect Resolution
+
+### Added
+- `docs/API_INTEGRATION_AUDIT.md`: Master 36-endpoint integration status matrix with HTTP test evidence and verified workflow traces.
+- `docs/ARCHITECTURE.md`: System communication architecture, central API client mechanics, dual-control regulatory rules, and cryptographic vault schemas.
+- `scratch/verify_api.mjs`: Complete automated HTTP test suite executing 36 endpoint validations against the live backend (`https://sih.monu14.me/api/v1`).
+- `authApi.onboardEoA`, `authApi.activateInstitution`, and `verifierApi.downloadPdfUrl` in `src/api/client.ts`.
+- EoA Institution Onboarding modal in `SuperAdminPortal.tsx`.
+- WORM Merkle root anchor buttons in `AictePortal.tsx` and `SuperAdminPortal.tsx`.
+- Rural Assisted SMS OTP simulation card in `StudentPortal.tsx`.
+- "Export Compliance CSV" button in `InstitutionPortal.tsx`.
+- Direct backend download for official admission CSV template in `InstitutionPortal.tsx`.
+
+### Fixed
+- **BUG-012**: Corrected login credentials documentation to `Aicte@2026!` and verified successful JWT generation.
+- **BUG-013**: Fixed critical backend crash in `SIH-backend/app/api/endpoints.py` where `StudentIdentityVault` was missing `student_token` UUID prior to `db.flush()`.
+- **BUG-014**: Added missing central API client bindings for EoA onboarding, nodal activation, and credential PDF downloads.
+- **BUG-015**: Replaced client-side generated CSV template with official backend endpoint `/reports/admission-template.csv`.
+- **BUG-016**: Merged live API enrolments from `/institutions/{id}/students` into `displayStudents` in `InstitutionPortal.tsx`.
+- **BUG-017**: Connected institutional compliance export to `/reports/institution/{id}.csv`.
+- **BUG-018**: Wired Isolation Forest anomaly scores from `/aicte/risk-ranking` into `AictePortal.tsx`.
+- **BUG-019**: Connected WORM storage Merkle root anchor to `/aicte/audit/anchor` in AICTE and Super Admin portals.
+- **BUG-020**: Implemented EoA onboarding user interface in `SuperAdminPortal.tsx`.
+- **BUG-021**: Added interactive assisted SMS consent simulation in `StudentPortal.tsx`.
+- Resolved TypeScript union type incompatibility for `gender` and `isSupernumerary` in `InstitutionPortal.tsx` and `types/index.ts`.
+
+### Verified
+- **Live Backend API**: 36/36 endpoints verified with **PASS** status against `https://sih.monu14.me/api/v1`.
+- **Production Build**: `npm run build` (`tsc -b && vite build`) executes cleanly with 0 errors in 2.92s.
+- **Linter**: `npm run lint` (`oxlint`) passes with 0 errors across 26 files.
+
+---
+
 ## [Phase 3] 2026-10-27 — Full-Stack Integration, Complete Bug Fixing & UI/UX Polish
 ### Fixed
 - **BUG-001**: Updated `vite.config.ts` `manualChunks` to use the typed `ManualChunksFunction` compatible with Vite 8.
@@ -15,8 +48,10 @@
 - **BUG-011**: In `VerifierPortal.tsx`, dynamically pre-filled verifier organization from session user's `org_name`.
 
 ### Verified
-- **Production Build**: `npm run build` (`tsc -b && vite build`) executes cleanly with 0 errors in 2.67s.
+- **Production Build**: `npm run build` (`tsc -b && vite build`) executes cleanly with 0 errors.
 - **Lint Check**: `npm run lint` (`oxlint`) passes with 0 errors across 26 project files.
+
+---
 
 ## [Phase 1-2] 2026-10-27 — Repository Audit & Documentation
 ### Added

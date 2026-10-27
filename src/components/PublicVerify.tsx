@@ -23,16 +23,20 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({ students }) => {
   const [apiResult, setApiResult] = useState<Record<string, unknown> | null>(null);
   const [localResult, setLocalResult] = useState<StudentRecord | null>(null);
 
-  const handleVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const executeVerify = async (tokenToVerify: string) => {
     setHasSearched(true);
-    const cleaned = inputToken.replace(/\s+/g, '');
+    const cleaned = tokenToVerify.replace(/\s+/g, '');
+    setInputToken(tokenToVerify);
     setApiLoading(true);
     setApiResult(null);
     setLocalResult(null);
     try {
       const res = await publicApi.verifyToken(cleaned) as Record<string, unknown>;
       setApiResult(res);
+      if (!res || res.status === 'INVALID') {
+        const found = students.find(s => s.apaarId === cleaned || s.digitalCredentialId === cleaned);
+        if (found) setLocalResult(found);
+      }
     } catch {
       // Fallback: search local students
       const found = students.find(s => s.apaarId === cleaned || s.digitalCredentialId === cleaned);
@@ -42,11 +46,16 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({ students }) => {
     }
   };
 
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await executeVerify(inputToken);
+  };
+
   const claims = (apiResult?.claims as Record<string, unknown>) || null;
   const isApiValid = apiResult?.status === 'VALID';
 
   const result = localResult || (apiResult && isApiValid && claims ? {
-    name: (claims.name as string) || (claims.student_name as string) || 'Authenticated Candidate',
+    name: (claims.name as string) || (claims.student_name as string) || (claims.student_id_no as string) || 'Authenticated Candidate',
     collegeName: (claims.institution as string) || (claims.institution_name as string) || 'Approved AICTE Institution',
     program: (claims.course as string) || (claims.program as string) || 'Degree Program',
     academicYear: String(claims.academic_year || '2025-2026'),
@@ -97,21 +106,21 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({ students }) => {
         <div className="mt-3 flex items-center space-x-2 text-[11px] text-slate-500">
           <span className="font-bold">Quick test:</span>
           <button
-            onClick={() => { setInputToken('892019482019'); setLocalResult(students.find(s => s.apaarId === '892019482019') || null); setApiResult(null); setHasSearched(true); }}
+            onClick={() => executeVerify('892019482019')}
             className="text-blue-700 dark:text-blue-400 hover:underline font-mono font-bold cursor-pointer"
           >
             892019482019 (Valid)
           </button>
           <span>•</span>
           <button
-            onClick={() => { setInputToken('472910482910'); setLocalResult(students.find(s => s.apaarId === '472910482910') || null); setApiResult(null); setHasSearched(true); }}
+            onClick={() => executeVerify('472910482910')}
             className="text-amber-700 dark:text-amber-400 hover:underline font-mono font-bold cursor-pointer"
           >
             472910482910 (Disputed)
           </button>
           <span>•</span>
           <button
-            onClick={() => { setInputToken('999999999999'); setLocalResult(null); setApiResult(null); setHasSearched(true); }}
+            onClick={() => executeVerify('999999999999')}
             className="text-rose-700 dark:text-rose-400 hover:underline font-mono font-bold cursor-pointer"
           >
             999999999999 (Invalid)

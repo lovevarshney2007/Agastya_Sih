@@ -31,6 +31,7 @@ export interface StudentRecord {
   consentGranted: boolean;
   version: number;
   digitalCredentialId?: string;
+  isSupernumerary?: boolean;
 }
 
 export interface Institution {

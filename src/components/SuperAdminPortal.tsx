@@ -14,10 +14,12 @@ import {
   CheckCircle2,
   AlertOctagon,
   Download,
-  RefreshCw
+  RefreshCw,
+  PlusCircle,
+  X
 } from 'lucide-react';
 import { Institution, StudentRecord, AuditLog } from '../types';
-import { aicteApi, reportsApi } from '../api/client';
+import { aicteApi, authApi, reportsApi } from '../api/client';
 import { Language, TRANSLATIONS } from '../data/translations';
 
 interface SuperAdminDashboardProps {
@@ -43,6 +45,22 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = ({
   const [chainVerification, setChainVerification] = useState<Record<string, unknown> | null>(null);
   const [isVerifyingChain, setIsVerifyingChain] = useState(false);
   const [tamperAlert, setTamperAlert] = useState<string | null>(null);
+  const [anchorAlert, setAnchorAlert] = useState<string | null>(null);
+  const [isAnchoring, setIsAnchoring] = useState(false);
+  const [showOnboardModal, setShowOnboardModal] = useState(false);
+  const [onboardForm, setOnboardForm] = useState({
+    aicte_permanent_id: '',
+    name: '',
+    state: 'Maharashtra',
+    district: 'Pune',
+    inst_type: 'State Govt Autonomous',
+    nodal_officer_name: '',
+    nodal_officer_email: '',
+    course: 'Computer Science and Engineering',
+    approved_intake: 120,
+  });
+  const [onboardLoading, setOnboardLoading] = useState(false);
+  const [onboardMsg, setOnboardMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -81,6 +99,68 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = ({
       setChainVerification(verifyRes);
     } catch {
       setTamperAlert('Tamper detected: Block hash broken.');
+    }
+  };
+
+  const handleAnchorAudit = async () => {
+    setIsAnchoring(true);
+    setAnchorAlert(null);
+    try {
+      const res = await aicteApi.anchorAudit() as Record<string, unknown>;
+      setAnchorAlert(`Anchored to WORM Storage! Merkle root: ${String(res.root_hash || res.merkle_root || 'Recorded')}`);
+      const audit = await aicteApi.auditLedger() as Record<string, unknown>;
+      if (audit && Array.isArray((audit as Record<string, unknown>).events)) {
+        setApiAuditLogs((audit as Record<string, unknown>).events as Record<string, unknown>[]);
+      }
+    } catch {
+      setAnchorAlert('Anchor failed or WORM storage unavailable');
+    } finally {
+      setIsAnchoring(false);
+    }
+  };
+
+  const handleOnboardSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setOnboardLoading(true);
+    setOnboardMsg(null);
+    try {
+      const res = await authApi.onboardEoA({
+        aicte_permanent_id: onboardForm.aicte_permanent_id,
+        name: onboardForm.name,
+        state: onboardForm.state,
+        district: onboardForm.district,
+        inst_type: onboardForm.inst_type,
+        nodal_officer_name: onboardForm.nodal_officer_name,
+        nodal_officer_email: onboardForm.nodal_officer_email,
+        programs: [
+          {
+            academic_year: 2026,
+            level: 'UG',
+            program: 'Engineering & Technology',
+            course: onboardForm.course,
+            approved_intake: Number(onboardForm.approved_intake),
+          }
+        ]
+      }) as Record<string, string>;
+      setOnboardMsg({ ok: true, text: res.message || 'Institution successfully onboarded into EoA registry!' });
+      if (onAddInstitution) {
+        onAddInstitution({
+          aicteCode: onboardForm.aicte_permanent_id,
+          name: onboardForm.name,
+          state: onboardForm.state,
+          district: onboardForm.district,
+          approvedIntake: Number(onboardForm.approved_intake),
+          contactEmail: onboardForm.nodal_officer_email
+        });
+      }
+      setTimeout(() => {
+        setShowOnboardModal(false);
+        setOnboardMsg(null);
+      }, 2000);
+    } catch (err) {
+      setOnboardMsg({ ok: false, text: err instanceof Error ? err.message : 'Onboarding failed' });
+    } finally {
+      setOnboardLoading(false);
     }
   };
 
@@ -269,6 +349,13 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
+          <button 
+            onClick={() => setShowOnboardModal(true)}
+            className="flex items-center space-x-2 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span>Onboard EoA Institution</span>
+          </button>
           <button 
             onClick={() => window.open(reportsApi.nationalCsvUrl(), '_blank')}
             className="flex items-center space-x-2 px-3.5 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs shadow-xs transition-all cursor-pointer"
@@ -620,6 +707,13 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = ({
               >
                 Simulate Tamper
               </button>
+              <button
+                onClick={handleAnchorAudit}
+                disabled={isAnchoring}
+                className="px-2.5 py-1 text-[10px] font-mono font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 rounded-lg hover:bg-emerald-100 cursor-pointer disabled:opacity-50"
+              >
+                {isAnchoring ? 'Anchoring…' : 'Anchor WORM'}
+              </button>
             </div>
           </div>
 
@@ -640,6 +734,13 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = ({
             <div className="mb-3 p-2.5 rounded-xl border bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-800 text-xs font-mono font-bold flex items-center space-x-2">
               <AlertOctagon className="w-4 h-4 shrink-0 text-rose-600" />
               <span>{tamperAlert}</span>
+            </div>
+          )}
+
+          {anchorAlert && (
+            <div className="mb-3 p-2.5 rounded-xl border bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 text-xs font-mono font-bold flex items-center space-x-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+              <span>{anchorAlert}</span>
             </div>
           )}
 
@@ -731,6 +832,138 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = ({
           </span>
         </div>
       </div>
+
+      {/* Onboard EoA Institution Modal */}
+      {showOnboardModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="dark:bg-slate-900 bg-white border dark:border-slate-800 border-slate-200 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b dark:border-slate-800 border-slate-200 pb-3">
+              <div>
+                <span className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 font-bold uppercase tracking-wider">AICTE EoA Bureau</span>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">Onboard New Approved Institution</h3>
+              </div>
+              <button 
+                onClick={() => setShowOnboardModal(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer font-bold"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleOnboardSubmit} className="space-y-3 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-500 font-mono mb-1 font-bold">AICTE Permanent ID *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. 1-1049281"
+                    value={onboardForm.aicte_permanent_id}
+                    onChange={(e) => setOnboardForm({ ...onboardForm, aicte_permanent_id: e.target.value })}
+                    className="w-full p-2.5 dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg text-slate-900 dark:text-white font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-500 font-mono mb-1 font-bold">State *</label>
+                  <input
+                    type="text"
+                    required
+                    value={onboardForm.state}
+                    onChange={(e) => setOnboardForm({ ...onboardForm, state: e.target.value })}
+                    className="w-full p-2.5 dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg text-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-500 font-mono mb-1 font-bold">Institution Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Indian Institute of Technology Bombay"
+                  value={onboardForm.name}
+                  onChange={(e) => setOnboardForm({ ...onboardForm, name: e.target.value })}
+                  className="w-full p-2.5 dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-500 font-mono mb-1 font-bold">Nodal Officer Name *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Dr. Rajesh Kumar"
+                    value={onboardForm.nodal_officer_name}
+                    onChange={(e) => setOnboardForm({ ...onboardForm, nodal_officer_name: e.target.value })}
+                    className="w-full p-2.5 dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg text-slate-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-500 font-mono mb-1 font-bold">Nodal Officer Email *</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="e.g. registrar@iitb.ac.in"
+                    value={onboardForm.nodal_officer_email}
+                    onChange={(e) => setOnboardForm({ ...onboardForm, nodal_officer_email: e.target.value })}
+                    className="w-full p-2.5 dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg text-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-500 font-mono mb-1 font-bold">Approved Program *</label>
+                  <input
+                    type="text"
+                    required
+                    value={onboardForm.course}
+                    onChange={(e) => setOnboardForm({ ...onboardForm, course: e.target.value })}
+                    className="w-full p-2.5 dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg text-slate-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-500 font-mono mb-1 font-bold">Sanctioned Intake *</label>
+                  <input
+                    type="number"
+                    required
+                    min={1}
+                    value={onboardForm.approved_intake}
+                    onChange={(e) => setOnboardForm({ ...onboardForm, approved_intake: Number(e.target.value) })}
+                    className="w-full p-2.5 dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg text-slate-900 dark:text-white font-mono"
+                  />
+                </div>
+              </div>
+
+              {onboardMsg && (
+                <div className={`p-2.5 rounded-lg font-bold text-xs ${
+                  onboardMsg.ok ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                }`}>
+                  {onboardMsg.text}
+                </div>
+              )}
+
+              <div className="flex justify-end space-x-3 pt-3 border-t dark:border-slate-800 border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setShowOnboardModal(false)}
+                  className="px-4 py-2 dark:bg-slate-800 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-bold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={onboardLoading}
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold cursor-pointer shadow-sm disabled:opacity-50"
+                >
+                  {onboardLoading ? 'Onboarding…' : 'Submit & Register EoA'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

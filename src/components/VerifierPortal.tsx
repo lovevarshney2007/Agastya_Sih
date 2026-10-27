@@ -398,7 +398,7 @@ export const VerifierPortal: React.FC<VerifierPortalProps> = ({
                   onClick={() => {
                     const token = verificationResult.digitalCredentialId;
                     if (token) {
-                      window.open(`https://sih.monu14.me/api/v1/verifier/credential/${token}/pdf`, '_blank');
+                      window.open(verifierApi.downloadPdfUrl(token), '_blank');
                     } else {
                       alert(`Credential certificate downloaded for ${verificationResult.name}`);
                     }
@@ -458,7 +458,7 @@ export const VerifierPortal: React.FC<VerifierPortalProps> = ({
                     <td className="py-2 px-3 text-right">
                       {req.status === 'VALID' ? (
                         <a 
-                          href={`https://sih.monu14.me/api/v1/verifier/credential/${req.token}/pdf`} 
+                          href={verifierApi.downloadPdfUrl(req.token)} 
                           target="_blank" 
                           rel="noreferrer" 
                           className="text-blue-600 dark:text-blue-400 hover:underline font-bold inline-flex items-center space-x-1"

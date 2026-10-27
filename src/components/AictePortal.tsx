@@ -9,7 +9,8 @@ import {
   AlertTriangle,
   CheckCircle2,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  Lock
 } from 'lucide-react';
 import { Institution, StudentRecord, ViolationCase } from '../types';
 import { aicteApi, reportsApi, userStore } from '../api/client';
@@ -51,6 +52,9 @@ export const AictePortal: React.FC<AictePortalProps> = ({
   const [checkerName, setCheckerName] = useState('');
   const [actionMsg, setActionMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [selectedApiCaseId, setSelectedApiCaseId] = useState<string | null>(null);
+  const [apiRiskRanking, setApiRiskRanking] = useState<Record<string, unknown>[] | null>(null);
+  const [anchorResult, setAnchorResult] = useState<Record<string, unknown> | null>(null);
+  const [isAnchoring, setIsAnchoring] = useState(false);
   const [auditData, setAuditData] = useState<Record<string, unknown> | null>(null);
   const [chainResult, setChainResult] = useState<Record<string, unknown> | null>(null);
   const [tamperResult, setTamperResult] = useState<Record<string, unknown> | null>(null);
@@ -61,11 +65,13 @@ export const AictePortal: React.FC<AictePortalProps> = ({
       aicteApi.dashboard() as Promise<Record<string, unknown>>,
       aicteApi.violations() as Promise<Record<string, unknown>[]>,
       aicteApi.auditLedger() as Promise<Record<string, unknown>>,
+      aicteApi.riskRanking() as Promise<Record<string, unknown>[]>,
     ])
-      .then(([dash, viols, audit]) => {
+      .then(([dash, viols, audit, risk]) => {
         setApiDashboard(dash);
         setApiViolations(viols);
         setAuditData(audit);
+        setApiRiskRanking(risk);
       })
       .catch(err => setApiError(err instanceof Error ? err.message : 'Backend load failed'))
       .finally(() => setApiLoading(false));
@@ -101,6 +107,21 @@ export const AictePortal: React.FC<AictePortalProps> = ({
 
   const handleSimulateTamper = async () => {
     try { setTamperResult(await aicteApi.simulateTamper() as Record<string, unknown>); } catch {}
+  };
+
+  const handleAnchorAudit = async () => {
+    setIsAnchoring(true);
+    setAnchorResult(null);
+    try {
+      const res = await aicteApi.anchorAudit() as Record<string, unknown>;
+      setAnchorResult(res);
+      const audit = await aicteApi.auditLedger() as Record<string, unknown>;
+      setAuditData(audit);
+    } catch (err) {
+      setAnchorResult({ error: err instanceof Error ? err.message : 'Anchor failed' });
+    } finally {
+      setIsAnchoring(false);
+    }
   };
 
   const totalApprovedIntake = institutions.reduce((acc, curr) => acc + curr.approvedIntake, 0);
@@ -743,27 +764,45 @@ export const AictePortal: React.FC<AictePortalProps> = ({
             </div>
 
             <div className="dark:bg-slate-950 bg-slate-50 p-4 rounded-xl border dark:border-slate-800 border-slate-200 space-y-2">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white">Cryptographic Audit Chain</h4>
-              <p className="text-xs text-slate-500">Tamper-evident logs of every transaction with SHA-256 block hashes.</p>
-              <button 
-                onClick={async () => {
-                  try {
-                    const data = await aicteApi.auditLedger();
-                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `aicte_audit_ledger_${Date.now()}.json`;
-                    a.click();
-                  } catch {
-                    alert('Audit ledger download failed');
-                  }
-                }}
-                className="mt-3 w-full py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 text-blue-700 dark:text-blue-400 border dark:border-slate-700 border-slate-300 rounded-lg text-xs font-mono font-bold flex items-center justify-center space-x-1 cursor-pointer shadow-xs"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Export Hash Audit (JSON)</span>
-              </button>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">Cryptographic Audit Chain & WORM Anchor</h4>
+              <p className="text-xs text-slate-500">Tamper-evident logs of every transaction with SHA-256 block hashes and WORM storage receipt anchoring.</p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+                <button 
+                  onClick={async () => {
+                    try {
+                      const data = await aicteApi.auditLedger();
+                      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `aicte_audit_ledger_${Date.now()}.json`;
+                      a.click();
+                    } catch {
+                      alert('Audit ledger download failed');
+                    }
+                  }}
+                  className="w-full py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 text-blue-700 dark:text-blue-400 border dark:border-slate-700 border-slate-300 rounded-lg text-xs font-mono font-bold flex items-center justify-center space-x-1 cursor-pointer shadow-xs"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Export JSON</span>
+                </button>
+
+                <button 
+                  onClick={handleAnchorAudit}
+                  disabled={isAnchoring}
+                  className="w-full py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-mono font-bold flex items-center justify-center space-x-1 cursor-pointer shadow-xs disabled:opacity-50"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>{isAnchoring ? 'Anchoring…' : 'Anchor to WORM'}</span>
+                </button>
+              </div>
+
+              {anchorResult && (
+                <div className="mt-2 p-2 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[11px] font-mono">
+                  {anchorResult.message ? String(anchorResult.message) : 'Merkle root anchored to WORM storage successfully!'}
+                </div>
+              )}
             </div>
           </div>
         </div>
