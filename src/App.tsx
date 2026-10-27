@@ -23,7 +23,7 @@ import {
   INITIAL_VIOLATIONS, 
   INITIAL_AUDIT_LOGS 
 } from './data/mockData';
-import { tokenStore, userStore, type AuthUser } from './api/client';
+import { tokenStore, userStore, authApi, type AuthUser } from './api/client';
 
 export function App() {
   const [currentRole, setCurrentRole] = useState<UserRole>('INSTITUTION');
@@ -45,7 +45,7 @@ export function App() {
   const [violations, setViolations] = useState<ViolationCase[]>(INITIAL_VIOLATIONS);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(INITIAL_AUDIT_LOGS);
 
-  // Restore session from localStorage on first load
+  // Restore session from localStorage on first load & verify with /auth/me
   useEffect(() => {
     const savedUser = userStore.get();
     const savedToken = tokenStore.get();
@@ -64,6 +64,22 @@ export function App() {
       setCurrentUserRole(mapped);
       setCurrentRole(mapped);
       setActiveNavPage('PORTALS');
+
+      // Validate session with backend /auth/me
+      authApi.me()
+        .then((freshUser) => {
+          setSessionUser(freshUser);
+          userStore.set(freshUser);
+        })
+        .catch(() => {
+          // If token expired or invalid, reset session
+          tokenStore.clear();
+          userStore.clear();
+          setIsAuthenticated(false);
+          setSessionUser(null);
+          setCurrentUserRole(null);
+          setActiveNavPage('HOME');
+        });
     }
   }, []);
 
@@ -102,7 +118,12 @@ export function App() {
   };
 
   // Logout handler
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } catch {
+      // Ignore network errors during logout
+    }
     setIsAuthenticated(false);
     setCurrentUserRole(null);
     setSessionUser(null);
