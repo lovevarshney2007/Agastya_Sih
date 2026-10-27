@@ -44,7 +44,7 @@ This guide allows anyone (evaluators, hackathon judges, developers) to verify th
 #### Test 1.2: Standard Email + Password Login
 - **Frontend Action:**
   1. On the Login screen, select any tab (e.g. **AICTE Maker**).
-  2. Notice the credentials auto-fill: `aicte.maker@gov.in` / `aicte@2026`.
+  2. Notice the credentials auto-fill: `aicte.maker@gov.in` / `Aicte@2026!`.
   3. Click **"Sign In as AICTE Maker"**.
 - **Backend Endpoint Triggered:**
   `POST https://sih.monu14.me/api/v1/auth/login`
