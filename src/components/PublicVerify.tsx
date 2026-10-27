@@ -42,6 +42,16 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({ students }) => {
     }
   };
 
+  const result = localResult || (apiResult ? {
+    name: (apiResult.student_name as string) || (apiResult.name as string) || 'Verified Student',
+    collegeName: (apiResult.institution_name as string) || (apiResult.college_name as string) || 'Approved Institution',
+    program: (apiResult.program as string) || (apiResult.course as string) || 'B.Tech Program',
+    academicYear: (apiResult.academic_year as string) || '2025-2026',
+    enrolmentStatus: (apiResult.enrolment_status as string) || (apiResult.valid ? 'Active' : 'Inactive'),
+    verificationStatus: (apiResult.verification_status as string) || (apiResult.valid ? 'Verified' : 'Flagged'),
+    digitalCredentialId: (apiResult.credential_id as string) || (apiResult.token as string) || inputToken,
+  } : null);
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Top Banner */}
@@ -73,9 +83,10 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({ students }) => {
           </div>
           <button
             type="submit"
-            className="px-6 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center space-x-2 cursor-pointer whitespace-nowrap"
+            disabled={apiLoading}
+            className="px-6 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center space-x-2 cursor-pointer whitespace-nowrap disabled:opacity-50"
           >
-            <ShieldCheck className="w-4 h-4" />
+            {apiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
             <span>Verify Validity</span>
           </button>
         </form>
@@ -83,21 +94,21 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({ students }) => {
         <div className="mt-3 flex items-center space-x-2 text-[11px] text-slate-500">
           <span className="font-bold">Quick test:</span>
           <button
-            onClick={() => { setInputToken('892019482019'); setResult(students.find(s => s.apaarId === '892019482019') || null); }}
+            onClick={() => { setInputToken('892019482019'); setLocalResult(students.find(s => s.apaarId === '892019482019') || null); setApiResult(null); setHasSearched(true); }}
             className="text-blue-700 dark:text-blue-400 hover:underline font-mono font-bold cursor-pointer"
           >
             892019482019 (Valid)
           </button>
           <span>•</span>
           <button
-            onClick={() => { setInputToken('472910482910'); setResult(students.find(s => s.apaarId === '472910482910') || null); }}
+            onClick={() => { setInputToken('472910482910'); setLocalResult(students.find(s => s.apaarId === '472910482910') || null); setApiResult(null); setHasSearched(true); }}
             className="text-amber-700 dark:text-amber-400 hover:underline font-mono font-bold cursor-pointer"
           >
             472910482910 (Disputed)
           </button>
           <span>•</span>
           <button
-            onClick={() => { setInputToken('999999999999'); setResult(null); }}
+            onClick={() => { setInputToken('999999999999'); setLocalResult(null); setApiResult(null); setHasSearched(true); }}
             className="text-rose-700 dark:text-rose-400 hover:underline font-mono font-bold cursor-pointer"
           >
             999999999999 (Invalid)

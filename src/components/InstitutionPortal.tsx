@@ -283,16 +283,16 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
         <div className="rounded-xl border bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800 px-4 py-3 text-xs">
           <div className="flex items-center justify-between">
             <span className="font-bold text-blue-800 dark:text-blue-300 font-mono">📤 Batch #{(uploadResult.batch_id as string)?.slice(-8)} — {uploadResult.status as string}</span>
-            {uploadResult.status === 'READY_TO_COMMIT' && uploadResult.batch_id && (
+            {uploadResult.status === 'READY_TO_COMMIT' && Boolean(uploadResult.batch_id) && (
               <button onClick={() => handleCommitBatch(uploadResult.batch_id as string)} className="px-4 py-1.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-lg cursor-pointer transition-colors">
                 ✅ Commit to Ledger
               </button>
             )}
           </div>
-          {uploadResult.summary && (
+          {Boolean(uploadResult.summary) && (
             <div className="mt-2 flex flex-wrap gap-3 text-slate-700 dark:text-slate-300">
-              {Object.entries(uploadResult.summary as Record<string, number>).map(([k, v]) => (
-                <span key={k}><span className="text-slate-500 font-normal capitalize">{k.replace(/_/g, ' ')}: </span><strong>{v}</strong></span>
+              {Object.entries((uploadResult.summary as Record<string, number | string>) || {}).map(([k, v]) => (
+                <span key={k}><span className="text-slate-500 font-normal capitalize">{k.replace(/_/g, ' ')}: </span><strong>{String(v)}</strong></span>
               ))}
             </div>
           )}
