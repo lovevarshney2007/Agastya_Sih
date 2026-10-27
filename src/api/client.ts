@@ -120,7 +120,15 @@ export const authApi = {
     }),
 
   /** Get current authenticated user profile */
-  me: () => apiFetch<AuthUser>('/auth/me'),
+  me: async () => {
+    const raw = await apiFetch<Record<string, unknown>>('/auth/me');
+    const inst = raw.institution as Record<string, unknown> | null | undefined;
+    const normalized: AuthUser = {
+      ...(raw as unknown as AuthUser),
+      institution_id: (raw.institution_id as string) || (inst?.id as string) || null,
+    };
+    return normalized;
+  },
 
   /** Logout */
   logout: () => apiFetch('/auth/logout', { method: 'POST' }),

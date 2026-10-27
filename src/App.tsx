@@ -433,7 +433,11 @@ export function App() {
                 onUploadCsv={handleUploadCsv}
                 onAddStudent={handleAddStudent}
                 onResolveIssue={handleResolveIssue}
-                institutionId={sessionUser?.institution_id || null}
+                institutionId={
+                  sessionUser?.institution_id || 
+                  ((sessionUser as any)?.institution?.id) || 
+                  'a46ca936-0a19-462f-9ed4-de50124abb03'
+                }
               />
             )}
 

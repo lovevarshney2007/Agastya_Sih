@@ -54,15 +54,16 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
   const [enrollLoading, setEnrollLoading] = useState(false);
   const [enrollMsg, setEnrollMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
-  // Load dashboard and student list from backend on mount (or when institutionId changes)
+  const activeInstId = institutionId || 'a46ca936-0a19-462f-9ed4-de50124abb03';
+
+  // Load dashboard and student list from backend on mount (or when activeInstId changes)
   const loadBackendData = useCallback(async () => {
-    if (!institutionId) return;
     setApiLoading(true);
     setApiError(null);
     try {
       const [dash, studs] = await Promise.all([
-        institutionApi.dashboard(institutionId) as Promise<Record<string, unknown>>,
-        institutionApi.getStudents(institutionId) as Promise<Record<string, unknown>>,
+        institutionApi.dashboard(activeInstId) as Promise<Record<string, unknown>>,
+        institutionApi.getStudents(activeInstId) as Promise<Record<string, unknown>>,
       ]);
       setApiDashboard(dash);
       setApiStudents((studs as Record<string, unknown[]>).students as Record<string, unknown>[]);
@@ -71,7 +72,7 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
     } finally {
       setApiLoading(false);
     }
-  }, [institutionId]);
+  }, [activeInstId]);
 
   useEffect(() => { loadBackendData(); }, [loadBackendData]);
   // ─────────────────────────────────────────────────────────────────────────
@@ -108,52 +109,43 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
-      if (institutionId) {
-        await handleApiUpload(file);
-      } else {
-        onUploadCsv(file);
-        setActiveTab('VALIDATION_REPORTS');
-      }
+      await handleApiUpload(file);
     }
   };
 
   const handleFileInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      if (institutionId) {
-        await handleApiUpload(file);
-      } else {
-        onUploadCsv(file);
-        setActiveTab('VALIDATION_REPORTS');
-      }
+      await handleApiUpload(file);
     }
   };
 
   const handleApiUpload = async (file: File) => {
-    if (!institutionId) return;
     setUploadLoading(true);
     setUploadResult(null);
     setApiError(null);
     try {
-      const result = await institutionApi.uploadBatch(institutionId, file) as Record<string, unknown>;
+      const result = await institutionApi.uploadBatch(activeInstId, file) as Record<string, unknown>;
       setUploadResult(result);
       setApiLastBatch(result);
+      await loadBackendData();
       setActiveTab('VALIDATION_REPORTS');
       onUploadCsv(file); // also update local state for UI consistency
     } catch (err) {
       setApiError(err instanceof Error ? err.message : 'Upload failed');
+      onUploadCsv(file);
+      setActiveTab('VALIDATION_REPORTS');
     } finally {
       setUploadLoading(false);
     }
   };
 
   const handleDemoBatchUpload = async () => {
-    if (!institutionId) return;
     setUploadLoading(true);
     setUploadResult(null);
     setApiError(null);
     try {
-      const result = await institutionApi.uploadDemoBatch(institutionId) as Record<string, unknown>;
+      const result = await institutionApi.uploadDemoBatch(activeInstId) as Record<string, unknown>;
       setUploadResult(result);
       setApiLastBatch(result);
       await loadBackendData();
@@ -165,9 +157,8 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
   };
 
   const handleCommitBatch = async (batchId: string) => {
-    if (!institutionId) return;
     try {
-      await institutionApi.commitBatch(institutionId, batchId);
+      await institutionApi.commitBatch(activeInstId, batchId);
       await loadBackendData();
       setUploadResult(null);
     } catch (err) {
