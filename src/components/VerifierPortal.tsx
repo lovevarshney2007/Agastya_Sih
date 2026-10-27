@@ -11,19 +11,28 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { StudentRecord } from '../types';
-import { verifierApi } from '../api/client';
+import { verifierApi, userStore } from '../api/client';
+
+import { Language, TRANSLATIONS } from '../data/translations';
 
 interface VerifierPortalProps {
   students: StudentRecord[];
   onLogVerification: (apaarId: string, verifierName: string, purpose: string) => void;
+  language?: Language;
 }
 
 export const VerifierPortal: React.FC<VerifierPortalProps> = ({
   students,
-  onLogVerification
+  onLogVerification,
+  language = 'EN',
 }) => {
+  const t = TRANSLATIONS[language] || TRANSLATIONS.EN;
   const [apaarInput, setApaarInput] = useState('');
-  const [verifierName, setVerifierName] = useState('Tata Consultancy Services (HR Recruitment)');
+  // Pre-fill verifier name from session user org (BUG-011 fix)
+  const sessionUser = userStore.get();
+  const [verifierName, setVerifierName] = useState(
+    sessionUser?.org_name || 'Tata Consultancy Services (HR Recruitment)'
+  );
   const [purpose, setPurpose] = useState('Employment Background Academic Verification');
   const [verificationResult, setVerificationResult] = useState<StudentRecord | null>(null);
   const [searchAttempted, setSearchAttempted] = useState(false);
@@ -151,7 +160,9 @@ export const VerifierPortal: React.FC<VerifierPortalProps> = ({
             <UserCheck className="w-4 h-4" />
             <span>AICTE CONSENT-GOVERNED VERIFICATION GATEWAY</span>
           </div>
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Authorized Background & Credential Verifier</h1>
+          <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+            {t.verifierPortalTitle || 'Authorized Background & Credential Verifier'}
+          </h1>
           <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
             Purpose-limited, consent-checked lookups for recruiters, universities, embassies, and regulatory bodies.
           </p>
@@ -184,7 +195,9 @@ export const VerifierPortal: React.FC<VerifierPortalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">Stated Purpose for Access</label>
+              <label className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">
+                {t.verifierPurposeLabel || 'Stated Purpose for Access'}
+              </label>
               <select
                 value={purpose}
                 onChange={(e) => setPurpose(e.target.value)}
@@ -198,12 +211,14 @@ export const VerifierPortal: React.FC<VerifierPortalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">Candidate 12-Digit APAAR ID</label>
+              <label className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">
+                {t.verifierSearchLabel || 'Candidate 12-Digit APAAR ID'}
+              </label>
               <input
                 type="text"
                 required
                 maxLength={14}
-                placeholder="e.g. 892019482019"
+                placeholder={t.verifierSearchPlaceholder || 'e.g. 892019482019'}
                 value={apaarInput}
                 onChange={(e) => setApaarInput(e.target.value)}
                 className="w-full dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg px-3 py-2 text-sm dark:text-white text-slate-900 font-mono font-bold focus:outline-none focus:border-emerald-600"
@@ -232,7 +247,7 @@ export const VerifierPortal: React.FC<VerifierPortalProps> = ({
               className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center space-x-2 cursor-pointer"
             >
               <Search className="w-4 h-4" />
-              <span>Verify Against AICTE Ledger</span>
+              <span>{t.verifierBtnVerify || 'Verify Against AICTE Ledger'}</span>
             </button>
           </form>
         </div>

@@ -18,15 +18,24 @@ import {
 } from 'lucide-react';
 import { Institution, StudentRecord, AuditLog } from '../types';
 import { aicteApi, reportsApi } from '../api/client';
+import { Language, TRANSLATIONS } from '../data/translations';
 
 interface SuperAdminDashboardProps {
   institutions?: Institution[];
   students?: StudentRecord[];
   auditLogs?: AuditLog[];
   onAddInstitution?: (inst: Partial<Institution>) => void;
+  language?: Language;
 }
 
-export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = () => {
+export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = ({
+  institutions = [],
+  students = [],
+  auditLogs = [],
+  onAddInstitution,
+  language = 'EN',
+}) => {
+  const t = TRANSLATIONS[language] || TRANSLATIONS.EN;
   const [searchTerm, setSearchTerm] = useState('');
   const [apiDashboard, setApiDashboard] = useState<Record<string, unknown> | null>(null);
   const [apiViolations, setApiViolations] = useState<Record<string, unknown>[] | null>(null);
@@ -86,8 +95,8 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = () => {
     { state: 'Uttar Pradesh', total: 450, verified: 396, pct: '88.0% Synced' },
   ];
 
-  // College-Wise Intake Compliance & Verification Master Table rows matching screenshot
-  const colleges = [
+  // College-Wise Intake Compliance & Verification Master Table rows
+  const defaultColleges = [
     {
       code: 'AICTE-DL-0012',
       name: 'Delhi Institute of Engineering & Technology',
@@ -95,12 +104,12 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = () => {
       approvedIntake: 1200,
       actualEnrolment: 1240,
       variance: '+40 (Over-intake)',
-      varianceType: 'error',
+      varianceType: 'error' as const,
       supernumerary: '45 Seats',
       nriFn: '24 NRI / 8 FN',
       verificationPct: '79.0%',
       status: 'Under Audit',
-      statusType: 'audit'
+      statusType: 'audit' as const
     },
     {
       code: 'AICTE-MH-0845',
@@ -109,12 +118,12 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = () => {
       approvedIntake: 420,
       actualEnrolment: 418,
       variance: 'Compliant',
-      varianceType: 'compliant',
+      varianceType: 'compliant' as const,
       supernumerary: '21 Seats',
       nriFn: '12 NRI / 6 FN',
       verificationPct: '90.9%',
       status: 'Approved',
-      statusType: 'approved'
+      statusType: 'approved' as const
     },
     {
       code: 'AICTE-KA-0491',
@@ -123,12 +132,12 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = () => {
       approvedIntake: 300,
       actualEnrolment: 295,
       variance: 'Compliant',
-      varianceType: 'compliant',
+      varianceType: 'compliant' as const,
       supernumerary: '15 Seats',
       nriFn: '10 NRI / 8 FN',
       verificationPct: '88.1%',
       status: 'Approved',
-      statusType: 'approved'
+      statusType: 'approved' as const
     },
     {
       code: 'AICTE-TN-0219',
@@ -137,12 +146,12 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = () => {
       approvedIntake: 480,
       actualEnrolment: 472,
       variance: 'Compliant',
-      varianceType: 'compliant',
+      varianceType: 'compliant' as const,
       supernumerary: '24 Seats',
       nriFn: '15 NRI / 10 FN',
       verificationPct: '93.2%',
       status: 'Approved',
-      statusType: 'approved'
+      statusType: 'approved' as const
     },
     {
       code: 'AICTE-UP-0672',
@@ -151,14 +160,33 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = () => {
       approvedIntake: 500,
       actualEnrolment: 515,
       variance: '+15 (Over-intake)',
-      varianceType: 'error',
+      varianceType: 'error' as const,
       supernumerary: '25 Seats',
       nriFn: '6 NRI / 2 FN',
       verificationPct: '79.6%',
       status: 'Under Audit',
-      statusType: 'audit'
+      statusType: 'audit' as const
     }
   ];
+
+  const colleges = institutions && institutions.length > 0 ? institutions.map(inst => {
+    const varianceCount = inst.currentEnrolment - inst.approvedIntake;
+    const isOver = varianceCount > 0;
+    return {
+      code: inst.aicteCode || `AICTE-IN-${inst.id.substring(0, 4)}`,
+      name: inst.name,
+      location: `${inst.district}, ${inst.state}`,
+      approvedIntake: inst.approvedIntake,
+      actualEnrolment: inst.currentEnrolment,
+      variance: isOver ? `+${varianceCount} (Over-intake)` : 'Compliant',
+      varianceType: isOver ? ('error' as const) : ('compliant' as const),
+      supernumerary: `${inst.supernumeraryQuota || 20} Seats`,
+      nriFn: `${inst.supernumeraryUsed || 5} NRI / FN`,
+      verificationPct: `${Math.min(100, Math.round(((inst.currentEnrolment - (inst.pendingViolations || 0)) / (inst.currentEnrolment || 1)) * 100))}%`,
+      status: inst.complianceStatus === 'Breached' ? 'Under Audit' : inst.complianceStatus === 'Warning' ? 'Warning' : 'Approved',
+      statusType: inst.complianceStatus === 'Breached' ? ('audit' as const) : ('approved' as const),
+    };
+  }) : defaultColleges;
 
   // Kafka Stream anomalies
   const kafkaAnomalies = [
@@ -182,8 +210,13 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = () => {
     }
   ];
 
-  // Immutable JPA Ledger
-  const auditLedger = [
+  // Immutable JPA Ledger Fallback
+  const auditLedger = auditLogs && auditLogs.length > 0 ? auditLogs.map(l => ({
+    time: l.timestamp,
+    tag: l.action,
+    detail: `${l.entity}: ${l.entityId} — ${l.details}`,
+    actor: `Actor: ${l.actor} (${l.role}) • Hash: ${l.hash.substring(0, 16)}...`,
+  })) : [
     {
       time: '10/27/26, 6:41 AM',
       tag: 'DUPLICATE_FLAGGED',

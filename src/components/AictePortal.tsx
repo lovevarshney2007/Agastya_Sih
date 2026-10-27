@@ -12,26 +12,34 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { Institution, StudentRecord, ViolationCase } from '../types';
-import { aicteApi, reportsApi } from '../api/client';
+import { aicteApi, reportsApi, userStore } from '../api/client';
+import { Language, TRANSLATIONS } from '../data/translations';
 
 interface AictePortalProps {
   institutions: Institution[];
   students: StudentRecord[];
   violations: ViolationCase[];
   onResolveViolation: (id: string, notes: string) => void;
+  language?: Language;
 }
 
 export const AictePortal: React.FC<AictePortalProps> = ({
   institutions,
   students,
   violations,
-  onResolveViolation
+  onResolveViolation,
+  language = 'EN',
 }) => {
+  const t = TRANSLATIONS[language] || TRANSLATIONS.EN;
   const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'DRILL_DOWN' | 'VIOLATION_CENTRE' | 'REPORT_BUILDER'>('DASHBOARD');
   const [selectedState, setSelectedState] = useState<string>('ALL');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('ALL');
   const [selectedViolation, setSelectedViolation] = useState<ViolationCase | null>(null);
   const [resolutionNote, setResolutionNote] = useState('');
+
+  // Read current session user for officer attribution (BUG-010 fix)
+  const sessionUser = userStore.get();
+  const currentOfficerName = sessionUser?.full_name || 'AICTE Officer';
 
   // Backend state
   const [apiDashboard, setApiDashboard] = useState<Record<string, unknown> | null>(null);
@@ -66,7 +74,7 @@ export const AictePortal: React.FC<AictePortalProps> = ({
   const handleProposeAction = async (caseId: string) => {
     setActionMsg(null);
     try {
-      await aicteApi.proposeAction(caseId, makerAction, 'Rajesh Verma (AICTE Officer)', makerReason);
+      await aicteApi.proposeAction(caseId, makerAction, currentOfficerName, makerReason);
       setActionMsg({ ok: true, text: 'Proposal submitted. Awaiting Checker approval.' });
       const updated = await aicteApi.violations() as Record<string, unknown>[];
       setApiViolations(updated);
@@ -204,7 +212,7 @@ export const AictePortal: React.FC<AictePortalProps> = ({
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'
           }`}
         >
-          National Overview
+          {t.aicteTabDashboard || 'National Overview'}
         </button>
         <button
           onClick={() => setActiveTab('DRILL_DOWN')}
@@ -226,7 +234,7 @@ export const AictePortal: React.FC<AictePortalProps> = ({
           }`}
         >
           <AlertOctagon className="w-4 h-4" />
-          <span>Violation Centre ({openViolations.length})</span>
+          <span>{t.aicteTabViolations || 'Violation Centre'} ({openViolations.length})</span>
         </button>
         <button
           onClick={() => setActiveTab('REPORT_BUILDER')}

@@ -33,8 +33,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const isDark = theme === 'dark';
 
   const [selectedRole, setSelectedRole] = useState<UserRole>(initialRole);
-  const [username, setUsername] = useState('registrar@diet.ac.in');
-  const [password, setPassword] = useState('••••••••••••');
+  // Default to INSTITUTION role demo credentials
+  const [username, setUsername] = useState('registrar@coep.ac.in');
+  const [password, setPassword] = useState('Aicte@2026!');
   const [otp, setOtp] = useState('849201');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);

@@ -41,11 +41,9 @@ export const TRANSLATIONS = {
     tileStudentTitle: 'Student Portal',
     tileStudentDesc: 'Direct APAAR ID verification, view ABC credits, and print digital academic pass.',
     tileStudentAction: 'Launch Portal',
-
     tileCollegeTitle: 'College Admin',
     tileCollegeDesc: 'Manage enrolments, upload batches, audit intake capacity, and resolve duplicate flags.',
     tileCollegeAction: 'Manage Enrolments',
-
     tileAdminTitle: 'AICTE Super Admin',
     tileAdminDesc: 'Pan-India state analytics, excess enrolment alerts, Kafka logs, and Apache POI Excel reports.',
     tileAdminAction: 'National Dashboard',
@@ -57,7 +55,85 @@ export const TRANSLATIONS = {
 
     // AICTE Sahayak
     sahayakButton: 'AICTE Sahayak',
-    sahayakPrompt: 'AICTE Sahayak: How may I assist you with APAAR ID verification, batch ingestion, or compliance checks?'
+    sahayakPrompt: 'AICTE Sahayak: How may I assist you with APAAR ID verification, batch ingestion, or compliance checks?',
+
+    // ── Institution Portal ──────────────────────────────────────────
+    instPortalTitle: 'Student Enrolment Registry',
+    instPortalSubtitle: 'AICTE-Approved Institution • Admission Compliance Dashboard',
+    instTabRegistry: 'Student Registry',
+    instTabUpload: 'Upload Batch',
+    instTabValidation: 'Validation Reports',
+    instTabCompliance: 'Compliance',
+    instBtnAddStudent: 'Enrol New Student',
+    instBtnDownloadCsv: 'Download CSV',
+    instBtnDemoBatch: 'Upload Demo Batch',
+    instLabelApprovedIntake: 'Approved Intake',
+    instLabelEnrolled: 'Enrolled',
+    instLabelVerified: 'APAAR Verified',
+    instLabelCompliance: 'Compliance Status',
+    instSearchPlaceholder: 'Search APAAR ID, name, roll number...',
+    instColName: 'Student Name',
+    instColApaar: 'APAAR ID',
+    instColProgram: 'Program / Branch',
+    instColCategory: 'Category',
+    instColStatus: 'Status',
+    instColActions: 'Actions',
+
+    // ── AICTE Portal ──────────────────────────────────────────────
+    aictePortalTitle: 'AICTE National Regulatory Command',
+    aicteTabDashboard: 'National Dashboard',
+    aicteTabViolations: 'Violation Centre',
+    aicteTabAudit: 'Audit Ledger',
+    aicteTabRisk: 'Risk Ranking',
+    aicteLabelOpenCases: 'Open Cases',
+    aicteLabelCritical: 'Critical Violations',
+    aicteLabelResolved: 'Resolved This Month',
+    aicteBtnPropose: 'Propose Action',
+    aicteBtnApprove: 'Approve',
+    aicteBtnReject: 'Reject',
+    aicteBtnVerifyChain: 'Verify Chain Integrity',
+    aicteBtnSimulateTamper: 'Simulate Tamper',
+
+    // ── Verifier Portal ──────────────────────────────────────────
+    verifierPortalTitle: 'Authorized APAAR Verification',
+    verifierSearchLabel: '12-Digit APAAR ID',
+    verifierSearchPlaceholder: 'Enter APAAR ID...',
+    verifierPurposeLabel: 'Verification Purpose',
+    verifierBtnVerify: 'Submit Verification Request',
+    verifierStatusValid: 'VALID CREDENTIAL',
+    verifierStatusPending: 'AWAITING CONSENT',
+    verifierStatusRevoked: 'REVOKED',
+
+    // ── Student Portal ──────────────────────────────────────────
+    studentPortalTitle: 'My Academic Identity & Consent Management',
+    studentPortalSubtitle: 'AICTE Student Sovereign Data Passport',
+    studentConsentSectionTitle: 'Active Consent Grants',
+    studentConsentBtnRevoke: 'Revoke Consent',
+    studentConsentBtnGrant: 'Grant Consent',
+    studentPrivacyNote: 'Zero Aadhaar stored. Authenticated via DigiLocker / ABC API.',
+
+    // ── Public Verify ─────────────────────────────────────────────
+    publicVerifyTitle: 'AICTE APAAR Public QR Verifier',
+    publicVerifySubtitle: 'Scan any QR code on an AICTE credential certificate or enter a 12-digit APAAR ID.',
+    publicVerifyBtn: 'Verify Validity',
+    publicVerifyValid: 'VALID CREDENTIAL',
+    publicVerifyInvalid: 'Invalid / Unrecognized Credential',
+
+    // ── Common ────────────────────────────────────────────────────
+    loading: 'Loading...',
+    refresh: 'Refresh',
+    download: 'Download',
+    close: 'Close',
+    save: 'Save',
+    cancel: 'Cancel',
+    search: 'Search',
+    filter: 'Filter',
+    all: 'All',
+    status: 'Status',
+    actions: 'Actions',
+    noData: 'No data found',
+    error: 'Error',
+    success: 'Success',
   },
   HI: {
     // Top Bar
@@ -99,11 +175,9 @@ export const TRANSLATIONS = {
     tileStudentTitle: 'छात्र पोर्टल',
     tileStudentDesc: 'सीधा अपार आईडी सत्यापन, एबीसी क्रेडिट देखें एवं डिजिटल शैक्षणिक पास प्रिंट करें।',
     tileStudentAction: 'पोर्टल खोलें',
-
     tileCollegeTitle: 'कॉलेज व्यवस्थापक',
     tileCollegeDesc: 'नामांकन प्रबंधित करें, बैच अपलोड करें, प्रवेश क्षमता ऑडिट करें एवं डुप्लिकेट फ्लैग सुलझाएं।',
     tileCollegeAction: 'नामांकन प्रबंधित करें',
-
     tileAdminTitle: 'एआईसीटीई सुपर एडमिन',
     tileAdminDesc: 'अखिल भारतीय राज्य एनालिटिक्स, अतिरिक्त प्रवेश अलर्ट, काफ्का लॉग्स एवं एक्सेल रिपोर्ट।',
     tileAdminAction: 'राष्ट्रीय डैशबोर्ड',
@@ -115,6 +189,84 @@ export const TRANSLATIONS = {
 
     // AICTE Sahayak
     sahayakButton: 'एआईसीटीई सहायक',
-    sahayakPrompt: 'एआईसीटीई सहायक: मैं अपार आईडी सत्यापन, बैच अपलोड या अनुपालन जांच में आपकी क्या सहायता कर सकता हूँ?'
+    sahayakPrompt: 'एआईसीटीई सहायक: मैं अपार आईडी सत्यापन, बैच अपलोड या अनुपालन जांच में आपकी क्या सहायता कर सकता हूँ?',
+
+    // ── Institution Portal ──────────────────────────────────────────
+    instPortalTitle: 'छात्र नामांकन पंजिका',
+    instPortalSubtitle: 'एआईसीटीई-अनुमोदित संस्थान • प्रवेश अनुपालन डैशबोर्ड',
+    instTabRegistry: 'छात्र पंजिका',
+    instTabUpload: 'बैच अपलोड',
+    instTabValidation: 'सत्यापन रिपोर्ट',
+    instTabCompliance: 'अनुपालन',
+    instBtnAddStudent: 'नया छात्र नामांकित करें',
+    instBtnDownloadCsv: 'CSV डाउनलोड करें',
+    instBtnDemoBatch: 'डेमो बैच अपलोड',
+    instLabelApprovedIntake: 'स्वीकृत प्रवेश क्षमता',
+    instLabelEnrolled: 'नामांकित',
+    instLabelVerified: 'अपार सत्यापित',
+    instLabelCompliance: 'अनुपालन स्थिति',
+    instSearchPlaceholder: 'अपार आईडी, नाम, रोल नंबर खोजें...',
+    instColName: 'छात्र का नाम',
+    instColApaar: 'अपार आईडी',
+    instColProgram: 'कार्यक्रम / शाखा',
+    instColCategory: 'श्रेणी',
+    instColStatus: 'स्थिति',
+    instColActions: 'कार्रवाई',
+
+    // ── AICTE Portal ──────────────────────────────────────────────
+    aictePortalTitle: 'एआईसीटीई राष्ट्रीय विनियामक कमान',
+    aicteTabDashboard: 'राष्ट्रीय डैशबोर्ड',
+    aicteTabViolations: 'उल्लंघन केंद्र',
+    aicteTabAudit: 'ऑडिट बही खाता',
+    aicteTabRisk: 'जोखिम रैंकिंग',
+    aicteLabelOpenCases: 'खुले मामले',
+    aicteLabelCritical: 'गंभीर उल्लंघन',
+    aicteLabelResolved: 'इस माह हल',
+    aicteBtnPropose: 'कार्रवाई प्रस्तावित करें',
+    aicteBtnApprove: 'स्वीकृत करें',
+    aicteBtnReject: 'अस्वीकार करें',
+    aicteBtnVerifyChain: 'श्रृंखला अखंडता सत्यापित करें',
+    aicteBtnSimulateTamper: 'छेड़छाड़ सिमुलेट करें',
+
+    // ── Verifier Portal ──────────────────────────────────────────
+    verifierPortalTitle: 'अधिकृत अपार सत्यापन',
+    verifierSearchLabel: '12-अंकीय अपार आईडी',
+    verifierSearchPlaceholder: 'अपार आईडी दर्ज करें...',
+    verifierPurposeLabel: 'सत्यापन का उद्देश्य',
+    verifierBtnVerify: 'सत्यापन अनुरोध भेजें',
+    verifierStatusValid: 'वैध प्रमाण-पत्र',
+    verifierStatusPending: 'सहमति प्रतीक्षित',
+    verifierStatusRevoked: 'निरस्त',
+
+    // ── Student Portal ──────────────────────────────────────────
+    studentPortalTitle: 'मेरी शैक्षणिक पहचान एवं सहमति प्रबंधन',
+    studentPortalSubtitle: 'एआईसीटीई छात्र संप्रभु डेटा पासपोर्ट',
+    studentConsentSectionTitle: 'सक्रिय सहमति अनुदान',
+    studentConsentBtnRevoke: 'सहमति वापस लें',
+    studentConsentBtnGrant: 'सहमति दें',
+    studentPrivacyNote: 'शून्य आधार संग्रहीत। डिजीलॉकर / ABC API द्वारा प्रमाणित।',
+
+    // ── Public Verify ─────────────────────────────────────────────
+    publicVerifyTitle: 'एआईसीटीई अपार सार्वजनिक QR सत्यापनकर्ता',
+    publicVerifySubtitle: 'किसी भी एआईसीटीई प्रमाण-पत्र पर QR कोड स्कैन करें या 12-अंकीय अपार आईडी दर्ज करें।',
+    publicVerifyBtn: 'वैधता सत्यापित करें',
+    publicVerifyValid: 'वैध प्रमाण-पत्र',
+    publicVerifyInvalid: 'अमान्य / अपहचाना प्रमाण-पत्र',
+
+    // ── Common ────────────────────────────────────────────────────
+    loading: 'लोड हो रहा है...',
+    refresh: 'ताज़ा करें',
+    download: 'डाउनलोड',
+    close: 'बंद करें',
+    save: 'सहेजें',
+    cancel: 'रद्द करें',
+    search: 'खोजें',
+    filter: 'फ़िल्टर',
+    all: 'सभी',
+    status: 'स्थिति',
+    actions: 'कार्रवाई',
+    noData: 'कोई डेटा नहीं मिला',
+    error: 'त्रुटि',
+    success: 'सफलता',
   }
 };

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { StudentRecord, Institution, UploadBatch } from '../types';
 import { institutionApi, reportsApi } from '../api/client';
+import { Language, TRANSLATIONS } from '../data/translations';
 
 interface InstitutionPortalProps {
   students: StudentRecord[];
@@ -26,6 +27,7 @@ interface InstitutionPortalProps {
   onAddStudent: (newStudent: Partial<StudentRecord>) => void;
   onResolveIssue: (issueId: string) => void;
   institutionId: string | null;
+  language?: Language;
 }
 
 export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
@@ -35,8 +37,10 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
   onUploadCsv,
   onAddStudent,
   onResolveIssue,
-  institutionId
+  institutionId,
+  language = 'EN',
 }) => {
+  const t = TRANSLATIONS[language] || TRANSLATIONS.EN;
   const [selectedInstId, setSelectedInstId] = useState<string>('inst-1');
   const [activeTab, setActiveTab] = useState<'REGISTRY' | 'UPLOAD_WIZARD' | 'VALIDATION_REPORTS' | 'COMPLIANCE'>('REGISTRY');
   const [searchQuery, setSearchQuery] = useState('');
@@ -55,10 +59,16 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
   const [enrollLoading, setEnrollLoading] = useState(false);
   const [enrollMsg, setEnrollMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
-  const activeInstId = institutionId || 'a46ca936-0a19-462f-9ed4-de50124abb03';
+  // institutionId comes from sessionUser.institution_id (set during login JWT)
+  // If null, the user needs to re-authenticate to get their institution_id in the session
+  const activeInstId = institutionId;
 
   // Load dashboard and student list from backend on mount (or when activeInstId changes)
   const loadBackendData = useCallback(async () => {
+    if (!activeInstId) {
+      setApiError('Institution ID not found in session. Please log in again using Institution Registrar credentials.');
+      return;
+    }
     setApiLoading(true);
     setApiError(null);
     try {
@@ -133,6 +143,7 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
   };
 
   const handleApiUpload = async (file: File) => {
+    if (!activeInstId) { setApiError('Session missing institution_id. Please re-login.'); return; }
     setUploadLoading(true);
     setUploadResult(null);
     setApiError(null);
@@ -168,6 +179,7 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
   };
 
   const handleDemoBatchUpload = async () => {
+    if (!activeInstId) { setApiError('Session missing institution_id. Please re-login.'); return; }
     setUploadLoading(true);
     setUploadResult(null);
     setApiError(null);
@@ -203,6 +215,7 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
   };
 
   const handleCommitBatch = async (batchId: string) => {
+    if (!activeInstId) { setApiError('Session missing institution_id. Please re-login.'); return; }
     try {
       await institutionApi.commitBatch(activeInstId, batchId);
       await loadBackendData();
@@ -433,7 +446,7 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'
           }`}
         >
-          Student Registry ({filteredStudents.length})
+          {t.instTabRegistry || 'Student Registry'} ({filteredStudents.length})
         </button>
         <button
           onClick={() => setActiveTab('UPLOAD_WIZARD')}
@@ -444,7 +457,7 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
           }`}
         >
           <Upload className="w-4 h-4" />
-          <span>Upload Wizard (CSV/XLSX)</span>
+          <span>{t.instTabUpload || 'Upload Wizard (CSV/XLSX)'}</span>
         </button>
         <button
           onClick={() => setActiveTab('VALIDATION_REPORTS')}
@@ -455,7 +468,7 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
           }`}
         >
           <FileSpreadsheet className="w-4 h-4" />
-          <span>Batch Validation Reports ({batches[0]?.issues.length || 0})</span>
+          <span>{t.instTabValidation || 'Batch Validation Reports'} ({batches[0]?.issues.length || 0})</span>
         </button>
         <button
           onClick={() => setActiveTab('COMPLIANCE')}
@@ -465,7 +478,7 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'
           }`}
         >
-          Intake & Quota Compliance
+          {t.instTabCompliance || 'Intake & Quota Compliance'}
         </button>
       </div>
 

@@ -11,19 +11,23 @@ import {
   Loader2
 } from 'lucide-react';
 import { StudentRecord } from '../types';
-import { studentApi } from '../api/client';
+import { studentApi, authApi, userStore } from '../api/client';
+import { Language, TRANSLATIONS } from '../data/translations';
 
 interface StudentPortalProps {
   students: StudentRecord[];
   onToggleConsent: (studentId: string) => void;
   studentToken: string | null;
+  language?: Language;
 }
 
 export const StudentPortal: React.FC<StudentPortalProps> = ({
   students,
   onToggleConsent,
-  studentToken
+  studentToken,
+  language = 'EN',
 }) => {
+  const t = TRANSLATIONS[language] || TRANSLATIONS.EN;
   const [selectedStudentId, setSelectedStudentId] = useState<string>('std-101');
   const currentStudent = students.find(s => s.id === selectedStudentId) || students[0];
 
@@ -32,7 +36,37 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
   const [consentLoading, setConsentLoading] = useState(false);
   const [consentMsg, setConsentMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
-  const effectiveToken = studentToken || 'tok_student_default';
+  // Dynamic token resolution (BUG-005 fix)
+  const [resolvedToken, setResolvedToken] = useState<string | null>(studentToken);
+
+  useEffect(() => {
+    if (studentToken) {
+      setResolvedToken(studentToken);
+      return;
+    }
+    const sessionUser = userStore.get() as (Record<string, unknown> & { student_token?: string }) | null;
+    if (sessionUser?.student_token) {
+      setResolvedToken(sessionUser.student_token);
+      return;
+    }
+    if (sessionUser?.user_id) {
+      setResolvedToken(sessionUser.user_id as string);
+      return;
+    }
+    // Dynamic lookup via personas endpoint
+    authApi.personas()
+      .then((personas: unknown) => {
+        if (Array.isArray(personas)) {
+          const sp = personas.find((p: Record<string, unknown>) => p.id === 'STUDENT' || p.role === 'STUDENT');
+          if (sp?.student_token) {
+            setResolvedToken(sp.student_token as string);
+          }
+        }
+      })
+      .catch(() => {});
+  }, [studentToken]);
+
+  const effectiveToken = resolvedToken || 'default_student_token';
 
   useEffect(() => {
     setConsentLoading(true);
@@ -71,9 +105,11 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
         <div>
           <div className="flex items-center space-x-2 text-blue-700 dark:text-blue-400 text-xs font-mono font-bold mb-1">
             <GraduationCap className="w-4 h-4" />
-            <span>AICTE STUDENT SOVEREIGN DATA PASSPORT</span>
+            <span>{t.studentPortalSubtitle || 'AICTE STUDENT SOVEREIGN DATA PASSPORT'}</span>
           </div>
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">My Academic Identity & Consent Management</h1>
+          <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+            {t.studentPortalTitle || 'My Academic Identity & Consent Management'}
+          </h1>
           <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
             View your verified academic enrolments, download QR-backed credentials, and control who can verify your record.
           </p>

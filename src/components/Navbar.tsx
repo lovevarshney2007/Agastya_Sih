@@ -20,7 +20,12 @@ import {
   Globe,
   Menu,
   X,
-  ArrowRight
+  ArrowRight,
+  Scale,
+  Home,
+  BarChart3,
+  FileText,
+  BookOpen
 } from 'lucide-react';
 import { UserRole, MainNavPage } from '../types';
 import { Language, TRANSLATIONS } from '../data/translations';
@@ -106,11 +111,41 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   const loginOptions = [
-    { role: 'STUDENT' as UserRole, icon: '🎓', title: language === 'HI' ? 'छात्र पोर्टल' : 'Student Portal', desc: 'APAAR ID & Digital Credential Pass' },
-    { role: 'INSTITUTION' as UserRole, icon: '🏛️', title: language === 'HI' ? 'संस्थान पोर्टल' : 'Institution Portal', desc: 'College Registrars & Nodal Admission Desk' },
-    { role: 'VERIFIER' as UserRole, icon: '🔍', title: language === 'HI' ? 'अधिकृत सत्यापनकर्ता' : 'Authorized Verifier', desc: 'Employer Background Check & Consent Query' },
-    { role: 'AICTE_OFFICER' as UserRole, icon: '⚖️', title: language === 'HI' ? 'एआईसीटीई अधिकारी' : 'AICTE Officer Command', desc: 'Regional Directorate & Quota Audit Desk' },
-    { role: 'AICTE_SUPER_ADMIN' as UserRole, icon: '🛡️', title: language === 'HI' ? 'सुपर एडमिन' : 'Super Admin Gateway', desc: 'National Oversight & System Telemetry' },
+    { 
+      role: 'STUDENT' as UserRole, 
+      Icon: GraduationCap, 
+      color: 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 border-indigo-200 dark:border-indigo-800', 
+      title: language === 'HI' ? 'छात्र पोर्टल' : 'Student Portal', 
+      desc: 'APAAR ID & Digital Credential Pass' 
+    },
+    { 
+      role: 'INSTITUTION' as UserRole, 
+      Icon: Building2, 
+      color: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 border-blue-200 dark:border-blue-800', 
+      title: language === 'HI' ? 'संस्थान पोर्टल' : 'Institution Portal', 
+      desc: 'College Registrars & Nodal Admission Desk' 
+    },
+    { 
+      role: 'VERIFIER' as UserRole, 
+      Icon: UserCheck, 
+      color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800', 
+      title: language === 'HI' ? 'अधिकृत सत्यापनकर्ता' : 'Authorized Verifier', 
+      desc: 'Employer Background Check & Consent Query' 
+    },
+    { 
+      role: 'AICTE_OFFICER' as UserRole, 
+      Icon: Scale, 
+      color: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-800', 
+      title: language === 'HI' ? 'एआईसीटीई अधिकारी' : 'AICTE Officer Command', 
+      desc: 'Regional Directorate & Quota Audit Desk' 
+    },
+    { 
+      role: 'AICTE_SUPER_ADMIN' as UserRole, 
+      Icon: ShieldCheck, 
+      color: 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/60 border-purple-200 dark:border-purple-800', 
+      title: language === 'HI' ? 'सुपर एडमिन' : 'Super Admin Gateway', 
+      desc: 'National Oversight & System Telemetry' 
+    },
   ];
 
   return (
@@ -284,10 +319,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                           key={opt.role}
                           type="button"
                           onClick={() => handlePortalNavigation(opt.role)}
-                          className="w-full p-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/80 text-left transition-colors flex items-center justify-between group cursor-pointer"
+                          className="w-full p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/80 text-left transition-colors flex items-center justify-between group cursor-pointer"
                         >
                           <div className="flex items-center space-x-3">
-                            <span className="text-lg shrink-0">{opt.icon}</span>
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center border shrink-0 ${opt.color}`}>
+                              <opt.Icon className="w-4 h-4" />
+                            </div>
                             <div>
                               <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 block">
                                 {opt.title}
@@ -430,7 +467,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               className="w-full text-left px-3 py-2 rounded-lg font-bold text-xs text-white hover:bg-blue-900/80 flex items-center justify-between"
             >
-              <span>🏠 {t.home}</span>
+              <span className="flex items-center space-x-2">
+                <Home className="w-4 h-4 text-blue-300" />
+                <span>{t.home}</span>
+              </span>
               <ChevronRight className="w-4 h-4 text-slate-400" />
             </button>
 
@@ -441,7 +481,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-200 hover:bg-blue-900/80 flex items-center justify-between"
             >
-              <span>📊 {t.analytics}</span>
+              <span className="flex items-center space-x-2">
+                <BarChart3 className="w-4 h-4 text-blue-300" />
+                <span>{t.analytics}</span>
+              </span>
               <ChevronRight className="w-4 h-4 text-slate-400" />
             </button>
 
@@ -452,7 +495,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-200 hover:bg-blue-900/80 flex items-center justify-between"
             >
-              <span>📜 {t.aphRules}</span>
+              <span className="flex items-center space-x-2">
+                <FileText className="w-4 h-4 text-blue-300" />
+                <span>{t.aphRules}</span>
+              </span>
               <ChevronRight className="w-4 h-4 text-slate-400" />
             </button>
 
@@ -463,7 +509,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-200 hover:bg-blue-900/80 flex items-center justify-between"
             >
-              <span>📖 {t.docsSpec}</span>
+              <span className="flex items-center space-x-2">
+                <BookOpen className="w-4 h-4 text-blue-300" />
+                <span>{t.docsSpec}</span>
+              </span>
               <ChevronRight className="w-4 h-4 text-slate-400" />
             </button>
           </div>
@@ -478,7 +527,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }}
                 className="w-full text-left px-3 py-2 rounded-lg text-xs font-bold text-white bg-blue-800 hover:bg-blue-700 flex items-center justify-between"
               >
-                <span>🚀 {language === 'HI' ? 'सक्रिय पोर्टल खोलें' : 'Open Active Portal'}</span>
+                <span>{language === 'HI' ? 'सक्रिय पोर्टल खोलें' : 'Open Active Portal'}</span>
                 <ChevronRight className="w-4 h-4 text-slate-300" />
               </button>
               <button
@@ -501,7 +550,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={() => handlePortalNavigation(opt.role)}
                   className="w-full text-left px-3 py-2 rounded-lg text-xs font-bold text-slate-200 hover:bg-blue-900/80 flex items-center justify-between"
                 >
-                  <span>{opt.icon} {opt.title}</span>
+                  <span className="flex items-center space-x-2.5">
+                    <opt.Icon className="w-3.5 h-3.5 text-blue-300" />
+                    <span>{opt.title}</span>
+                  </span>
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 </button>
               ))}

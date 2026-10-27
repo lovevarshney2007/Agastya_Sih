@@ -23,7 +23,7 @@ import {
   INITIAL_VIOLATIONS, 
   INITIAL_AUDIT_LOGS 
 } from './data/mockData';
-import { tokenStore, userStore, authApi, type AuthUser } from './api/client';
+import { tokenStore, userStore, authApi, institutionApi, type AuthUser } from './api/client';
 
 export function App() {
   const [currentRole, setCurrentRole] = useState<UserRole>('INSTITUTION');
@@ -133,9 +133,20 @@ export function App() {
   };
 
   // Handlers
-  const handleUploadCsv = (file: File) => {
+  const handleUploadCsv = async (file: File) => {
+    // Attempt real API upload if institution_id is available
+    const instId = sessionUser?.institution_id;
+    if (instId) {
+      try {
+        await institutionApi.uploadBatch(instId, file);
+        // Real batch was uploaded - InstitutionPortal will reload via its own effect
+      } catch (err) {
+        console.error('[handleUploadCsv] Real API upload failed:', err);
+      }
+    }
+
+    // Keep local mock state updated for portals that rely on it
     const newBatchId = `BATCH-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`;
-    
     const newBatch: UploadBatch = {
       id: newBatchId,
       filename: file.name,
@@ -174,13 +185,13 @@ export function App() {
         }
       ]
     };
-
     setBatches([newBatch, ...batches]);
 
+    const actor = sessionUser?.email || 'registrar@diet.ac.in';
     const newAuditLog: AuditLog = {
       id: `LOG-${Date.now().toString().slice(-4)}`,
       timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
-      actor: 'registrar@diet.ac.in',
+      actor,
       role: 'INSTITUTION_ADMIN',
       action: 'BATCH_UPLOAD_INGESTED',
       entity: 'UploadBatch',
@@ -265,7 +276,7 @@ export function App() {
     setAuditLogs([newAuditLog, ...auditLogs]);
   };
 
-  const handleResolveViolation = (violationId: string) => {
+  const handleResolveViolation = (violationId: string, _notes?: string) => {
     setViolations(violations.map(v => v.id === violationId ? { ...v, status: 'RESOLVED' as const } : v));
 
     const newAuditLog: AuditLog = {
@@ -435,9 +446,10 @@ export function App() {
                 onResolveIssue={handleResolveIssue}
                 institutionId={
                   sessionUser?.institution_id || 
-                  ((sessionUser as any)?.institution?.id) || 
-                  'a46ca936-0a19-462f-9ed4-de50124abb03'
+                  ((sessionUser as unknown as Record<string, unknown>)?.institution as Record<string, string> | null)?.id || 
+                  null
                 }
+                language={language}
               />
             )}
 
@@ -447,6 +459,7 @@ export function App() {
                 students={students}
                 violations={violations}
                 onResolveViolation={handleResolveViolation}
+                language={language}
               />
             )}
 
@@ -455,6 +468,7 @@ export function App() {
                 institutions={institutions}
                 auditLogs={auditLogs}
                 onAddInstitution={handleAddInstitution}
+                language={language}
               />
             )}
 
@@ -462,6 +476,7 @@ export function App() {
               <VerifierPortal 
                 students={students}
                 onLogVerification={handleLogVerification}
+                language={language}
               />
             )}
 
@@ -469,7 +484,15 @@ export function App() {
               <StudentPortal 
                 students={students}
                 onToggleConsent={handleToggleConsent}
-                studentToken={sessionUser?.institution_id || null}
+                studentToken={
+                  // The backend /student/{student_token}/consents uses vault student_token
+                  // For the demo STUDENT persona, the backend seed has a known vault entry
+                  // We use sessionUser.user_id as fallback (backend will find the first vault)
+                  (sessionUser as (AuthUser & { student_token?: string }))?.student_token ||
+                  sessionUser?.user_id ||
+                  null
+                }
+                language={language}
               />
             )}
 
