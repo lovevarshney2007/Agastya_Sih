@@ -4,7 +4,7 @@
 // All endpoints are prefixed with /api/v1 (see backend config)
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const BASE_URL = 'https://sih.monu14.me';
+export const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://sih.monu14.me';
 export const API_BASE = `${BASE_URL}/api/v1`;
 
 // ─── Token Storage ────────────────────────────────────────────────────────────
