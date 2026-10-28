@@ -47,7 +47,7 @@ export function PageHeader({ title, description, actions, back }: {
   return (
     <div className="mb-6">
       {back && (
-        <Link to={back.to} className="text-sm no-underline hover:underline inline-block mb-2">← {back.label}</Link>
+        <Link to={back.to} className="text-sm no-underline hover:underline inline-block py-1.5 mb-1">← {back.label}</Link>
       )}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
@@ -78,21 +78,28 @@ export function Panel({ title, actions, children, className = '', bodyClassName 
 
 const prefersReducedMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
-/** Counts up to the number at the start of a value like "1,234", "94.7%" or "8 / 9"; other content renders as-is. */
+/**
+ * Counts up to the number at the start of a value like "1,234", "94.7%" or "8 / 9" the first time it appears,
+ * then glides from the previous value when it changes. Other content renders as-is.
+ */
 export function CountUp({ value }: { value: ReactNode }) {
   const text = typeof value === 'number' ? String(value) : typeof value === 'string' ? value : null;
   const match = text ? /^([\d,]+(?:\.\d+)?)(.*)$/.exec(text) : null;
   const target = match ? Number(match[1].replace(/,/g, '')) : 0;
   const decimals = match?.[1].includes('.') ? match[1].split('.')[1].length : 0;
   const [shown, setShown] = useState(() => (match && !prefersReducedMotion() ? 0 : target));
+  const shownRef = useRef(shown);
 
   useEffect(() => {
-    if (!match || prefersReducedMotion()) { setShown(target); return; }
+    const from = shownRef.current;
+    if (!match || prefersReducedMotion() || from === target) { shownRef.current = target; setShown(target); return; }
     let frame = 0;
     const start = performance.now();
     const tick = (now: number) => {
-      const t = Math.min((now - start) / 800, 1);
-      setShown(target * (1 - Math.pow(1 - t, 3)));
+      const t = Math.min((now - start) / 700, 1);
+      const v = from + (target - from) * (1 - Math.pow(1 - t, 3));
+      shownRef.current = v;
+      setShown(v);
       if (t < 1) frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
@@ -105,14 +112,12 @@ export function CountUp({ value }: { value: ReactNode }) {
   return <>{formatted}{match[2]}</>;
 }
 
-const STAT_ACCENT = { bad: 'before:bg-bad', warn: 'before:bg-[#d4a72c]', ok: 'before:bg-ok', none: 'before:bg-brand' };
-
 export function Stat({ label, value, note, tone }: { label: string; value: ReactNode; note?: ReactNode; tone?: 'bad' | 'warn' | 'ok' }) {
   const color = tone === 'bad' ? 'text-bad' : tone === 'warn' ? 'text-warn' : tone === 'ok' ? 'text-ok' : 'text-ink';
   return (
-    <div className={`panel lift relative overflow-hidden px-4 py-3 before:absolute before:left-0 before:top-0 before:h-full before:w-1 ${STAT_ACCENT[tone ?? 'none']}`}>
+    <div className="panel px-4 py-3">
       <div className="text-[13px] text-muted">{label}</div>
-      <div className={`text-2xl font-bold tabular-nums mt-0.5 font-[family-name:var(--font-display)] ${color}`}><CountUp value={value} /></div>
+      <div className={`text-2xl font-bold tabular-nums mt-0.5 ${color}`}><CountUp value={value} /></div>
       {note && <div className="text-xs text-muted mt-1">{note}</div>}
     </div>
   );
@@ -232,9 +237,9 @@ export function Modal({ open, title, onClose, children, footer, width = 'max-w-l
 
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-[#0b1f44]/50 backdrop-blur-[2px] p-4 overflow-y-auto"
+    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-[#0e2448]/50 p-4 overflow-y-auto"
          onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div ref={ref} role="dialog" aria-modal="true" aria-labelledby={titleId} className={`panel w-full ${width} shadow-2xl my-8 animate-pop`}>
+      <div ref={ref} role="dialog" aria-modal="true" aria-labelledby={titleId} className={`panel w-full ${width} shadow-2xl my-8 animate-fade-up`}>
         <div className="panel-head">
           <h2 id={titleId}>{title}</h2>
           <button type="button" onClick={onClose} className="text-muted hover:text-ink" aria-label="Close"><X size={18} /></button>
@@ -266,7 +271,7 @@ export function Pagination({ page, pageSize, total, onPage }: { page: number; pa
 export function Meter({ value, max, label }: { value: number; max: number; label?: string }) {
   const ratio = max > 0 ? value / max : 0;
   const width = Math.min(ratio, 1) * 100;
-  const color = ratio > 1 ? 'bg-gradient-to-r from-[#e0483a] to-bad' : ratio >= 0.95 ? 'bg-gradient-to-r from-[#f2c14e] to-[#d4a72c]' : 'bg-gradient-to-r from-[#4f86f0] to-brand';
+  const color = ratio > 1 ? 'bg-bad' : ratio >= 0.95 ? 'bg-[#d4a72c]' : 'bg-brand';
   // Start at 0 so the bar fills in when it first appears.
   const [shown, setShown] = useState(0);
   useEffect(() => {

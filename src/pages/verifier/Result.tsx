@@ -14,7 +14,7 @@ export function VerificationResult({ token }: { token: string }) {
   if (!data) return <Loading rows={8} />;
 
   const valid = data.status === 'VALID';
-  const bannerClass = valid ? 'bg-gradient-to-r from-[#0f6b35] to-ok' : data.status === 'REVOKED' ? 'bg-gradient-to-r from-[#8f1c13] to-bad' : 'bg-[#4a5465]';
+  const bannerClass = valid ? 'bg-ok' : data.status === 'REVOKED' ? 'bg-bad' : 'bg-[#4a5465]';
 
   return (
     <>

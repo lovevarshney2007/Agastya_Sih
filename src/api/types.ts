@@ -383,3 +383,13 @@ export interface StudentRecord {
   shares: StudentShare[];
   access_log: { verifier_name: string; purpose: string; at: string; result: RequestStatus }[];
 }
+
+export interface PublicStats {
+  as_of: string;
+  institutions_approved: number;
+  institutions_reporting: number;
+  students_on_ledger: number;
+  duplicates_caught: number;
+  credentials_issued: number;
+  submission_deadline: string;
+}

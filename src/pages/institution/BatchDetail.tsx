@@ -187,9 +187,9 @@ export function FilterSelect({ label, value, onChange, options, labels }: {
 }) {
   const id = `f-${label.replace(/\s+/g, '-').toLowerCase()}`;
   return (
-    <div className="flex items-center gap-2 text-sm">
+    <div className="flex items-center gap-2 text-sm max-w-full min-w-0">
       <label htmlFor={id} className="text-muted whitespace-nowrap">{label}</label>
-      <select id={id} className="select !py-1 !w-auto" value={value} onChange={(e) => onChange(e.target.value)}>
+      <select id={id} className="select !py-1 !w-auto max-w-[16rem] min-w-0 truncate" value={value} onChange={(e) => onChange(e.target.value)}>
         <option value="ALL">All</option>
         {options.map((o) => <option key={o} value={o}>{labels?.[o] ?? o.replace(/_/g, ' ')}</option>)}
       </select>

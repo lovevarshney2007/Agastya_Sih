@@ -59,7 +59,7 @@ export function HeroIllustration({ className = '' }: { className?: string }) {
       </g>
 
       {/* credential card */}
-      <g className="animate-[float_6s_ease-in-out_infinite]" style={{ transformOrigin: '400px 180px' }}>
+      <g>
         <g filter="url(#hi-shadow)">
           <rect x="318" y="72" width="182" height="230" rx="16" fill="#fff" />
           <path d="M318 88 a16 16 0 0 1 16 -16 h150 a16 16 0 0 1 16 16 v34 h-182 Z" fill="url(#hi-card)" />
@@ -89,10 +89,6 @@ export function HeroIllustration({ className = '' }: { className?: string }) {
 
         {/* verified badge */}
         <g transform="translate(456 248)">
-          <circle r="26" fill="#138a4b" opacity=".18">
-            <animate attributeName="r" values="22;32;22" dur="2.4s" repeatCount="indefinite" />
-            <animate attributeName="opacity" values=".25;0;.25" dur="2.4s" repeatCount="indefinite" />
-          </circle>
           <circle r="22" fill="#138a4b" />
           <path d="M-9 0 L-3 6 L10 -7" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
         </g>
@@ -114,12 +110,12 @@ export function SignInIllustration({ className = '' }: { className?: string }) {
     <svg viewBox="0 0 240 200" className={className} aria-hidden="true">
       <circle cx="120" cy="100" r="78" fill="#fff" opacity=".06" />
       <circle cx="120" cy="100" r="56" fill="#fff" opacity=".08" />
-      <g style={{ transformOrigin: '120px 100px' }} className="animate-[spin_24s_linear_infinite]">
+      <g>
         <circle cx="120" cy="22" r="5" fill="#f08a24" />
         <circle cx="198" cy="100" r="4" fill="#4ade80" />
         <circle cx="42" cy="100" r="4" fill="#93c5fd" />
       </g>
-      <g className="animate-[float_6s_ease-in-out_infinite]">
+      <g>
         <path d="M120 58 L150 70 V96 C150 118 136 132 120 140 C104 132 90 118 90 96 V70 Z" fill="#fff" />
         <path d="M120 66 L143 75 V96 C143 113 132 125 120 131 C108 125 97 113 97 96 V75 Z" fill="#2457c5" />
         <rect x="109" y="92" width="22" height="18" rx="3" fill="#fff" />

@@ -61,7 +61,7 @@ export function NationalOverview() {
         <Stat label="Without verified APAAR" value={fmtNum(k.pending_apaar)} note="Held or pending, not rejected" tone={k.pending_apaar ? 'warn' : undefined} />
         <Stat label="Open cases" value={k.open_cases} note={`${k.awaiting_approval} awaiting second approval`} tone={k.open_cases ? 'bad' : 'ok'} />
         <Stat label="Duplicates intercepted" value={k.duplicates_intercepted} note="Cross-institution conflicts, all time" />
-        <Stat label="High-risk institutions" value={k.high_risk_institutions} tone={k.high_risk_institutions ? 'bad' : undefined} note={<Link to="/aicte/risk">See ranking</Link>} />
+        <Stat label="High-risk institutions" value={k.high_risk_institutions} tone={k.high_risk_institutions ? 'bad' : undefined} note={<Link to="/aicte/risk" className="inline-block py-1">See ranking</Link>} />
         <Stat label="Over approved intake" value={k.over_intake_institutions} tone={k.over_intake_institutions ? 'bad' : undefined} note="Institutions, within-intake seats" />
         <Stat label="APAAR verified" value={`${k.identity_verified_pct}%`} tone={k.identity_verified_pct >= 95 ? 'ok' : 'warn'} note="Of active enrolments" />
       </div>

@@ -103,12 +103,10 @@ export function SignIn() {
 
   return (
     <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] items-start">
-      <aside className="hidden lg:flex flex-col nav-gradient text-white rounded-2xl p-8 sticky top-36 overflow-hidden relative">
-        <div className="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-saffron/20 blur-2xl" aria-hidden="true" />
-        <div className="absolute -left-10 bottom-0 w-40 h-40 rounded-full bg-india-green/25 blur-2xl" aria-hidden="true" />
-        <SignInIllustration className="w-56 mx-auto relative" />
-        <h2 className="text-xl font-bold mt-4 font-[family-name:var(--font-display)] relative">Secure access to the national student ledger</h2>
-        <ul className="mt-4 space-y-3 text-sm text-[#d6e0f2] relative stagger">
+      <aside className="hidden lg:flex flex-col bg-navy text-white rounded-lg p-8 sticky top-6">
+        <SignInIllustration className="w-44 mx-auto" />
+        <h2 className="text-xl font-bold mt-4">Secure access to the national student ledger</h2>
+        <ul className="mt-4 space-y-3 text-sm text-[#d6e0f2]">
           {[
             ['Role-based access', 'Each account sees only its own institution, cases or record.'],
             ['Two-step sign-in', 'A one-time code is required after your password.'],
@@ -129,7 +127,7 @@ export function SignIn() {
       {expired && <div className="mb-4"><Alert tone="warn" title="Your session expired">Sign in again to continue.</Alert></div>}
       {search.get('signedout') && !expired && <div className="mb-4"><Alert tone="ok">You have signed out.</Alert></div>}
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 border border-line-soft rounded-t-xl overflow-hidden bg-white" role="tablist">
+      <div className="grid grid-cols-2 sm:grid-cols-4 border border-line-soft rounded-t-lg overflow-hidden bg-white" role="tablist">
         {DOORS.map((d) => (
           <button
             key={d.id}
@@ -137,7 +135,7 @@ export function SignIn() {
             role="tab"
             aria-selected={door === d.id}
             onClick={() => { setDoor(d.id); setError(null); setStep('credentials'); setPendingLogin(null); setIdentifier(''); setPassword(''); }}
-            className={`px-3 py-2.5 text-sm border-0 cursor-pointer transition-colors duration-200 ${door === d.id ? 'nav-gradient text-white font-semibold' : 'bg-white text-ink hover:bg-brand-wash'}`}
+            className={`px-3 py-2.5 text-sm border-0 cursor-pointer transition-colors duration-200 ${door === d.id ? 'bg-navy text-white font-semibold' : 'bg-white text-ink hover:bg-brand-wash'}`}
           >
             {d.title}
           </button>

@@ -43,7 +43,7 @@ export function PublicVerify({ token }: { token?: string }) {
       {data && (
         <div className="panel overflow-hidden">
           {data.status === 'VALID' && (
-            <div className="bg-gradient-to-r from-[#0f6b35] to-ok text-white px-5 py-4 flex items-center gap-3">
+            <div className="bg-ok text-white px-5 py-4 flex items-center gap-3">
               <CircleCheck size={30} className="animate-pop" aria-hidden="true" />
               <div>
                 <div className="text-xl font-bold tracking-wide">VALID</div>
@@ -52,7 +52,7 @@ export function PublicVerify({ token }: { token?: string }) {
             </div>
           )}
           {data.status === 'REVOKED' && (
-            <div className="bg-gradient-to-r from-[#8f1c13] to-bad text-white px-5 py-4 flex items-center gap-3">
+            <div className="bg-bad text-white px-5 py-4 flex items-center gap-3">
               <ShieldAlert size={30} className="animate-pop" aria-hidden="true" />
               <div>
                 <div className="text-xl font-bold tracking-wide">REVOKED</div>

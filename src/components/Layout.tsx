@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { LogOut, Menu, X } from 'lucide-react';
 import { API_ORIGIN } from '../api/client';
 import { Link, useRouter } from '../lib/router';
@@ -43,11 +43,17 @@ function isActive(path: string, to: string, portalRoot: string) {
   return to === portalRoot ? path === to : path === to || path.startsWith(`${to}/`);
 }
 
-export function Layout({ children, wide = false }: { children: ReactNode; wide?: boolean }) {
+export function Layout({ children, wide = false, full = false }: { children: ReactNode; wide?: boolean; full?: boolean }) {
   const { user, portal, signOut } = useSession();
   const { path, navigate } = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const nav = portal && path.startsWith(`/${portal}`) ? PORTAL_NAV[portal] : null;
+  const navRef = useRef<HTMLDivElement>(null);
+
+  // On narrow screens the tab bar scrolls; keep the current tab visible.
+  useEffect(() => {
+    navRef.current?.querySelector<HTMLElement>('[aria-current="page"]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }, [path]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -61,12 +67,12 @@ export function Layout({ children, wide = false }: { children: ReactNode; wide?:
         </div>
       </div>
 
-      <header className="bg-white/95 backdrop-blur border-b border-line-soft no-print sticky top-0 z-30 shadow-[0_1px_0_rgb(16_33_70/.04)]">
+      <header className="bg-white border-b border-line no-print">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
           <Link to={user && portal ? `/${portal}` : '/'} className="flex items-center gap-3 no-underline text-ink min-w-0">
-            <img src="/aicte-logo.png" alt="" className="h-11 w-11 object-contain shrink-0 transition-transform duration-500 hover:rotate-[20deg]" />
+            <img src="/aicte-logo.png" alt="" className="h-11 w-11 object-contain shrink-0" />
             <span className="leading-tight min-w-0">
-              <span className="block font-bold text-[17px] truncate font-[family-name:var(--font-display)] text-navy">APAAR Student Ledger</span>
+              <span className="block font-bold text-[17px] truncate text-navy">APAAR Student Ledger</span>
               <span className="block text-xs text-muted truncate">Enrolment reporting &amp; verification for AICTE-approved institutions</span>
             </span>
           </Link>
@@ -96,10 +102,11 @@ export function Layout({ children, wide = false }: { children: ReactNode; wide?:
             )}
           </div>
         </div>
+      </header>
 
         {nav && (
-          <nav className="nav-gradient" aria-label={nav.title}>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 flex gap-1 overflow-x-auto">
+          <nav className="bg-navy sticky top-0 z-30 shadow-[0_2px_6px_rgb(14_36_72/.18)] no-print" aria-label={nav.title}>
+            <div ref={navRef} className="max-w-7xl mx-auto px-4 sm:px-6 flex gap-1 overflow-x-auto scroll-fade">
               {nav.links.map((l) => {
                 const active = isActive(path, l.to, `/${portal}`);
                 return (
@@ -107,7 +114,7 @@ export function Layout({ children, wide = false }: { children: ReactNode; wide?:
                     key={l.to}
                     to={l.to}
                     aria-current={active ? 'page' : undefined}
-                    className={`px-3.5 py-2.5 text-sm no-underline whitespace-nowrap border-b-[3px] transition-colors duration-200 ${active ? 'text-white border-saffron font-semibold bg-white/10' : 'text-[#c9d4e5] border-transparent hover:text-white hover:bg-white/5 hover:border-white/30'}`}
+                    className={`px-3.5 py-2.5 text-sm no-underline whitespace-nowrap border-b-[3px] transition-colors duration-200 ${active ? 'text-white border-saffron font-semibold' : 'text-[#c9d4e5] border-transparent hover:text-white hover:border-white/40'}`}
                   >
                     {l.label}
                   </Link>
@@ -116,19 +123,18 @@ export function Layout({ children, wide = false }: { children: ReactNode; wide?:
             </div>
           </nav>
         )}
-      </header>
 
-      <main id="main" className={`flex-1 w-full mx-auto px-4 sm:px-6 py-7 ${wide ? 'max-w-7xl' : 'max-w-5xl'}`}>
+      <main id="main" className={full ? 'flex-1 w-full' : `flex-1 w-full mx-auto px-4 sm:px-6 py-7 ${wide ? 'max-w-7xl' : 'max-w-5xl'}`}>
         <div key={path} className="page-enter">{children}</div>
       </main>
 
-      <footer className="nav-gradient text-sm text-[#c9d4e5] no-print">
+      <footer className="bg-navy-dark text-sm text-[#c3cee0] no-print">
         <div className="tricolour h-1" aria-hidden="true" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 grid gap-6 sm:grid-cols-3">
           <div>
             <div className="flex items-center gap-2.5">
               <img src="/aicte-logo.png" alt="" className="h-9 w-9 object-contain bg-white rounded-full p-0.5" />
-              <span className="font-semibold text-white font-[family-name:var(--font-display)]">APAAR Student Ledger</span>
+              <span className="font-semibold text-white">APAAR Student Ledger</span>
             </div>
             <p className="mt-3">One verified record for every student in an AICTE-approved institution. Built for Smart India Hackathon 2026, problem statement SIH26263.</p>
           </div>

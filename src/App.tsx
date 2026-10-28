@@ -30,11 +30,12 @@ interface Route {
   pattern: string;
   portal?: Portal;
   wide?: boolean;
+  full?: boolean;
   render: (params: Record<string, string>) => ReactNode;
 }
 
 const ROUTES: Route[] = [
-  { pattern: '/', render: () => <Home />, wide: true },
+  { pattern: '/', render: () => <Home />, full: true },
   { pattern: '/sign-in', render: () => <SignIn /> },
   { pattern: '/activate', render: () => <Activate /> },
   { pattern: '/verify', render: () => <PublicVerify /> },
@@ -98,14 +99,14 @@ function Routes() {
         );
       }
     }
-    return <Layout wide={route.wide}>{route.render(params)}</Layout>;
+    return <Layout wide={route.wide} full={route.full}>{route.render(params)}</Layout>;
   }
 
   return (
     <Layout>
       <h1 className="text-2xl font-bold">Page not found</h1>
       <p className="text-muted">The address may be mistyped, or the page may have moved.</p>
-      <Link to={user ? portalHome(portal) : '/'}>Go to the start page</Link>
+      <Link to={user ? portalHome(portal) : '/'} className="inline-block py-1.5">Go to the start page</Link>
     </Layout>
   );
 }

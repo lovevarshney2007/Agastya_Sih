@@ -66,19 +66,20 @@ export function InstitutionDashboard() {
           </div>
 
           <div className="grid gap-6 lg:grid-cols-[1.35fr_1fr]">
-            <Panel title="Enrolled against approved intake" actions={<Link to="/institution/compliance" className="text-sm">Full compliance view</Link>}>
-              <div className="space-y-4">
+            <Panel title="Enrolled against approved intake" actions={<Link to="/institution/compliance" className="text-sm inline-block py-1">Full compliance view</Link>}>
+              <div className="space-y-2">
                 {data.program_breakdown.map((p) => (
-                  <div key={p.program_offering_id}>
+                  <Link key={p.program_offering_id} to={`/institution/registry?course=${encodeURIComponent(p.course)}`}
+                        className="block -mx-2 px-2 py-1.5 rounded-md no-underline text-ink hover:bg-brand-wash group" title={`Open ${p.course} in the student registry`}>
                     <div className="flex justify-between gap-3 text-sm mb-1">
-                      <span className="font-medium">{p.course} <span className="text-muted font-normal">· {p.level}</span></span>
+                      <span className="font-medium group-hover:text-brand">{p.course} <span className="text-muted font-normal">· {p.level}</span></span>
                       {p.enrolled > p.approved_intake && <StatusTag value="VIOLATION" label="Over intake" />}
                     </div>
                     <Meter value={p.enrolled} max={p.approved_intake} label={`${p.course} enrolment`} />
                     {(p.supernumerary > 0 || p.lateral > 0) && (
                       <div className="text-xs text-muted mt-1">Plus {p.supernumerary} supernumerary and {p.lateral} lateral-entry seats</div>
                     )}
-                  </div>
+                  </Link>
                 ))}
               </div>
             </Panel>

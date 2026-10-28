@@ -1,7 +1,7 @@
 import type {
   AddStudentInput, AddStudentResult, AuditLedger, BatchReport, BatchSummary, CaseDetail, CaseSummary, ChainCheck,
   CommitResult, Consent, CredentialResult, DemoAccounts, InstitutionDashboard, InstitutionListItem, LoginResponse,
-  NationalDashboard, OnboardInput, PublicVerifyResult, RecordHistory, RiskRanking, SessionUser, StudentPage,
+  NationalDashboard, OnboardInput, PublicStats, PublicVerifyResult, RecordHistory, RiskRanking, SessionUser, StudentPage,
   StudentRecord, StudentRow, StudentShare, VerificationRequestSummary, VerifierTracker,
 } from './types';
 
@@ -193,6 +193,7 @@ export const api = {
     revokeShare: (token: string) => json<VerificationRequestSummary>(`/student/shares/${encodeURIComponent(token)}/revoke`, { method: 'POST' }),
   },
 
+  publicStats: () => json<PublicStats>('/public/stats', { auth: false }),
   publicVerify: (token: string) => json<PublicVerifyResult>(`/verify/public/${encodeURIComponent(token)}`, { auth: false }),
   templateDownload: () => downloadFile('/reports/admission-template.csv', 'upload_template.csv'),
 };

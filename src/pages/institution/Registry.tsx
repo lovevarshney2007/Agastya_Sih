@@ -27,7 +27,7 @@ export function Registry() {
   const [status, setStatus] = useState(query.get('status') ?? 'ALL');
   const [identity, setIdentity] = useState(query.get('identity') ?? 'ALL');
   const [verification, setVerification] = useState(query.get('verification') ?? 'ALL');
-  const [course, setCourse] = useState('ALL');
+  const [course, setCourse] = useState(query.get('course') ?? 'ALL');
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<StudentRow | null>(null);
   const [adding, setAdding] = useState(false);

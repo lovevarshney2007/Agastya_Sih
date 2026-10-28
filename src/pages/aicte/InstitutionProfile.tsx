@@ -80,7 +80,7 @@ export function InstitutionProfile({ institutionId }: { institutionId: string })
         {!accessGranted ? (
           <div className="text-sm">
             <p className="mt-0">Student records are hidden by default. Opening them requires a stated purpose, and the access is logged. Names stay hidden; APAAR IDs are masked.</p>
-            <button type="button" className="btn btn-secondary" onClick={() => setPurposeOpen(true)}>View student records</button>
+            <button type="button" className="btn btn-secondary mt-3" onClick={() => setPurposeOpen(true)}>View student records</button>
           </div>
         ) : students.error ? <div className="p-4"><ErrorState message={students.error} onRetry={students.reload} /></div>
           : !students.data ? <div className="p-4"><Loading /></div>

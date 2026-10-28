@@ -84,7 +84,7 @@ export function Activate() {
           <button type="submit" className="btn btn-primary" disabled={pending}>
             {pending && <Spinner />} {otpSent ? 'Activate account' : 'Send code'}
           </button>
-          <Link to="/sign-in" className="text-sm">Already activated? Sign in</Link>
+          <Link to="/sign-in" className="text-sm inline-block py-1.5">Already activated? Sign in</Link>
         </div>
       </form>
     </div>
