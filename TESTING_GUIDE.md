@@ -1,636 +1,170 @@
-# 🚀 AICTE APAAR Platform — Complete Testing & User Guide
+# APAAR Student Ledger — Test Guide
 
-**Frontend:** https://agastya-chi.vercel.app  
-**Backend:** https://sih.monu14.me  
-**Swagger Docs:** https://sih.monu14.me/docs
+Step-by-step checks for every portal and feature. Each test lists what to do and what you should see.
+Mark the **Result** column ✅ pass or ❌ fail and note anything odd.
 
----
+| | |
+|---|---|
+| Website | https://agastya-chi.vercel.app (or http://localhost:5173 when running locally) |
+| Backend API docs | https://sih.monu14.me/docs |
+| Demo password (all accounts) | `Aicte@2026!` |
+| One-time code at sign-in | any 6 digits (prototype) |
 
-## 🖥️ How to Use the Website (Full Flow)
+**Before you start**
+- Run the sections **in order** (A → H). Later tests rely on data created earlier (for example, the conflict case from section C is reviewed in section D).
+- The tests change the data. On a local setup you can start fresh by stopping the backend, deleting `SIH-backend/aicte_ledger.db` and starting it again. On the hosted server, ask the backend owner to reset it.
+- Demo accounts are listed on the sign-in page under **Demo accounts**. **Sign in** next to an account skips the password; **Fill in** puts the email and password in the form.
 
----
-
-### Step 1: Open the Landing Page
-
-Visit **https://agastya-chi.vercel.app**
-
-You will see **5 Portal Cards** — one for each role:
-
-| Portal Card | Role | Use Case |
+| Account | Email | Portal |
 |---|---|---|
-| 🏫 Institution Portal | College Registrar | Upload student data, track compliance |
-| 🏛️ AICTE National Portal | AICTE Maker / Checker | View national stats, handle violations |
-| 🔍 Verifier Portal | Employer (e.g. TCS) | Request & verify student credentials |
-| 🎓 Student Consent Centre | Student | Approve/revoke data sharing |
-| 🌐 Public QR Verifier | Anyone | Verify a student credential anonymously |
+| Institution registrar (COEP Pune) | registrar@coep.ac.in | Institution |
+| AICTE officer (maker) | aicte.maker@gov.in | AICTE |
+| AICTE senior officer (checker) | aicte.checker@gov.in | AICTE |
+| Verifier (TCS) | verifier@tcs.com | Verifier |
+| Student (Priya Nair) | priya.nair@student.aicte.gov.in | Student |
 
 ---
 
-### Step 2: Login — Pick Any Role
+## A. Public pages (no sign-in)
 
-Click any portal card → Login screen opens → **Use either method:**
+| # | Steps | Expected result | Result |
+|---|---|---|---|
+| A1 | Open the home page. | Heading “One verified record for every student…”, a **Check a credential** box, four “Who uses it” cards, and the six-step “How a record moves” list. A “Prototype — synthetic data only” notice is in the top bar. | |
+| A2 | In **Check a credential**, click the example `demo-priya-tcs-2026`. | Green **VALID** banner showing institution, programme, academic year, enrolment status, credential ID and “Signed by AICTE”. | |
+| A3 | On the same page, look for personal data. | No APAAR number, date of birth or phone/email of the student anywhere. | |
+| A4 | Open `/verify/demo-priya-hdfc-2025`. | Red **REVOKED** banner and the credential ID only. | |
+| A5 | Open `/verify/anything-random`. | Grey **NOT VALID** banner with a neutral message that does not say why. | |
+| A6 | Click **Check again** on any result. | “Last checked” time updates. | |
+| A7 | Open `/institution` while signed out. | You are sent to the sign-in page. After signing in as the registrar you land back on `/institution`. | |
+| A8 | Shrink the browser to phone width (about 390 px). | Layout stacks into one column, the menu becomes a ☰ button, nothing scrolls sideways. | |
 
-#### Method A: 1-Click Instant Demo Login ⚡ (Recommended)
-Click the **"1-Click Instant Demo Login"** button. Instantly logs you in without typing anything.
+## B. Sign-in and account activation
 
-#### Method B: Email + Password Login
-Auto-filled credentials per role:
+| # | Steps | Expected result | Result |
+|---|---|---|---|
+| B1 | **Sign in** → **Institution** tab. Enter `1-1049281` and a wrong password → **Continue**. | Red message “The ID or password is incorrect.” | |
+| B2 | Enter the right password `Aicte@2026!` → **Continue**. | One-time-code step appears. | |
+| B3 | Enter any 6 digits → **Sign in**. | Institution dashboard for COEP Technological University opens. Your name and role show at the top right. | |
+| B4 | **Sign out**. On the **Institution** tab, enter `verifier@tcs.com` / `Aicte@2026!` → **Continue**. | Message: “This account belongs to the Verifier organisation portal. Use that tab to sign in.” | |
+| B5 | Go to **Activate an institution account** (link on the sign-in page). Permanent ID `1-9900112`, email `registrar@mitjaipur.edu.in` → **Send code**. Code `123456`, a new password (8+ characters) twice → **Activate account**. | You are signed in to the Institution portal for Malaviya Institute of Technology. Doing it again shows “already activated”. | |
+| B6 | While signed in as the student, open `/aicte`. | “You do not have access to this page” with a link to your own portal. | |
 
-| Role | Email | Password |
-|---|---|---|
-| Institution Registrar | `registrar@coep.ac.in` | `coep@2026` |
-| AICTE Maker | `aicte.maker@gov.in` | `aicte@2026` |
-| AICTE Checker | `aicte.checker@gov.in` | `aicte@2026` |
-| Verifier (TCS) | `verifier@tcs.com` | `tcs@2026` |
-| Student | `priya.nair@student.aicte.gov.in` | `student@2026` |
+## C. Institution portal — sign in as the registrar (COEP)
 
-> 💡 **Session Persists**: After login, refresh the page — you stay logged in automatically (JWT stored in `localStorage`).
+| # | Steps | Expected result | Result |
+|---|---|---|---|
+| C1 | **Dashboard**. | Six figure tiles (enrolled, approved intake, supernumerary, APAAR verified %, without verified APAAR, on hold), intake bars per programme, **Needs your attention**, **Latest upload**, deadline banner and an “As of” time. | |
+| C2 | Click **Refresh** on the dashboard. | “As of” time updates. | |
+| C3 | **Upload data** → **Download template (CSV)**. | A CSV with the column headers and two example rows downloads. | |
+| C4 | Open **Column guide**. | Table of every column with what to enter and an example. | |
+| C5 | Choose a `.txt` or `.pdf` file. | “Only .csv and .xlsx files are accepted.” | |
+| C6 | Upload a CSV that has an `aadhaar` column (any content). | Refused: “The file contains an Aadhaar column…”. | |
+| C7 | Click **Use the sample file**. | Report shows 15 rows with counts for accepted / with warning / on hold / rejected, and **What the checks found** lists rules including V-ID-01, V-ID-02, V-ID-03, V-DUP-01, V-DUP-02, V-INT-01 and V-INT-03. | |
+| C8 | Read the V-DUP-02 issue. | It says the student is active at *another institution* but does **not** name that institution. | |
+| C9 | Click **Download error file**. | CSV of the row-level issues downloads. | |
+| C10 | Look at **Commit batch** before ticking the declaration. | Button is disabled. | |
+| C11 | Tick the nodal-officer declaration → **Commit batch**. | “Batch committed to the ledger” with recorded and held counts, plus a yellow notice “Conflict, case DUP-2026-xxxx”. **Write down the case number.** | |
+| C12 | **Uploads & reports**. | The sample file is listed as **Committed** with its counts. Click it: the batch page shows issues grouped by rule and a filterable row-level table. | |
+| C13 | On the batch page, filter **Row decision** = Reject. | Only rejected rows remain; the count in the heading changes. | |
+| C14 | **Student registry**. Search `Ishita`. | One row: Ishita Kulkarni, APAAR shown as `••••••••5431`. | |
+| C15 | Click the row. | Side panel with all fields, identity status explanation, issues and history. | |
+| C16 | **Mark withdrawn** → type a reason (5+ characters) → **Save change**. | Record shows version 2 and status Withdrawn; history shows the change with your reason. | |
+| C17 | Press Esc. Filter **Enrolment** = On hold. | Only held records (e.g. missing APAAR) appear. Click **Clear filters** to reset. | |
+| C18 | **Add a student**: name `Kavya Menon`, date of birth any 2006 date, APAAR `778899001122`, student ID `COEP-ME-2026-777`, programme Mechanical Engineering → **Check and add**. | “Kavya Menon was added” with the masked APAAR. | |
+| C19 | **Add a student** again with APAAR `123`. | Field shows “Must be 12 digits.” and the button stays disabled. | |
+| C20 | Click **Export CSV**. | Registry CSV downloads with masked APAAR numbers only. | |
+| C21 | **Intake compliance**. | Table of programmes with meters for within-intake, supernumerary and lateral seats, and a table explaining how each seat category is counted (marked illustrative). | |
+| C22 | Back to **Dashboard**. | **Needs your attention** now includes the conflict case from C11 (case number only). | |
 
----
+## D. AICTE portal — maker and checker
 
-## 🧪 Backend Route Testing — Step by Step
+Sign in as **AICTE officer (maker)**.
 
----
+| # | Steps | Expected result | Result |
+|---|---|---|---|
+| D1 | **National overview**. | Eight figure tiles, **By state** bars, **Reporting progress**, **Needs attention** (cases and high-risk institutions), “As of” time. | |
+| D2 | Change **Show** above the state bars to “Institutions reporting (%)”. | Bars and numbers change to percentages. | |
+| D3 | Click **National summary (CSV)**. | CSV downloads with one row per institution programme. | |
+| D4 | **Cases**. Switch between Open / Awaiting approval / Closed / All. | Counts in the tabs match the rows shown. The case from C11 is in **Open**. | |
+| D5 | Open that case. | **Evidence** shows both enrolments side by side (both institution names visible to AICTE), APAAR masked, plus Activity and the notice text sent to institutions. | |
+| D6 | Choose **Confirm the violation**, type a reason of 10+ characters → **Submit for approval**. | Status becomes **Pending approval** and the panel says “You proposed this outcome… a different senior officer must approve it.” | |
+| D7 | **Risk ranking**. | Ranked table with score bars, levels and main reasons. Apex Institute is near the top. A yellow notice says it is an indicator, not a finding. | |
+| D8 | Click **Why?** on Apex. | Dialog listing four measures with values, the unusual ones marked. | |
+| D9 | **Institutions**. Search `Malaviya` or filter by state. | List narrows. | |
+| D10 | **Register an institution**: Permanent ID `1-7777001`, name, state, district, nodal officer and email, one programme with intake 60 → **Register**. | Green confirmation; the new institution appears as “Not activated”. | |
+| D11 | Open **Apex Institute** → **View student records** → enter a note → **Open records**. | Student table appears with APAAR masked and no names, and “This access is logged”. | |
+| D12 | **Audit ledger**. | Green **Chain intact** card with the number of entries checked, last anchor details, and the entries table. Click a row to see its detail and hashes. | |
+| D13 | Click **Tamper with entry**, then **Verify now**. | Red **Tampering detected** card naming the entry number; that row is highlighted. **Anchor to WORM storage** is disabled. | |
+| D14 | Click **Undo the tampering**. | Card returns to **Chain intact**. | |
+| D15 | Click **Anchor to WORM storage**. | Green notice “Anchored N new entries” with a Merkle root. | |
+| D16 | In the entries table, set **Action** = Student records viewed. | The access from D11 is listed with its purpose. | |
 
-### ✅ Route Test 1: Health Check
+Sign out and sign in as **AICTE senior officer (checker)**.
 
-**How to test directly (no login needed):**  
-Open this URL in browser → should return JSON:
+| # | Steps | Expected result | Result |
+|---|---|---|---|
+| D17 | **Cases** → **Awaiting approval** → open the case from D6. | Proposal, the maker’s name and reason, and a note box with **Approve** / **Return to maker**. | |
+| D18 | Type a note → **Approve**. | Outcome panel shows “Violation confirmed”, proposed by the maker and approved by you. The case moves to **Closed**. | |
+| D19 | Open case `DUP-2026-0042`, propose **Mark as false positive** yourself, then try to approve it. | The approval panel says you cannot approve your own proposal. | |
 
-```
-GET https://sih.monu14.me/api/v1/health
-```
+## E. Verifier portal — sign in as TCS
 
-**Expected Response:**
-```json
-{ "status": "healthy", "service": "AICTE APAAR National Ledger & Verification Platform" }
-```
+| # | Steps | Expected result | Result |
+|---|---|---|---|
+| E1 | **Verification requests** page. | New request form, tracker table, quota meter and the list of approved purposes. | |
+| E2 | Type APAAR `12345`. | “An APAAR ID has exactly 12 digits.” and **Send request** stays disabled. | |
+| E3 | APAAR `663910284422`, purpose “Higher education admission” → **Send request**. | “The student has already consented. A signed result is ready.” → **View result**. | |
+| E4 | On the result page. | Green **VALID** banner, institution / programme / year / status, “Signed by AICTE”, two QR codes, and a purpose-use notice. | |
+| E5 | Click **Download PDF**. | A certificate PDF downloads with masked APAAR, student ID and a QR code. | |
+| E6 | Open **Machine-readable credential (JWS)**. | The signed token is shown with a **Copy** button. | |
+| E7 | Back to the list. Request APAAR `123412341234` (nobody). | Neutral message “Request sent. If the student consents…” — it does **not** say the student doesn’t exist. Tracker shows **Awaiting consent** with a **Withdraw** button. | |
+| E8 | Click **Withdraw** on that request. | Status becomes **Withdrawn**. | |
+| E9 | Copy the result link from E4’s QR panel (“Link: …/verify/…”) and keep it for section G. If it starts with `http://localhost:5173`, replace that part with the website address. | | |
 
-**Status:** ✅ Pass if you see JSON | ❌ Fail if browser shows connection error
+## F. Student portal — sign in as Priya Nair
 
----
+| # | Steps | Expected result | Result |
+|---|---|---|---|
+| F1 | **My record**. | Name, masked APAAR, a yellow banner about pending requests, and an enrolment card for COEP with identity status explained. | |
+| F2 | **Consent** → **Waiting for your answer**. | Request from Larsen & Toubro with purpose and exactly what would be shared. | |
+| F3 | Choose a duration → **Approve**. | Green notice “Larsen & Toubro Ltd can now see your record until …”; it moves to **Active**. | |
+| F4 | In **Active**, click **Withdraw** for Tata Consultancy Services → **Withdraw consent**. | Confirmation dialog first, then “Consent for Tata Consultancy Services is withdrawn…”. TCS moves to **Past** as Revoked. | |
+| F5 | Open the **Who verified me** tab. | Every verifier request so far, with organisation, purpose, time and result. | |
+| F6 | **Share my record**. | Form plus a preview of exactly what the recipient will see (no name, date of birth or APAAR). | |
+| F7 | Enter a purpose → **Create link and QR**. | QR code and link appear, with **Copy** and **Open as the recipient sees it** (opens a VALID page). | |
+| F8 | In **Earlier shares**, click **Revoke** on that share, then **Open**. | The share shows **Revoked**; the public page shows **REVOKED**. | |
 
-### ✅ Route Test 2: Auth — 1-Click Persona Login
+## G. Revocation reaches the verifier
 
-**Frontend Steps:**
-1. Go to https://agastya-chi.vercel.app
-2. Click **"Institution Portal"**
-3. Click **"1-Click Instant Demo Login"**
+| # | Steps | Expected result | Result |
+|---|---|---|---|
+| G1 | Open the link saved in E9 (no sign-in needed). | Red **REVOKED** — because the student withdrew TCS’s consent in F4. | |
+| G2 | Sign in as the verifier, open that request → **Re-check status**. | Banner shows **REVOKED** and **Download PDF** is disabled. | |
+| G3 | As the verifier, request APAAR `663910284422` again. | Now it says **Awaiting consent** (consent was withdrawn, so the student must approve again). | |
 
-**Backend Route Hit:**
-```
-POST https://sih.monu14.me/api/v1/auth/quick-login/INSTITUTION_REGISTRAR
-```
+## H. Security and data-protection checks
 
-**What to Check:**
-- Open `F12` → **Network tab** → filter by `XHR/Fetch`
-- Find the `quick-login` request → Status should be `200 OK`
-- Response body should contain `access_token` (JWT string)
-- Frontend should **automatically redirect** to Institution Dashboard
-
-**✅ Pass:** Redirected to dashboard with green "Live data from sih.monu14.me" banner  
-**❌ Fail:** Red banner "Backend error" or stays on login page
-
----
-
-### ✅ Route Test 3: Auth — Email/Password Login
-
-**Frontend Steps:**
-1. Click any portal card → login screen opens
-2. Select **AICTE Maker** tab
-3. Credentials auto-fill → click **"Sign In"**
-
-**Backend Route Hit:**
-```
-POST https://sih.monu14.me/api/v1/auth/login
-Body: { "email": "aicte.maker@gov.in", "password": "aicte@2026" }
-```
-
-**✅ Pass:** Redirected to AICTE Portal  
-**❌ Fail:** "Invalid credentials" error message
-
----
-
-### ✅ Route Test 4: Auth — Session Restore (Me Endpoint)
-
-**Frontend Steps:**
-1. Login with any role
-2. Press `F5` (refresh the page)
-
-**Backend Route Hit:**
-```
-GET https://sih.monu14.me/api/v1/auth/me
-Headers: Authorization: Bearer <saved_token>
-```
-
-**✅ Pass:** Page loads directly to the portal (not login screen)  
-**❌ Fail:** Redirected back to login page after refresh
-
----
-
-### ✅ Route Test 5: Institution Dashboard — Live KPIs
-
-**Frontend Steps:**
-1. Login as **Institution Registrar**
-2. Wait for dashboard to load
-
-**Backend Route Hit:**
-```
-GET https://sih.monu14.me/api/v1/institutions/inst_01/dashboard
-```
-
-**What to Check:**
-- Banner at top: `✅ Live data from sih.monu14.me · <date>`
-- 4 metric cards show real numbers (Approved Seats, Enrolled, Compliance Score, Discrepancies)
-
-**✅ Pass:** Green banner + populated metric cards  
-**❌ Fail:** Red banner "Backend error — showing mock data"
-
----
-
-### ✅ Route Test 6: Institution — Fetch Students List
-
-**Frontend Steps:**
-1. Login as Institution Registrar
-2. Click **"Student Directory"** tab
-
-**Backend Route Hit:**
-```
-GET https://sih.monu14.me/api/v1/institutions/inst_01/students
-```
-
-**What to Check:**
-- Table shows student rows with APAAR ID, Name, Course, Status
-- Search and filter work
-
-**✅ Pass:** Table populated with student data  
-**❌ Fail:** Empty table or error message
+| # | Steps | Expected result | Result |
+|---|---|---|---|
+| H1 | Sign in as the registrar and open `/aicte/cases` in the address bar. | “You do not have access to this page.” | |
+| H2 | As any user, open https://sih.monu14.me/api/v1/aicte/dashboard directly in the browser (no token). | `{"detail":"Authentication required. Please sign in."}` | |
+| H3 | Look through every page and download. | No Aadhaar numbers anywhere; APAAR always shown as `••••••••1234` except where you type it. | |
+| H4 | Sign out, then press the browser Back button. | Portal pages send you to sign-in instead of showing data. | |
 
 ---
 
-### ✅ Route Test 7: Institution — Demo CSV Upload & Validation
+## Quick API check (optional, for developers)
 
-**Frontend Steps:**
-1. Login as Institution Registrar
-2. Click **"Batch Upload"** tab
-3. Notice `🔴 LIVE` badge in upload zone
-4. Click **"Demo Batch Upload"** button
+Open https://sih.monu14.me/docs, click **Authorize**, and use a token from `POST /api/v1/auth/quick-login/{persona_id}`
+(persona IDs: `INSTITUTION_REGISTRAR`, `AICTE_MAKER`, `AICTE_CHECKER`, `VERIFIER`, `STUDENT`). Every endpoint can be tried there.
 
-**Backend Route Hit:**
-```
-POST https://sih.monu14.me/api/v1/institutions/inst_01/upload-demo
-```
+## Known limits of the prototype
 
-**What to Check:**
-- Blue banner appears: `📤 Batch #XXXXXXXX — READY_TO_COMMIT`
-- Summary row counts: Total Processed, Valid, Violations found
-- **"✅ Commit to Ledger"** button appears
+- The APAAR/ABC registry, DigiLocker, Parichay and Meri Pehchaan are simulated. Test APAAR IDs ending in **9** return a registry mismatch and those ending in **0** return “not found”.
+- The one-time code at sign-in accepts any 6 digits; the activation code is `123456`.
+- Uploading the sample file a second time rejects most rows as “already registered” — that is correct behaviour.
+- If QR codes or PDFs point to `localhost`, the backend’s `PUBLIC_VERIFY_BASE_URL` setting has not been set to the website address yet.
 
-**✅ Pass:** Blue upload result banner appears with batch summary  
-**❌ Fail:** Error message or no response banner
+## Reporting a problem
 
----
-
-### ✅ Route Test 8: Institution — Commit Batch to Ledger
-
-**Frontend Steps:**
-1. After completing Route Test 7
-2. Click **"✅ Commit to Ledger"** button
-
-**Backend Route Hit:**
-```
-POST https://sih.monu14.me/api/v1/institutions/inst_01/batches/{batch_id}/commit
-```
-
-**What to Check:**
-- Banner disappears (batch committed)
-- Dashboard refreshes with updated metrics
-- No error toast
-
-**✅ Pass:** Dashboard refreshes and banner clears  
-**❌ Fail:** API error or "Commit failed" message
-
----
-
-### ✅ Route Test 9: Institution — Manual Single Student Enrolment
-
-**Frontend Steps:**
-1. Login as Institution Registrar
-2. Click **"Manual Enrolment"** tab
-3. Fill the form:
-   - **APAAR ID:** `111222333444`
-   - **Name:** `Test Student`
-   - **DOB:** `2002-06-15`
-   - **Course:** `Computer Science and Engineering`
-4. Click **"Enroll Student"**
-
-**Backend Route Hit:**
-```
-POST https://sih.monu14.me/api/v1/institutions/inst_01/students
-```
-
-**✅ Pass:** Green success alert "Student enrolled successfully!"  
-**❌ Fail:** Red error or no response
-
----
-
-### ✅ Route Test 10: AICTE — National Dashboard
-
-**Frontend Steps:**
-1. Login as **AICTE Maker**
-2. Wait for dashboard to load
-
-**Backend Route Hit:**
-```
-GET https://sih.monu14.me/api/v1/aicte/dashboard
-```
-
-**What to Check:**
-- National stats visible: Total Institutions, Approved Intake, Over-Admission cases
-- Charts or summary cards populated with real data
-
-**✅ Pass:** Dashboard shows national aggregate data  
-**❌ Fail:** Empty or mock data only
-
----
-
-### ✅ Route Test 11: AICTE — Violations List
-
-**Frontend Steps:**
-1. Login as AICTE Maker
-2. Click **"Violations & Discrepancies"** tab
-
-**Backend Route Hit:**
-```
-GET https://sih.monu14.me/api/v1/aicte/violations
-```
-
-**✅ Pass:** List of institutions violating AICTE caps displayed  
-**❌ Fail:** Empty list or error
-
----
-
-### ✅ Route Test 12: AICTE Maker — Propose Action on Violation
-
-**Frontend Steps:**
-1. Login as **AICTE Maker**
-2. Go to **"Violations"** tab
-3. Find any violation entry
-4. Click **"Propose Action"** button
-
-**Backend Route Hit:**
-```
-POST https://sih.monu14.me/api/v1/aicte/violations/{id}/propose
-```
-
-**✅ Pass:** Violation status changes to "Pending Checker Approval"  
-**❌ Fail:** Error toast or no status change
-
----
-
-### ✅ Route Test 13: AICTE Checker — Approve Action
-
-**Frontend Steps:**
-1. **Logout** → Login as **AICTE Checker** (`aicte.checker@gov.in`)
-2. Go to **"Violations"** tab
-3. Find the pending violation from Route Test 12
-4. Click **"Approve"** or **"Reject"**
-
-**Backend Route Hit:**
-```
-POST https://sih.monu14.me/api/v1/aicte/violations/{id}/approve
-```
-
-**✅ Pass:** Status updates to "Approved" or "Rejected" — Two-person integrity workflow complete!  
-**❌ Fail:** Error or status unchanged
-
----
-
-### ✅ Route Test 14: AICTE — Risk Ranking
-
-**Frontend Steps:**
-1. Login as AICTE Maker or Checker
-2. Click **"Risk Ranking"** tab
-
-**Backend Route Hit:**
-```
-GET https://sih.monu14.me/api/v1/aicte/risk-ranking
-```
-
-**✅ Pass:** Institutions sorted into High / Medium / Compliant risk tiers  
-**❌ Fail:** Empty list
-
----
-
-### ✅ Route Test 15: AICTE — Audit Ledger (SHA-256 Blockchain)
-
-**Frontend Steps:**
-1. Login as AICTE Maker/Checker
-2. Click **"Audit Ledger"** tab
-
-**Backend Route Hit:**
-```
-GET https://sih.monu14.me/api/v1/aicte/audit
-```
-
-**What to Check:**
-- Table of audit blocks with:
-  - Block Index
-  - Timestamp
-  - SHA-256 Block Hash
-  - Previous Block Hash (chain linking)
-
-**✅ Pass:** Cryptographic block chain table renders  
-**❌ Fail:** Empty or error
-
----
-
-### ✅ Route Test 16: AICTE — Verify Chain Integrity
-
-**Frontend Steps:**
-1. In Audit Ledger tab
-2. Click **"Verify Chain Integrity"** button
-
-**Backend Route Hit:**
-```
-POST https://sih.monu14.me/api/v1/aicte/audit/verify-chain
-```
-
-**Expected Response:**
-```json
-{ "valid": true, "tampered": false, "blocks_checked": 12 }
-```
-
-**✅ Pass:** Green confirmation "Chain integrity verified — No tampering detected"  
-**❌ Fail:** Error or "Tampered" flag
-
----
-
-### ✅ Route Test 17: AICTE — Simulate Tamper Attack
-
-**Frontend Steps:**
-1. In Audit Ledger tab
-2. Click **"Simulate Tamper"** button
-
-**Backend Route Hit:**
-```
-POST https://sih.monu14.me/api/v1/aicte/audit/simulate-tamper
-```
-
-**What to Check:**
-- System detects the tampered block
-- Shows which block hash is now broken
-- Demonstrates tamper-proof capability
-
-**✅ Pass:** Tamper detection alert showing corrupted block number  
-**❌ Fail:** No detection or error
-
----
-
-### ✅ Route Test 18: AICTE — Anchor to WORM Storage
-
-**Frontend Steps:**
-1. In Audit Ledger tab
-2. Click **"Anchor to WORM"** button
-
-**Backend Route Hit:**
-```
-POST https://sih.monu14.me/api/v1/aicte/audit/anchor
-```
-
-**✅ Pass:** Confirmation message "Audit log anchored to immutable WORM storage"  
-**❌ Fail:** Error or no response
-
----
-
-### ✅ Route Test 19: Verifier — Submit Verification Request
-
-**Frontend Steps:**
-1. Login as **Verifier (TCS)** (`verifier@tcs.com`)
-2. Enter in the form:
-   - **Candidate APAAR ID:** `892019482019`
-   - **Purpose:** `Pre-employment verification`
-3. Click **"Request Verification"**
-
-**Backend Route Hit:**
-```
-POST https://sih.monu14.me/api/v1/verifier/requests
-```
-
-**✅ Pass:** Request created with status `PENDING_STUDENT_CONSENT` or `APPROVED`  
-**❌ Fail:** Error or no confirmation
-
----
-
-### ✅ Route Test 20: Verifier — Tracker Roster
-
-**Frontend Steps:**
-1. Login as Verifier
-2. Click **"Tracker"** tab
-
-**Backend Route Hit:**
-```
-GET https://sih.monu14.me/api/v1/verifier/tracker
-```
-
-**✅ Pass:** Table shows all verification requests with live statuses  
-**❌ Fail:** Empty or error
-
----
-
-### ✅ Route Test 21: Student — Consent Management
-
-**Frontend Steps:**
-1. Login as **Student** (`priya.nair@student.aicte.gov.in`)
-2. Dashboard loads with pending consent requests (e.g. TCS verification)
-
-**Backend Route Hit:**
-```
-GET https://sih.monu14.me/api/v1/student/priya.nair/consents
-```
-
-**What to Check:**
-- List of pending consent requests from employers
-- Each request shows: Requester, Purpose, Date
-
-**✅ Pass:** Consent cards visible  
-**❌ Fail:** Empty page or error
-
----
-
-### ✅ Route Test 22: Student — Approve / Revoke Consent
-
-**Frontend Steps:**
-1. Login as Student
-2. Click **"Approve"** on any pending consent request
-
-**Backend Route Hit:**
-```
-POST https://sih.monu14.me/api/v1/student/consent/{consent_id}/action
-```
-
-**✅ Pass:** Card updates to "Approved" status instantly  
-**❌ Fail:** Error or no status change
-
----
-
-### ✅ Route Test 23: Public QR Verifier (No Login Required)
-
-**Frontend Steps:**
-1. On any page, click **"Public QR Verifier"** in the navigation bar
-2. Click the quick test button **"892019482019 (Valid)"**
-3. Click **"Verify Validity"**
-
-**Backend Route Hit:**
-```
-GET https://sih.monu14.me/api/v1/verify/public/892019482019
-```
-
-**What to Check:**
-- Emerald green card: **VALID CREDENTIAL**
-- Shows Institution Name, Program, Academic Year
-- No personal Aadhaar or private data shown (zero-knowledge)
-
-**✅ Pass:** Valid credential card with institution details  
-**❌ Fail:** "Invalid / Unrecognized Credential" red card (when it should be valid)
-
-**Also test invalid token:**
-- Click **"999999999999 (Invalid)"** → should show red "Invalid Credential" card
-
----
-
-### ✅ Route Test 24: CSV Reports Download
-
-Open these directly in browser (no login needed):
-
-| Report | Test URL | Expected |
-|---|---|---|
-| Admission Template | https://sih.monu14.me/api/v1/reports/admission-template.csv | CSV downloads |
-| National Summary | https://sih.monu14.me/api/v1/reports/national-summary.csv | CSV downloads |
-
-**✅ Pass:** Browser prompts download of `.csv` file  
-**❌ Fail:** 404 or access denied
-
----
-
-## ⚡ 1-Minute Full Smoke Test (Browser Console)
-
-Open https://agastya-chi.vercel.app → Press `F12` → **Console** tab → Paste & Enter:
-
-```javascript
-(async () => {
-  const B = "https://sih.monu14.me/api/v1";
-  const log = (label, ok, extra = "") => console.log(`${ok ? "✅" : "❌"} ${label}`, extra);
-
-  // 1. Health Check
-  try {
-    const r = await fetch(`${B}/health`);
-    log("Health Check", r.ok, await r.json());
-  } catch(e) { log("Health Check", false, e.message); }
-
-  // 2. Auth Quick Login
-  let token = "";
-  try {
-    const r = await fetch(`${B}/auth/quick-login/INSTITUTION_REGISTRAR`, { method: "POST" });
-    const d = await r.json();
-    token = d.access_token;
-    log("Auth Quick-Login", r.ok && !!token, `Role: ${d.user?.role}`);
-  } catch(e) { log("Auth Quick-Login", false, e.message); }
-
-  const h = { "Authorization": `Bearer ${token}` };
-
-  // 3. Institution Dashboard
-  try {
-    const r = await fetch(`${B}/institutions/inst_01/dashboard`, { headers: h });
-    log("Institution Dashboard", r.ok, r.status);
-  } catch(e) { log("Institution Dashboard", false, e.message); }
-
-  // 4. Institution Students
-  try {
-    const r = await fetch(`${B}/institutions/inst_01/students`, { headers: h });
-    const d = await r.json();
-    log("Institution Students", r.ok, `Count: ${d.students?.length ?? 0}`);
-  } catch(e) { log("Institution Students", false, e.message); }
-
-  // 5. AICTE Dashboard
-  try {
-    const r = await fetch(`${B}/aicte/dashboard`, { headers: h });
-    log("AICTE Dashboard", r.ok, r.status);
-  } catch(e) { log("AICTE Dashboard", false, e.message); }
-
-  // 6. Violations
-  try {
-    const r = await fetch(`${B}/aicte/violations`, { headers: h });
-    log("AICTE Violations", r.ok, r.status);
-  } catch(e) { log("AICTE Violations", false, e.message); }
-
-  // 7. Audit Ledger
-  try {
-    const r = await fetch(`${B}/aicte/audit`, { headers: h });
-    log("Audit Ledger", r.ok, r.status);
-  } catch(e) { log("Audit Ledger", false, e.message); }
-
-  // 8. Public Verify (No Auth)
-  try {
-    const r = await fetch(`${B}/verify/public/892019482019`);
-    log("Public QR Verify", r.ok, r.status);
-  } catch(e) { log("Public QR Verify", false, e.message); }
-
-  console.log("\n📊 Smoke test complete. ✅ = working, ❌ = broken");
-})();
-```
-
----
-
-## 📋 Final Verification Checklist
-
-Mark each item after testing:
-
-**Auth:**
-- [ ] `POST /auth/quick-login/{role}` → 200 OK + JWT token
-- [ ] `POST /auth/login` → 200 OK + JWT token  
-- [ ] `GET /auth/me` → 200 OK after page refresh
-
-**Institution Portal:**
-- [ ] `GET /institutions/inst_01/dashboard` → Live banner visible
-- [ ] `GET /institutions/inst_01/students` → Students table populated
-- [ ] `POST /institutions/inst_01/upload-demo` → Batch banner with summary
-- [ ] `POST /institutions/inst_01/batches/{id}/commit` → Dashboard refresh
-- [ ] `POST /institutions/inst_01/students` → Enrolment success
-
-**AICTE Portal:**
-- [ ] `GET /aicte/dashboard` → National stats loaded
-- [ ] `GET /aicte/violations` → Violation list populated
-- [ ] `POST /aicte/violations/{id}/propose` → Status changes (Maker)
-- [ ] `POST /aicte/violations/{id}/approve` → Approved (Checker)
-- [ ] `GET /aicte/risk-ranking` → Institutions ranked
-- [ ] `GET /aicte/audit` → Block chain table visible
-- [ ] `POST /aicte/audit/verify-chain` → `valid: true`
-- [ ] `POST /aicte/audit/simulate-tamper` → Tamper detected
-- [ ] `POST /aicte/audit/anchor` → WORM anchored
-
-**Verifier Portal:**
-- [ ] `POST /verifier/requests` → Verification request created
-- [ ] `GET /verifier/tracker` → Request tracker loaded
-
-**Student Portal:**
-- [ ] `GET /student/{token}/consents` → Consent cards visible
-- [ ] `POST /student/consent/{id}/action` → Status updated
-
-**Public:**
-- [ ] `GET /verify/public/892019482019` → Valid credential card (green)
-- [ ] `GET /verify/public/999999999999` → Invalid credential card (red)
-- [ ] `GET /reports/admission-template.csv` → CSV file downloads
-
----
-
-## 🔥 Common Issues & Quick Fixes
-
-| Problem | Cause | Fix |
-|---|---|---|
-| Red banner "Backend error" | Backend API unreachable or CORS | Check https://sih.monu14.me/api/v1/health — if down, backend is offline |
-| Stays on login page after 1-Click | `VITE_API_BASE_URL` not set on Vercel | Add env var `VITE_API_BASE_URL=https://sih.monu14.me` in Vercel dashboard |
-| 401 Unauthorized on routes | JWT expired or not attached | Logout and login again to get fresh token |
-| Session lost after refresh | localStorage cleared or private mode | Use normal browser window, not incognito |
-| Students table empty | Backend data not seeded | Backend developer needs to run seed script |
-| CORS error in Network tab | Backend not allowing Vercel domain | Backend must add `https://agastya-chi.vercel.app` to `CORS_ORIGINS` |
+Note the test number, the account you were signed in as, the page address, what you expected and what happened, and a screenshot.
