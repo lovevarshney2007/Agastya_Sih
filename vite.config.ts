@@ -2,37 +2,39 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-// https://vite.dev/config/
+// During development /api is forwarded to the FastAPI backend, so no CORS setup is needed locally.
+// Override the target with VITE_DEV_API_TARGET if the backend runs elsewhere.
+const apiTarget = process.env.VITE_DEV_API_TARGET || 'http://localhost:8000'
+
 export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(),
-  ],
+  plugins: [react(), tailwindcss()],
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': { target: apiTarget, changeOrigin: true },
+      '/docs': { target: apiTarget, changeOrigin: true },
+      '/openapi.json': { target: apiTarget, changeOrigin: true },
+    },
+  },
+  preview: {
+    port: 4173,
+    proxy: {
+      '/api': { target: apiTarget, changeOrigin: true },
+      '/docs': { target: apiTarget, changeOrigin: true },
+      '/openapi.json': { target: apiTarget, changeOrigin: true },
+    },
+  },
   build: {
-    target: 'esnext',
-    sourcemap: false, // Skip source maps in production to reduce memory usage
+    target: 'es2022',
+    sourcemap: false,
     rollupOptions: {
       output: {
-        // Manual chunks reduce peak memory by splitting large vendor libraries
         manualChunks(id) {
-          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
-            return 'vendor-react';
-          }
-          if (id.includes('node_modules/lucide-react')) {
-            return 'vendor-icons';
-          }
-          if (id.includes('node_modules/jspdf')) {
-            return 'vendor-pdf';
-          }
-          if (id.includes('node_modules/qrcode')) {
-            return 'vendor-qr';
-          }
-          if (id.includes('node_modules/canvas-confetti')) {
-            return 'vendor-canvas';
-          }
+          if (id.includes('node_modules/react')) return 'vendor-react'
+          if (id.includes('node_modules/lucide-react')) return 'vendor-icons'
+          if (id.includes('node_modules/qrcode')) return 'vendor-qr'
         },
       },
     },
-    chunkSizeWarningLimit: 1000, // 1MB chunks are acceptable for institutional app
   },
 })
