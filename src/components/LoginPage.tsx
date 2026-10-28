@@ -19,18 +19,23 @@ import {
 import { UserRole } from '../types';
 import { authApi, tokenStore, userStore } from '../api/client';
 
+import { Language } from '../data/translations';
+
 interface LoginPageProps {
   initialRole?: UserRole;
   onLoginSuccess: (role: UserRole, user?: object) => void;
   theme: 'dark' | 'light';
+  language?: Language;
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ 
   initialRole = 'INSTITUTION', 
   onLoginSuccess, 
-  theme 
+  theme,
+  language = 'EN',
 }) => {
   const isDark = theme === 'dark';
+  const isHi = language === 'HI';
 
   const [selectedRole, setSelectedRole] = useState<UserRole>(initialRole);
   // Default to INSTITUTION role demo credentials
@@ -169,8 +174,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         <div className="flex items-center space-x-2.5">
           <Lock className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" aria-hidden="true" />
           <div>
-            <strong className="block font-bold">Role-Based Access Control Enforced</strong>
-            <span>You must authenticate to access the requested portal. Session is audit-logged and scoped to your organization.</span>
+            <strong className="block font-bold">
+              {isHi ? 'भूमिका-आधारित अभिगम नियंत्रण (RBAC) अनिवार्य' : 'Role-Based Access Control Enforced'}
+            </strong>
+            <span>
+              {isHi 
+                ? 'अनुरोधित पोर्टल में प्रवेश हेतु प्रमाणीकरण आवश्यक है। प्रत्येक सत्र ऑडिट-लॉग किया जाता है।' 
+                : 'You must authenticate to access the requested portal. Session is audit-logged and scoped to your organization.'}
+            </span>
           </div>
         </div>
 
@@ -180,7 +191,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           className="shrink-0 px-4 py-2 bg-[#D97706] hover:bg-[#B45309] text-white font-bold rounded-xl shadow-sm transition-all cursor-pointer flex items-center space-x-1.5 whitespace-nowrap"
         >
           <Sparkles className="w-3.5 h-3.5" />
-          <span>1-Click Instant Demo Login</span>
+          <span>{isHi ? '1-क्लिक त्वरित डेमो लॉगिन' : '1-Click Instant Demo Login'}</span>
         </button>
       </div>
 
@@ -202,11 +213,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             >
               <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-blue-600 dark:text-blue-400'}`} />
               <span className="text-xs leading-tight">
-                {r === 'INSTITUTION' && 'College Admin'}
-                {r === 'AICTE_OFFICER' && 'AICTE Officer'}
-                {r === 'AICTE_SUPER_ADMIN' && 'Super-Admin'}
-                {r === 'VERIFIER' && 'Authorized Verifier'}
-                {r === 'STUDENT' && 'Student Passport'}
+                {r === 'INSTITUTION' && (isHi ? 'कॉलेज व्यवस्थापक' : 'College Admin')}
+                {r === 'AICTE_OFFICER' && (isHi ? 'एआईसीटीई अधिकारी' : 'AICTE Officer')}
+                {r === 'AICTE_SUPER_ADMIN' && (isHi ? 'सुपर एडमिन' : 'Super-Admin')}
+                {r === 'VERIFIER' && (isHi ? 'सत्यापनकर्ता' : 'Authorized Verifier')}
+                {r === 'STUDENT' && (isHi ? 'छात्र पासपोर्ट' : 'Student Passport')}
               </span>
             </button>
           );
@@ -244,7 +255,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               }}
               className="text-xs px-3 py-1.5 rounded-lg border font-mono font-semibold dark:bg-slate-800 bg-slate-100 dark:border-slate-700 border-slate-300 text-blue-700 dark:text-blue-400 hover:underline cursor-pointer"
             >
-              Auto-fill Demo Credentials
+              {isHi ? 'डेमो क्रेडेंशियल स्वतः भरें' : 'Auto-fill Demo Credentials'}
             </button>
           </div>
         </div>
@@ -358,10 +369,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             className="w-full py-3 rounded-xl font-bold text-xs sm:text-sm bg-blue-700 hover:bg-blue-800 text-white shadow-md shadow-blue-700/25 flex items-center justify-center space-x-2 cursor-pointer transition-all disabled:opacity-75"
           >
             {isSubmitting ? (
-              <span>Authenticating Session Token...</span>
+              <span>{isHi ? 'सत्र टोकन प्रमाणित किया जा रहा है...' : 'Authenticating Session Token...'}</span>
             ) : (
               <>
-                <span>Sign In & Open {activeConfig.title.split(' ')[0]} Console</span>
+                <span>{isHi ? 'लॉगिन करें व पोर्टल खोलें' : `Sign In & Open ${activeConfig.title.split(' ')[0]} Console`}</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}

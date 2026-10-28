@@ -499,10 +499,10 @@ export const AuthenticatedDashboardHome: React.FC<AuthenticatedDashboardHomeProp
               onChange={(e) => { setStatusFilter(e.target.value as any); setCurrentPage(1); }}
               className="px-3 py-2 rounded-xl text-xs font-semibold dark:bg-slate-950 bg-slate-50 border dark:border-slate-700 border-slate-300 dark:text-white text-slate-900 focus:outline-none"
             >
-              <option value="ALL">All Statuses</option>
-              <option value="Verified">Verified Only</option>
-              <option value="Pending">Pending Only</option>
-              <option value="Flagged">Flagged Only</option>
+              <option value="ALL">{isHi ? 'सभी स्थितियां' : 'All Statuses'}</option>
+              <option value="Verified">{isHi ? 'केवल सत्यापित' : 'Verified Only'}</option>
+              <option value="Pending">{isHi ? 'केवल प्रतीक्षारत' : 'Pending Only'}</option>
+              <option value="Flagged">{isHi ? 'केवल त्रुटि/उल्लंघन' : 'Flagged Only'}</option>
             </select>
 
             {!isInstitutionAdmin && (
@@ -511,7 +511,7 @@ export const AuthenticatedDashboardHome: React.FC<AuthenticatedDashboardHomeProp
                 onChange={(e) => { setSelectedInstFilter(e.target.value); setCurrentPage(1); }}
                 className="px-3 py-2 rounded-xl text-xs font-semibold dark:bg-slate-950 bg-slate-50 border dark:border-slate-700 border-slate-300 dark:text-white text-slate-900 focus:outline-none max-w-[180px] truncate"
               >
-                <option value="ALL">All Institutions</option>
+                <option value="ALL">{isHi ? 'सभी संस्थान' : 'All Institutions'}</option>
                 {institutions.map(inst => (
                   <option key={inst.id} value={inst.id}>{inst.name.split(' ')[0]}</option>
                 ))}
@@ -525,19 +525,19 @@ export const AuthenticatedDashboardHome: React.FC<AuthenticatedDashboardHomeProp
           <table className="w-full text-left text-xs">
             <thead className="dark:bg-slate-950 bg-slate-100/80 text-[10px] font-mono font-bold uppercase text-slate-500 border-b dark:border-slate-800 border-slate-200">
               <tr>
-                <th scope="col" className="px-4 py-3">Student Name</th>
-                <th scope="col" className="px-4 py-3">Masked APAAR ID</th>
-                <th scope="col" className="px-4 py-3">Institution & Program</th>
-                <th scope="col" className="px-4 py-3">Category</th>
-                <th scope="col" className="px-4 py-3">Status</th>
-                <th scope="col" className="px-4 py-3 text-right">Actions</th>
+                <th scope="col" className="px-4 py-3">{isHi ? 'छात्र का नाम' : 'Student Name'}</th>
+                <th scope="col" className="px-4 py-3">{isHi ? 'मास्क्ड अपार आईडी' : 'Masked APAAR ID'}</th>
+                <th scope="col" className="px-4 py-3">{isHi ? 'संस्थान व कार्यक्रम' : 'Institution & Program'}</th>
+                <th scope="col" className="px-4 py-3">{isHi ? 'श्रेणी' : 'Category'}</th>
+                <th scope="col" className="px-4 py-3">{isHi ? 'स्थिति' : 'Status'}</th>
+                <th scope="col" className="px-4 py-3 text-right">{isHi ? 'कार्रवाई' : 'Actions'}</th>
               </tr>
             </thead>
             <tbody className="divide-y dark:divide-slate-800 divide-slate-100 font-medium">
               {displayedRecords.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="text-center py-8 text-xs text-slate-400">
-                    No student records match the active search and filter criteria.
+                    {isHi ? 'सक्रिय खोज और फ़िल्टर मानदंडों से कोई छात्र रिकॉर्ड मेल नहीं खाता।' : 'No student records match the active search and filter criteria.'}
                   </td>
                 </tr>
               ) : (
@@ -577,7 +577,13 @@ export const AuthenticatedDashboardHome: React.FC<AuthenticatedDashboardHomeProp
                             ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
                             : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
                         }`}>
-                          <span>{s.verificationStatus}</span>
+                          <span>
+                            {s.verificationStatus === 'Verified' 
+                              ? (isHi ? 'सत्यापित' : 'Verified') 
+                              : s.verificationStatus === 'Pending' 
+                              ? (isHi ? 'प्रतीक्षारत' : 'Pending') 
+                              : (isHi ? 'त्रुटि/उल्लंघन' : 'Flagged')}
+                          </span>
                           {s.duplicateRisk !== 'NONE' && (
                             <span className="w-1.5 h-1.5 rounded-full bg-rose-500 ml-1" title="Duplicate risk detected"></span>
                           )}
@@ -593,7 +599,7 @@ export const AuthenticatedDashboardHome: React.FC<AuthenticatedDashboardHomeProp
                           className="px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/80 hover:bg-blue-100 text-blue-700 dark:text-blue-300 text-[11px] font-bold transition-colors cursor-pointer inline-flex items-center space-x-1"
                         >
                           <Eye className="w-3 h-3" />
-                          <span>Verify</span>
+                          <span>{isHi ? 'सत्यापित करें' : 'Verify'}</span>
                         </button>
                       </td>
                     </tr>
@@ -608,7 +614,7 @@ export const AuthenticatedDashboardHome: React.FC<AuthenticatedDashboardHomeProp
         {totalPages > 1 && (
           <div className="flex items-center justify-between pt-2">
             <span className="text-xs text-slate-500 font-mono">
-              Page {currentPage} of {totalPages}
+              {isHi ? `पृष्ठ ${currentPage} का ${totalPages}` : `Page ${currentPage} of ${totalPages}`}
             </span>
             <div className="flex items-center space-x-1">
               <button
@@ -616,14 +622,14 @@ export const AuthenticatedDashboardHome: React.FC<AuthenticatedDashboardHomeProp
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 className="px-2.5 py-1 rounded-lg border text-xs font-semibold disabled:opacity-40 cursor-pointer"
               >
-                Previous
+                {isHi ? 'पिछला' : 'Previous'}
               </button>
               <button
                 disabled={currentPage >= totalPages}
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 className="px-2.5 py-1 rounded-lg border text-xs font-semibold disabled:opacity-40 cursor-pointer"
               >
-                Next
+                {isHi ? 'अगला' : 'Next'}
               </button>
             </div>
           </div>

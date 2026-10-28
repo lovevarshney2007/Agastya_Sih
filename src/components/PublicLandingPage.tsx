@@ -103,42 +103,50 @@ export const PublicLandingPage: React.FC<PublicLandingPageProps> = ({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center divide-y md:divide-y-0 md:divide-x dark:divide-slate-800 divide-slate-100">
             <div className="pt-2 md:pt-0 flex flex-col items-center">
               <span className="text-xl sm:text-2xl font-black text-blue-700 dark:text-blue-400 font-mono">
-                12-Digit
+                {isHi ? '12-अंकीय' : '12-Digit'}
               </span>
               <span className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-1">
-                Standard APAAR ID Schema
+                {isHi ? 'मानक अपार प्रारूप' : 'Standard APAAR ID Schema'}
               </span>
-              <span className="text-[10px] text-slate-500">Universal Student Registry</span>
+              <span className="text-[10px] text-slate-500">
+                {isHi ? 'सार्वभौमिक छात्र पंजिका' : 'Universal Student Registry'}
+              </span>
             </div>
 
             <div className="pt-2 md:pt-0 flex flex-col items-center">
               <span className="text-xl sm:text-2xl font-black text-emerald-700 dark:text-emerald-400 font-mono">
-                Zero Leakage
+                {isHi ? 'शून्य रिसाव' : 'Zero Leakage'}
               </span>
               <span className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-1">
-                Aadhaar Privacy Assured
+                {isHi ? 'आधार गोपनीयता सुरक्षित' : 'Aadhaar Privacy Assured'}
               </span>
-              <span className="text-[10px] text-slate-500">DPDP Act 2023 Compliant</span>
+              <span className="text-[10px] text-slate-500">
+                {isHi ? 'DPDP अधिनियम 2023 अनुकूल' : 'DPDP Act 2023 Compliant'}
+              </span>
             </div>
 
             <div className="pt-2 md:pt-0 flex flex-col items-center">
               <span className="text-xl sm:text-2xl font-black text-amber-700 dark:text-amber-400 font-mono">
-                10% Cap
+                {isHi ? '10% सीमा' : '10% Cap'}
               </span>
               <span className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-1">
-                Supernumerary Quota Ceiling
+                {isHi ? 'अधिसंख्य कोटा सीमा' : 'Supernumerary Quota Ceiling'}
               </span>
-              <span className="text-[10px] text-slate-500">APH Regulatory Guardrails</span>
+              <span className="text-[10px] text-slate-500">
+                {isHi ? 'APH विनियामक सुरक्षा चक्र' : 'APH Regulatory Guardrails'}
+              </span>
             </div>
 
             <div className="pt-2 md:pt-0 flex flex-col items-center">
               <span className="text-xl sm:text-2xl font-black text-purple-700 dark:text-purple-400 font-mono">
-                Cryptographic
+                {isHi ? 'क्रिप्टोग्राफिक' : 'Cryptographic'}
               </span>
               <span className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-1">
-                Immutable SHA-256 Ledger
+                {isHi ? 'अपरिवर्तनीय SHA-256 लेजर' : 'Immutable SHA-256 Ledger'}
               </span>
-              <span className="text-[10px] text-slate-500">Chained Audit Traceability</span>
+              <span className="text-[10px] text-slate-500">
+                {isHi ? 'श्रृंखलाबद्ध ऑडिट ट्रेल' : 'Chained Audit Traceability'}
+              </span>
             </div>
           </div>
         </div>
@@ -430,65 +438,81 @@ export const PublicLandingPage: React.FC<PublicLandingPageProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="p-4 rounded-xl border dark:bg-slate-900 bg-white dark:border-slate-800 border-slate-200 space-y-1.5">
             <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            <h4 className="text-xs font-bold text-slate-900 dark:text-white">Student Record Management</h4>
+            <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+              {isHi ? 'छात्र रिकॉर्ड प्रबंधन' : 'Student Record Management'}
+            </h4>
             <p className="text-[11px] text-slate-500 leading-relaxed">
-              Structured database of enrolled students with branch, category, and academic year indexes.
+              {isHi ? 'शाखा, श्रेणी और शैक्षणिक वर्ष अनुक्रमणिका के साथ नामांकित छात्रों का संरचित डेटाबेस।' : 'Structured database of enrolled students with branch, category, and academic year indexes.'}
             </p>
           </div>
 
           <div className="p-4 rounded-xl border dark:bg-slate-900 bg-white dark:border-slate-800 border-slate-200 space-y-1.5">
             <FileSpreadsheet className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-            <h4 className="text-xs font-bold text-slate-900 dark:text-white">Bulk Ingestion Pipeline</h4>
+            <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+              {isHi ? 'थोक अंतर्ग्रहण पाइपलाइन' : 'Bulk Ingestion Pipeline'}
+            </h4>
             <p className="text-[11px] text-slate-500 leading-relaxed">
-              Standardized CSV/Excel parser processing thousands of admissions with line-by-line validation.
+              {isHi ? 'पंक्ति-दर-पंक्ति सत्यापन के साथ हजारों प्रवेशों को संसाधित करने वाला मानकीकृत CSV/Excel पार्सर।' : 'Standardized CSV/Excel parser processing thousands of admissions with line-by-line validation.'}
             </p>
           </div>
 
           <div className="p-4 rounded-xl border dark:bg-slate-900 bg-white dark:border-slate-800 border-slate-200 space-y-1.5">
             <AlertTriangle className="w-5 h-5 text-rose-600 dark:text-rose-400" />
-            <h4 className="text-xs font-bold text-slate-900 dark:text-white">Duplicate Detection</h4>
+            <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+              {isHi ? 'दोहरा दाखिला रोकथाम' : 'Duplicate Detection'}
+            </h4>
             <p className="text-[11px] text-slate-500 leading-relaxed">
-              Real-time anomaly scanner catching dual active enrollment across different colleges instantly.
+              {isHi ? 'एकाधिक संस्थानों में एक साथ सीट अवरुद्ध करने वाले छात्रों की वास्तविक समय पहचान।' : 'Real-time anomaly scanner catching dual active enrollment across different colleges instantly.'}
             </p>
           </div>
 
           <div className="p-4 rounded-xl border dark:bg-slate-900 bg-white dark:border-slate-800 border-slate-200 space-y-1.5">
             <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            <h4 className="text-xs font-bold text-slate-900 dark:text-white">Intake Capacity Audit</h4>
+            <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+              {isHi ? 'प्रवेश क्षमता ऑडिट' : 'Intake Capacity Audit'}
+            </h4>
             <p className="text-[11px] text-slate-500 leading-relaxed">
-              Automated monitoring of approved intake vs actual admissions, preventing illegal over-enrollment.
+              {isHi ? 'स्वीकृत सीटों बनाम वास्तविक प्रवेश की स्वचालित निगरानी, अवैध अतिरिक्त प्रवेश पर रोक।' : 'Automated monitoring of approved intake vs actual admissions, preventing illegal over-enrollment.'}
             </p>
           </div>
 
           <div className="p-4 rounded-xl border dark:bg-slate-900 bg-white dark:border-slate-800 border-slate-200 space-y-1.5">
             <Lock className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-            <h4 className="text-xs font-bold text-slate-900 dark:text-white">Consent Management</h4>
+            <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+              {isHi ? 'सहमति प्रबंधन (DPDP)' : 'Consent Management'}
+            </h4>
             <p className="text-[11px] text-slate-500 leading-relaxed">
-              DPDP Act 2023 aligned sovereign toggles allowing students to grant or revoke third-party verification access.
+              {isHi ? 'छात्रों को तृतीय-पक्ष सत्यापन पहुंच प्रदान करने या निरस्त करने का संप्रभु अधिकार।' : 'DPDP Act 2023 aligned sovereign toggles allowing students to grant or revoke third-party verification access.'}
             </p>
           </div>
 
           <div className="p-4 rounded-xl border dark:bg-slate-900 bg-white dark:border-slate-800 border-slate-200 space-y-1.5">
             <QrCode className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            <h4 className="text-xs font-bold text-slate-900 dark:text-white">Digital Credentials</h4>
+            <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+              {isHi ? 'डिजिटल प्रमाण-पत्र' : 'Digital Credentials'}
+            </h4>
             <p className="text-[11px] text-slate-500 leading-relaxed">
-              Tamper-evident verification passes with embedded digital token and instant QR resolution.
+              {isHi ? 'एम्बेडेड डिजिटल टोकन और त्वरित क्यूआर स्कैन के साथ छेड़छाड़-प्रमाणित सत्यापन पास।' : 'Tamper-evident verification passes with embedded digital token and instant QR resolution.'}
             </p>
           </div>
 
           <div className="p-4 rounded-xl border dark:bg-slate-900 bg-white dark:border-slate-800 border-slate-200 space-y-1.5">
             <Database className="w-5 h-5 text-teal-600 dark:text-teal-400" />
-            <h4 className="text-xs font-bold text-slate-900 dark:text-white">Cryptographic Audit Chain</h4>
+            <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+              {isHi ? 'क्रिप्टोग्राफिक ऑडिट चेन' : 'Cryptographic Audit Chain'}
+            </h4>
             <p className="text-[11px] text-slate-500 leading-relaxed">
-              Immutable SHA-256 chained transaction logs for every admission, modification, and inspection event.
+              {isHi ? 'प्रत्येक प्रवेश, संशोधन और निरीक्षण के लिए अपरिवर्तनीय SHA-256 श्रृंखला लेनदेन लॉग।' : 'Immutable SHA-256 chained transaction logs for every admission, modification, and inspection event.'}
             </p>
           </div>
 
           <div className="p-4 rounded-xl border dark:bg-slate-900 bg-white dark:border-slate-800 border-slate-200 space-y-1.5">
             <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-            <h4 className="text-xs font-bold text-slate-900 dark:text-white">Regulatory Reporting</h4>
+            <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+              {isHi ? 'विनियामक रिपोर्टिंग' : 'Regulatory Reporting'}
+            </h4>
             <p className="text-[11px] text-slate-500 leading-relaxed">
-              State-wise telemetry, intake compliance certificates, and exportable regulatory spreadsheets.
+              {isHi ? 'राज्य-वार टेलीमेट्री, प्रवेश अनुपालन प्रमाण पत्र और निर्यात योग्य विनियामक स्प्रेडशीट।' : 'State-wise telemetry, intake compliance certificates, and exportable regulatory spreadsheets.'}
             </p>
           </div>
         </div>

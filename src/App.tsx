@@ -30,8 +30,11 @@ export function App() {
   const [activeNavPage, setActiveNavPage] = useState<MainNavPage>('HOME');
   const [theme, setTheme] = useState<'dark' | 'light'>('light');
   
-  // Real Hindi <-> English Language State
-  const [language, setLanguage] = useState<Language>('HI');
+  // Language State: Default to 'EN', or restore user preference from localStorage
+  const [language, setLanguage] = useState<Language>(() => {
+    const saved = localStorage.getItem('aicte_language') || localStorage.getItem('agastya_language');
+    return (saved === 'HI' || saved === 'EN') ? (saved as Language) : 'EN';
+  });
 
   // Option A: Authentication state
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -90,7 +93,12 @@ export function App() {
 
   // Toggle Language handler
   const handleToggleLanguage = () => {
-    setLanguage(prev => prev === 'HI' ? 'EN' : 'HI');
+    setLanguage(prev => {
+      const next: Language = prev === 'HI' ? 'EN' : 'HI';
+      localStorage.setItem('aicte_language', next);
+      localStorage.setItem('agastya_language', next);
+      return next;
+    });
   };
 
   useEffect(() => {
@@ -105,9 +113,11 @@ export function App() {
     }
   }, [theme]);
 
-  // Update document lang attribute for proper font rendering (HI = Devanagari)
+  // Update document lang attribute and save to localStorage
   useEffect(() => {
     document.documentElement.lang = language === 'HI' ? 'hi' : 'en';
+    localStorage.setItem('aicte_language', language);
+    localStorage.setItem('agastya_language', language);
   }, [language]);
 
   // Login handler
@@ -435,6 +445,7 @@ export function App() {
             initialRole={currentRole}
             onLoginSuccess={handleLoginSuccess}
             theme={theme}
+            language={language}
           />
         )}
 

@@ -178,17 +178,17 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
                     </div>
                     <div>
                       <span className="text-[11px] font-mono uppercase tracking-widest font-black text-slate-400 block">
-                        AICTE REGULATION BUREAU
+                        {isHi ? 'एआईसीटीई विनियमन ब्यूरो' : 'AICTE REGULATION BUREAU'}
                       </span>
                       <span className="text-sm font-black text-slate-900 dark:text-white">
-                        Higher Education Portal
+                        {isHi ? 'उच्च शिक्षा पोर्टल' : 'Higher Education Portal'}
                       </span>
                     </div>
                   </div>
 
                   <div className="text-right">
                     <span className="px-2.5 py-1 rounded text-[10px] font-mono font-black bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                      LIVE ACTIVE
+                      {isHi ? 'सक्रिय' : 'LIVE ACTIVE'}
                     </span>
                   </div>
                 </div>
@@ -211,7 +211,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
                       {isHi ? 'अखिल भारतीय तकनीकी शिक्षा परिषद्' : 'All India Council for Technical Education'}
                     </h4>
                     <p className="text-xs sm:text-sm text-slate-500 font-semibold mt-1">
-                      Department of Higher Education, Ministry of Education, Govt. of India
+                      {isHi ? 'उच्च शिक्षा विभाग, शिक्षा मंत्रालय, भारत सरकार' : 'Department of Higher Education, Ministry of Education, Govt. of India'}
                     </p>
                   </div>
                 </div>
