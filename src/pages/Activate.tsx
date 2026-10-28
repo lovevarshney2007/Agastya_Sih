@@ -63,7 +63,7 @@ export function Activate() {
         {otpSent && (
           <>
             <Alert tone="info">
-              A one-time code was sent to {form.nodal_officer_email}. <span className="text-xs">(Prototype code: 123456)</span>{' '}
+              Enter the one-time code for {form.nodal_officer_email}. <span className="text-xs">(Demo code: 123456)</span>{' '}
               <button type="button" className="underline text-brand bg-transparent border-0 p-0 cursor-pointer" onClick={() => setOtpSent(false)}>Change details</button>
             </Alert>
             <Field label="One-time code" htmlFor="act-otp">

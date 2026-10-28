@@ -3,7 +3,7 @@ import QRCode from 'qrcode';
 import { api } from '../../api/client';
 import type { StudentShare } from '../../api/types';
 import { Alert, Empty, ErrorState, Field, KeyValue, Loading, PageHeader, Panel, Spinner, StatusTag } from '../../components/ui';
-import { fmtDate, humanize } from '../../lib/format';
+import { fmtDate, humanize, verifyLink } from '../../lib/format';
 import { useAction, useApi } from '../../lib/useApi';
 
 function QrImage({ value }: { value: string }) {
@@ -51,17 +51,17 @@ export function ShareRecord() {
       ) : created ? (
         <Panel title="Your link is ready">
           <div className="flex flex-wrap gap-6 items-start">
-            <QrImage value={created.public_url} />
+            <QrImage value={verifyLink(created.token)} />
             <div className="flex-1 min-w-[240px] space-y-3 text-sm">
               <p >Anyone with this link or QR code can see the details below until <strong>{fmtDate(created.expires_at)}</strong>.</p>
               <div className="flex gap-2">
-                <input className="input mono text-xs" readOnly value={created.public_url} aria-label="Share link" onFocus={(e) => e.currentTarget.select()} />
+                <input className="input mono text-xs" readOnly value={verifyLink(created.token)} aria-label="Share link" onFocus={(e) => e.currentTarget.select()} />
                 <button type="button" className="btn btn-secondary" onClick={async () => {
-                  try { await navigator.clipboard.writeText(created.public_url); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { /* clipboard blocked */ }
+                  try { await navigator.clipboard.writeText(verifyLink(created.token)); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { /* clipboard blocked */ }
                 }}>{copied ? 'Copied' : 'Copy'}</button>
               </div>
               <div className="flex flex-wrap gap-2">
-                <a href={created.public_url} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm no-underline">Open as the recipient sees it</a>
+                <a href={verifyLink(created.token)} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm no-underline">Open as the recipient sees it</a>
                 <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setCreated(null); setPurpose(''); }}>Create another</button>
               </div>
             </div>
@@ -121,7 +121,7 @@ export function ShareRecord() {
                     <td className="whitespace-nowrap">{fmtDate(s.expires_at)}</td>
                     <td><StatusTag value={s.status} /></td>
                     <td className="text-right whitespace-nowrap">
-                      <a href={s.public_url} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm no-underline">Open</a>
+                      <a href={verifyLink(s.token)} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm no-underline">Open</a>
                       {s.status === 'VALID' && (
                         <button type="button" className="btn btn-secondary btn-sm ml-1" disabled={revoke.pending} onClick={() => void revoke.run(s.token)}>Revoke</button>
                       )}

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { CircleCheck, Download, ShieldAlert } from 'lucide-react';
 import { api } from '../../api/client';
 import { Alert, ErrorState, KeyValue, Loading, PageHeader, Panel, Spinner, StatusTag } from '../../components/ui';
-import { fmtDate, fmtDateTime, fmtTime, humanize } from '../../lib/format';
+import { fmtDate, fmtDateTime, fmtTime, humanize, verifyLink } from '../../lib/format';
 import { useAction, useApi } from '../../lib/useApi';
 
 export function VerificationResult({ token }: { token: string }) {
@@ -14,7 +14,7 @@ export function VerificationResult({ token }: { token: string }) {
   if (!data) return <Loading rows={8} />;
 
   const valid = data.status === 'VALID';
-  const bannerClass = valid ? 'bg-ok' : data.status === 'REVOKED' ? 'bg-bad' : 'bg-[#4a5465]';
+  const bannerClass = valid ? 'bg-gradient-to-r from-[#0f6b35] to-ok' : data.status === 'REVOKED' ? 'bg-gradient-to-r from-[#8f1c13] to-bad' : 'bg-[#4a5465]';
 
   return (
     <>
@@ -23,7 +23,7 @@ export function VerificationResult({ token }: { token: string }) {
 
       <div className="panel overflow-hidden">
         <div className={`${bannerClass} text-white px-5 py-4 flex items-center gap-3`}>
-          {valid ? <CircleCheck size={28} aria-hidden="true" /> : <ShieldAlert size={28} aria-hidden="true" />}
+          {valid ? <CircleCheck size={28} className="animate-pop" aria-hidden="true" /> : <ShieldAlert size={28} className="animate-pop" aria-hidden="true" />}
           <div>
             <div className="text-xl font-bold tracking-wide">{data.status === 'AWAITING_CONSENT' ? 'AWAITING CONSENT' : data.status}</div>
             <div className="text-sm opacity-90">
@@ -85,7 +85,7 @@ export function VerificationResult({ token }: { token: string }) {
                   <figcaption className="mt-1">Offline (signed data)</figcaption>
                 </figure>
               </div>
-              <p className="text-xs text-muted mt-3 break-all">Link: <a href={data.public_url} target="_blank" rel="noreferrer">{data.public_url}</a></p>
+              <p className="text-xs text-muted mt-3 break-all">Link: <a href={verifyLink(data.token)} target="_blank" rel="noreferrer">{verifyLink(data.token)}</a></p>
             </Panel>
           )}
         </div>

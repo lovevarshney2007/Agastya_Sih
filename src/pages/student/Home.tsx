@@ -50,7 +50,6 @@ export function StudentHome() {
               {(e.identity_status === 'PENDING_APAAR' || e.identity_status === 'MISMATCH') && (
                 <p className="text-sm mt-3">
                   To link your APAAR ID yourself, sign in to DigiLocker and confirm this institution under <em>ABC / APAAR → Link institution</em>.
-                  <span className="text-muted"> (Not connected in this prototype.)</span>
                 </p>
               )}
             </Panel>

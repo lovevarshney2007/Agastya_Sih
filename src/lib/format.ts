@@ -33,3 +33,6 @@ export function humanize(code: string | null | undefined) {
 }
 
 export const shortHash = (h: string | null | undefined, n = 10) => (h ? `${h.slice(0, n)}…` : '—');
+
+/** Public verification link on this website, so links and QR codes always open the live site. */
+export const verifyLink = (token: string) => `${window.location.origin}/verify/${encodeURIComponent(token)}`;

@@ -7,7 +7,7 @@ import type {
 
 // In development Vite proxies /api to the local backend (see vite.config.ts).
 // A deployed build uses VITE_API_BASE_URL, falling back to the team's hosted backend.
-const API_ORIGIN = (import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? '' : 'https://sih.monu14.me')).replace(/\/$/, '');
+export const API_ORIGIN = (import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? '' : 'https://sih.monu14.me')).replace(/\/$/, '');
 export const API_BASE = `${API_ORIGIN}/api/v1`;
 
 const TOKEN_KEY = 'apaar.session.token';

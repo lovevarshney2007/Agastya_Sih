@@ -1,4 +1,4 @@
-import { useEffect, useId, useLayoutEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { CircleAlert, CircleCheck, Clock, Info, LoaderCircle, RefreshCw, TriangleAlert, X } from 'lucide-react';
 import { fmtTime, humanize } from '../lib/format';
 import { Link } from '../lib/router';
@@ -76,12 +76,43 @@ export function Panel({ title, actions, children, className = '', bodyClassName 
   );
 }
 
+const prefersReducedMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+/** Counts up to the number at the start of a value like "1,234", "94.7%" or "8 / 9"; other content renders as-is. */
+export function CountUp({ value }: { value: ReactNode }) {
+  const text = typeof value === 'number' ? String(value) : typeof value === 'string' ? value : null;
+  const match = text ? /^([\d,]+(?:\.\d+)?)(.*)$/.exec(text) : null;
+  const target = match ? Number(match[1].replace(/,/g, '')) : 0;
+  const decimals = match?.[1].includes('.') ? match[1].split('.')[1].length : 0;
+  const [shown, setShown] = useState(() => (match && !prefersReducedMotion() ? 0 : target));
+
+  useEffect(() => {
+    if (!match || prefersReducedMotion()) { setShown(target); return; }
+    let frame = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const t = Math.min((now - start) / 800, 1);
+      setShown(target * (1 - Math.pow(1 - t, 3)));
+      if (t < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target]);
+
+  if (!match) return <>{value}</>;
+  const formatted = shown.toLocaleString('en-IN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  return <>{formatted}{match[2]}</>;
+}
+
+const STAT_ACCENT = { bad: 'before:bg-bad', warn: 'before:bg-[#d4a72c]', ok: 'before:bg-ok', none: 'before:bg-brand' };
+
 export function Stat({ label, value, note, tone }: { label: string; value: ReactNode; note?: ReactNode; tone?: 'bad' | 'warn' | 'ok' }) {
   const color = tone === 'bad' ? 'text-bad' : tone === 'warn' ? 'text-warn' : tone === 'ok' ? 'text-ok' : 'text-ink';
   return (
-    <div className="panel px-4 py-3">
+    <div className={`panel lift relative overflow-hidden px-4 py-3 before:absolute before:left-0 before:top-0 before:h-full before:w-1 ${STAT_ACCENT[tone ?? 'none']}`}>
       <div className="text-[13px] text-muted">{label}</div>
-      <div className={`text-2xl font-bold tabular-nums mt-0.5 ${color}`}>{value}</div>
+      <div className={`text-2xl font-bold tabular-nums mt-0.5 font-[family-name:var(--font-display)] ${color}`}><CountUp value={value} /></div>
       {note && <div className="text-xs text-muted mt-1">{note}</div>}
     </div>
   );
@@ -113,7 +144,7 @@ export function Alert({ tone = 'info', title, children, onClose }: {
   const Icon = { info: Info, ok: CircleCheck, warn: TriangleAlert, bad: CircleAlert }[tone];
   const iconColor = { info: 'text-brand', ok: 'text-ok', warn: 'text-warn', bad: 'text-bad' }[tone];
   return (
-    <div className={`border-l-4 ${styles} rounded-r px-4 py-3 flex gap-3 text-sm`} role={tone === 'bad' ? 'alert' : 'status'}>
+    <div className={`border-l-4 ${styles} rounded-r-lg px-4 py-3 flex gap-3 text-sm animate-fade-up`} role={tone === 'bad' ? 'alert' : 'status'}>
       <Icon size={18} className={`${iconColor} shrink-0 mt-0.5`} aria-hidden="true" />
       <div className="flex-1 min-w-0">
         {title && <div className="font-semibold">{title}</div>}
@@ -201,9 +232,9 @@ export function Modal({ open, title, onClose, children, footer, width = 'max-w-l
 
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-[#0f172a]/45 p-4 overflow-y-auto"
+    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-[#0b1f44]/50 backdrop-blur-[2px] p-4 overflow-y-auto"
          onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div ref={ref} role="dialog" aria-modal="true" aria-labelledby={titleId} className={`panel w-full ${width} shadow-xl my-8`}>
+      <div ref={ref} role="dialog" aria-modal="true" aria-labelledby={titleId} className={`panel w-full ${width} shadow-2xl my-8 animate-pop`}>
         <div className="panel-head">
           <h2 id={titleId}>{title}</h2>
           <button type="button" onClick={onClose} className="text-muted hover:text-ink" aria-label="Close"><X size={18} /></button>
@@ -235,11 +266,17 @@ export function Pagination({ page, pageSize, total, onPage }: { page: number; pa
 export function Meter({ value, max, label }: { value: number; max: number; label?: string }) {
   const ratio = max > 0 ? value / max : 0;
   const width = Math.min(ratio, 1) * 100;
-  const color = ratio > 1 ? 'bg-bad' : ratio >= 0.95 ? 'bg-[#d4a72c]' : 'bg-brand';
+  const color = ratio > 1 ? 'bg-gradient-to-r from-[#e0483a] to-bad' : ratio >= 0.95 ? 'bg-gradient-to-r from-[#f2c14e] to-[#d4a72c]' : 'bg-gradient-to-r from-[#4f86f0] to-brand';
+  // Start at 0 so the bar fills in when it first appears.
+  const [shown, setShown] = useState(0);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setShown(width));
+    return () => cancelAnimationFrame(id);
+  }, [width]);
   return (
     <div className="flex items-center gap-2 min-w-[140px]">
-      <div className="h-2 flex-1 rounded-sm bg-line-soft overflow-hidden" role="meter" aria-valuenow={value} aria-valuemin={0} aria-valuemax={max} aria-label={label}>
-        <div className={`h-full ${color}`} style={{ width: `${width}%` }} />
+      <div className="h-2 flex-1 rounded-full bg-line-soft overflow-hidden" role="meter" aria-valuenow={value} aria-valuemin={0} aria-valuemax={max} aria-label={label}>
+        <div className={`h-full rounded-full ${color} transition-[width] duration-700 ease-out`} style={{ width: `${shown}%` }} />
       </div>
       <span className={`text-xs tabular-nums w-[70px] text-right ${ratio > 1 ? 'text-bad font-semibold' : 'text-muted'}`}>{value} / {max}</span>
     </div>

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api/client';
 import type { DemoAccounts, LoginResponse } from '../api/types';
+import { CircleCheck } from 'lucide-react';
+import { SignInIllustration } from '../components/Illustrations';
 import { Alert, Field, Spinner } from '../components/ui';
 import { Link, useRouter } from '../lib/router';
 import { PORTAL_FOR_ROLE, portalHome, useSession, type Portal } from '../lib/session';
@@ -9,11 +11,11 @@ const DOORS: { id: Portal; title: string; idLabel: string; placeholder: string; 
   { id: 'institution', title: 'Institution', idLabel: 'AICTE Permanent ID or registered email', placeholder: '1-1049281',
     note: 'For registrars and nodal officers of AICTE-approved institutions.' },
   { id: 'aicte', title: 'AICTE', idLabel: 'Official email', placeholder: 'name@gov.in',
-    note: 'In production AICTE staff sign in through Parichay. Here it uses a password.' },
+    note: 'For officers of the AICTE Approval Bureau and regional offices. Use your official government email.' },
   { id: 'verifier', title: 'Verifier organisation', idLabel: 'Work email', placeholder: 'name@company.com',
     note: 'For organisations AICTE has approved to verify student records.' },
   { id: 'student', title: 'Student', idLabel: 'Registered email', placeholder: 'name@student.aicte.gov.in',
-    note: 'In production students sign in with Meri Pehchaan or their APAAR ID. Here it uses a password.' },
+    note: 'For students whose institution has reported them. Use the email registered with your institution.' },
 ];
 
 const DEMO_FOR_DOOR: Record<Portal, string[]> = {
@@ -100,14 +102,34 @@ export function SignIn() {
   }
 
   return (
-    <div className="max-w-xl mx-auto">
+    <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] items-start">
+      <aside className="hidden lg:flex flex-col nav-gradient text-white rounded-2xl p-8 sticky top-36 overflow-hidden relative">
+        <div className="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-saffron/20 blur-2xl" aria-hidden="true" />
+        <div className="absolute -left-10 bottom-0 w-40 h-40 rounded-full bg-india-green/25 blur-2xl" aria-hidden="true" />
+        <SignInIllustration className="w-56 mx-auto relative" />
+        <h2 className="text-xl font-bold mt-4 font-[family-name:var(--font-display)] relative">Secure access to the national student ledger</h2>
+        <ul className="mt-4 space-y-3 text-sm text-[#d6e0f2] relative stagger">
+          {[
+            ['Role-based access', 'Each account sees only its own institution, cases or record.'],
+            ['Two-step sign-in', 'A one-time code is required after your password.'],
+            ['Every action logged', 'Sign-ins and changes are written to a tamper-evident ledger.'],
+          ].map(([t, d]) => (
+            <li key={t} className="flex gap-3">
+              <CircleCheck size={18} className="text-[#f6c48f] shrink-0 mt-0.5" aria-hidden="true" />
+              <span><span className="font-semibold text-white block">{t}</span>{d}</span>
+            </li>
+          ))}
+        </ul>
+      </aside>
+
+    <div className="max-w-xl w-full mx-auto lg:mx-0">
       <h1 className="text-2xl font-bold mt-0 mb-1">Sign in</h1>
       <p className="text-muted mt-0 mb-5">Choose who you are signing in as.</p>
 
       {expired && <div className="mb-4"><Alert tone="warn" title="Your session expired">Sign in again to continue.</Alert></div>}
       {search.get('signedout') && !expired && <div className="mb-4"><Alert tone="ok">You have signed out.</Alert></div>}
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 border border-line rounded-t-md overflow-hidden bg-white" role="tablist">
+      <div className="grid grid-cols-2 sm:grid-cols-4 border border-line-soft rounded-t-xl overflow-hidden bg-white" role="tablist">
         {DOORS.map((d) => (
           <button
             key={d.id}
@@ -115,15 +137,15 @@ export function SignIn() {
             role="tab"
             aria-selected={door === d.id}
             onClick={() => { setDoor(d.id); setError(null); setStep('credentials'); setPendingLogin(null); setIdentifier(''); setPassword(''); }}
-            className={`px-3 py-2.5 text-sm border-0 cursor-pointer ${door === d.id ? 'bg-navy text-white font-semibold' : 'bg-white text-ink hover:bg-wash'}`}
+            className={`px-3 py-2.5 text-sm border-0 cursor-pointer transition-colors duration-200 ${door === d.id ? 'nav-gradient text-white font-semibold' : 'bg-white text-ink hover:bg-brand-wash'}`}
           >
             {d.title}
           </button>
         ))}
       </div>
 
-      <div className="panel rounded-t-none border-t-0 p-5 sm:p-6">
-        <p className="text-sm text-muted mt-0">{doorInfo.note}</p>
+      <div key={door} className="panel rounded-t-none border-t-0 p-5 sm:p-6 page-enter">
+        <p className="text-sm text-muted mt-0 mb-4">{doorInfo.note}</p>
 
         {error && <div className="mb-4"><Alert tone="bad">{error}</Alert></div>}
 
@@ -145,8 +167,8 @@ export function SignIn() {
         ) : (
           <form onSubmit={submitOtp} className="space-y-4">
             <Alert tone="info">
-              We sent a 6-digit code to the mobile number registered for <strong>{pendingLogin?.user.email}</strong>.
-              <span className="block text-xs mt-1">Prototype: any 6 digits are accepted.</span>
+              Enter the 6-digit one-time code for <strong>{pendingLogin?.user.email}</strong>.
+              <span className="block text-xs mt-1">For the demo accounts, any 6 digits work.</span>
             </Alert>
             <Field label="One-time code" htmlFor="signin-otp">
               <input id="signin-otp" className="input mono tracking-[0.3em] max-w-[180px]" inputMode="numeric" autoComplete="one-time-code"
@@ -189,6 +211,7 @@ export function SignIn() {
           </ul>
         </div>
       )}
+    </div>
     </div>
   );
 }

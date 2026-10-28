@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { LogOut, Menu, X } from 'lucide-react';
+import { API_ORIGIN } from '../api/client';
 import { Link, useRouter } from '../lib/router';
 import { ROLE_LABEL, useSession, type Portal } from '../lib/session';
 
@@ -52,19 +53,20 @@ export function Layout({ children, wide = false }: { children: ReactNode; wide?:
     <div className="min-h-screen flex flex-col">
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:px-3 focus:py-2">Skip to main content</a>
 
+      <div className="tricolour h-1 no-print" aria-hidden="true" />
       <div className="bg-navy-dark text-[#c9d4e5] text-xs no-print">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-1.5 flex justify-between gap-4">
-          <span>Ministry of Education · All India Council for Technical Education</span>
-          <span className="font-semibold text-[#f6c48f]">Prototype — synthetic data only</span>
+          <span>Government of India · Ministry of Education</span>
+          <span className="hidden sm:inline">All India Council for Technical Education</span>
         </div>
       </div>
 
-      <header className="bg-white border-b border-line no-print">
+      <header className="bg-white/95 backdrop-blur border-b border-line-soft no-print sticky top-0 z-30 shadow-[0_1px_0_rgb(16_33_70/.04)]">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
           <Link to={user && portal ? `/${portal}` : '/'} className="flex items-center gap-3 no-underline text-ink min-w-0">
-            <img src="/aicte-logo.png" alt="" className="h-11 w-11 object-contain shrink-0" />
+            <img src="/aicte-logo.png" alt="" className="h-11 w-11 object-contain shrink-0 transition-transform duration-500 hover:rotate-[20deg]" />
             <span className="leading-tight min-w-0">
-              <span className="block font-bold text-[17px] truncate">APAAR Student Ledger</span>
+              <span className="block font-bold text-[17px] truncate font-[family-name:var(--font-display)] text-navy">APAAR Student Ledger</span>
               <span className="block text-xs text-muted truncate">Enrolment reporting &amp; verification for AICTE-approved institutions</span>
             </span>
           </Link>
@@ -96,7 +98,7 @@ export function Layout({ children, wide = false }: { children: ReactNode; wide?:
         </div>
 
         {nav && (
-          <nav className="bg-navy" aria-label={nav.title}>
+          <nav className="nav-gradient" aria-label={nav.title}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 flex gap-1 overflow-x-auto">
               {nav.links.map((l) => {
                 const active = isActive(path, l.to, `/${portal}`);
@@ -105,7 +107,7 @@ export function Layout({ children, wide = false }: { children: ReactNode; wide?:
                     key={l.to}
                     to={l.to}
                     aria-current={active ? 'page' : undefined}
-                    className={`px-3.5 py-2.5 text-sm no-underline whitespace-nowrap border-b-[3px] ${active ? 'text-white border-saffron font-semibold' : 'text-[#c9d4e5] border-transparent hover:text-white'}`}
+                    className={`px-3.5 py-2.5 text-sm no-underline whitespace-nowrap border-b-[3px] transition-colors duration-200 ${active ? 'text-white border-saffron font-semibold bg-white/10' : 'text-[#c9d4e5] border-transparent hover:text-white hover:bg-white/5 hover:border-white/30'}`}
                   >
                     {l.label}
                   </Link>
@@ -117,22 +119,29 @@ export function Layout({ children, wide = false }: { children: ReactNode; wide?:
       </header>
 
       <main id="main" className={`flex-1 w-full mx-auto px-4 sm:px-6 py-7 ${wide ? 'max-w-7xl' : 'max-w-5xl'}`}>
-        {children}
+        <div key={path} className="page-enter">{children}</div>
       </main>
 
-      <footer className="bg-white border-t border-line text-sm text-muted no-print">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 grid gap-6 sm:grid-cols-3">
+      <footer className="nav-gradient text-sm text-[#c9d4e5] no-print">
+        <div className="tricolour h-1" aria-hidden="true" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 grid gap-6 sm:grid-cols-3">
           <div>
-            <div className="font-semibold text-ink">APAAR Student Ledger</div>
-            <p className="mt-1">Smart India Hackathon 2026 prototype for problem statement SIH26263. Not an official AICTE service.</p>
+            <div className="flex items-center gap-2.5">
+              <img src="/aicte-logo.png" alt="" className="h-9 w-9 object-contain bg-white rounded-full p-0.5" />
+              <span className="font-semibold text-white font-[family-name:var(--font-display)]">APAAR Student Ledger</span>
+            </div>
+            <p className="mt-3">One verified record for every student in an AICTE-approved institution. Built for Smart India Hackathon 2026, problem statement SIH26263.</p>
           </div>
           <div>
-            <div className="font-semibold text-ink">Privacy</div>
-            <p className="mt-1">No Aadhaar numbers are collected. APAAR IDs are encrypted and shown masked. Every access is written to a tamper-evident log.</p>
+            <div className="font-semibold text-white">Privacy</div>
+            <p className="mt-2">No Aadhaar numbers are collected. APAAR IDs are encrypted and shown masked. Every access is written to a tamper-evident log.</p>
           </div>
           <div>
-            <div className="font-semibold text-ink">Help</div>
-            <p className="mt-1">Report a problem: helpdesk@apaar-ledger.example<br />API documentation: <a href="/docs" target="_blank" rel="noreferrer">/docs</a> on the backend server</p>
+            <div className="font-semibold text-white">Help</div>
+            <p className="mt-2">
+              Report a problem: helpdesk@apaar-ledger.example<br />
+              Developers: <a href={`${API_ORIGIN}/docs`} target="_blank" rel="noreferrer" className="text-[#f6c48f] hover:underline">API documentation</a>
+            </p>
           </div>
         </div>
       </footer>

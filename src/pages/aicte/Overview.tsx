@@ -89,7 +89,7 @@ export function NationalOverview() {
               </li>
             ))}
           </ul>
-          <p className="text-xs text-muted mt-4">{states.length} states and UTs with approved institutions in this prototype.</p>
+          <p className="text-xs text-muted mt-4">{states.length} states and UTs with approved institutions.</p>
         </Panel>
 
         <div className="space-y-6">
