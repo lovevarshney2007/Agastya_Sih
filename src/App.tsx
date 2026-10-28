@@ -105,6 +105,11 @@ export function App() {
     }
   }, [theme]);
 
+  // Update document lang attribute for proper font rendering (HI = Devanagari)
+  useEffect(() => {
+    document.documentElement.lang = language === 'HI' ? 'hi' : 'en';
+  }, [language]);
+
   // Login handler
   const handleLoginSuccess = (role: UserRole, user?: object) => {
     setIsAuthenticated(true);
@@ -393,7 +398,7 @@ export function App() {
       />
 
       {/* Main Website Container */}
-      <main className={`flex-1 w-full ${activeNavPage === 'HOME' && !isAuthenticated ? '' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6'}`}>
+      <main id="main-content" className={`flex-1 w-full ${activeNavPage === 'HOME' && !isAuthenticated ? '' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6'}`}>
         {/* VIEW 1: HOME PAGE (Public Landing Page OR Role-Based Dashboard) */}
         {activeNavPage === 'HOME' && (
           isAuthenticated && currentUserRole ? (

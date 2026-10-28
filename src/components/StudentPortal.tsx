@@ -118,11 +118,12 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
 
         {/* Switch Student */}
         <div className="flex items-center space-x-2 dark:bg-slate-800 bg-slate-50 p-2 rounded-xl border dark:border-slate-700 border-slate-200">
-          <span className="text-xs text-slate-600 dark:text-slate-400 font-bold">Switch Student:</span>
+          <label htmlFor="student-switcher" className="text-xs text-slate-600 dark:text-slate-400 font-bold">Switch Student:</label>
           <select
+            id="student-switcher"
             value={selectedStudentId}
             onChange={(e) => setSelectedStudentId(e.target.value)}
-            className="dark:bg-slate-900 bg-white dark:text-white text-slate-900 text-xs font-semibold rounded-lg px-2.5 py-1 border dark:border-slate-700 border-slate-300 focus:outline-none"
+            className="dark:bg-slate-900 bg-white dark:text-white text-slate-900 text-xs font-semibold rounded-lg px-2.5 py-1 border dark:border-slate-700 border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600"
           >
             {students.map(s => (
               <option key={s.id} value={s.id}>
@@ -177,9 +178,12 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
                   <span className="text-[11px] text-slate-600 dark:text-slate-400">Allow recruiters to check credentials</span>
                 </div>
                 <button
+                  role="switch"
+                  aria-checked={currentStudent.consentGranted}
+                  aria-label="Toggle employer verification consent"
                   onClick={toggleConsent}
                   disabled={consentLoading}
-                  className="cursor-pointer focus:outline-none disabled:opacity-50"
+                  className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-md disabled:opacity-50"
                 >
                   {currentStudent.consentGranted ? (
                     <ToggleRight className="w-8 h-8 text-emerald-600 dark:text-emerald-400 transition-colors" />
@@ -210,7 +214,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
                 <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block font-mono">
                   Active Verifier Grants
                 </span>
-                {(apiConsents?.active_grants as Record<string, string>[]).map((g, i) => (
+                {((apiConsents?.active_grants as Record<string, string>[]) || []).map((g, i) => (
                   <div key={i} className="p-2.5 rounded-lg border dark:border-slate-800 border-slate-100 text-xs flex items-center justify-between">
                     <div>
                       <span className="font-bold text-slate-900 dark:text-white block">{g.verifier_name}</span>
@@ -296,8 +300,8 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
             </div>
 
             {/* Certificate Canvas */}
-            <div className="dark:bg-slate-950 bg-white border-2 dark:border-blue-900/40 border-blue-200 rounded-2xl p-8 relative shadow-sm">
-              <div className="border dark:border-blue-950 border-blue-100 rounded-xl p-6 relative">
+            <div className="dark:bg-slate-950 bg-white border-2 dark:border-blue-900/40 border-blue-200 rounded-2xl p-4 sm:p-8 relative shadow-sm">
+              <div className="border dark:border-blue-950 border-blue-100 rounded-xl p-4 sm:p-6 relative">
                 <div className="text-center space-y-1 mb-8">
                   <div className="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-full text-[10px] font-mono uppercase tracking-widest text-blue-800 dark:text-blue-300 font-bold mb-2">
                     ALL INDIA COUNCIL FOR TECHNICAL EDUCATION
@@ -337,7 +341,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
                     </div>
                   </div>
 
-                  <div className="text-right font-mono text-[11px] text-slate-500 space-y-1">
+                  <div className="text-left sm:text-right font-mono text-[11px] text-slate-500 space-y-1 w-full sm:w-auto">
                     <div>AICTE Signature: <span className="text-emerald-700 dark:text-emerald-400 font-bold">JWS RSA-SHA256</span></div>
                     <div>Admission Date: <span className="font-bold text-slate-800 dark:text-slate-200">{currentStudent.admissionDate}</span></div>
                     <div>Status: <span className="text-blue-700 dark:text-blue-400 font-bold">APPROVED & SECURED</span></div>
@@ -355,7 +359,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
 
               <div className="space-y-2">
                 {(apiConsents?.access_log as Record<string, string>[])?.length ? (
-                  (apiConsents?.access_log as Record<string, string>[]).map((log, idx) => (
+                  ((apiConsents?.access_log as Record<string, string>[]) || []).map((log, idx) => (
                     <div key={idx} className="p-3 dark:bg-slate-950 bg-slate-50 rounded-xl border dark:border-slate-800 border-slate-200 text-xs flex items-center justify-between">
                       <div>
                         <span className="text-slate-900 dark:text-white font-bold">{log.verifier_name}</span>

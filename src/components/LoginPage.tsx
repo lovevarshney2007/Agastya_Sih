@@ -165,9 +165,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   return (
     <div className="py-6 max-w-4xl mx-auto space-y-6">
       {/* Notice Banner */}
-      <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-900 dark:text-amber-200">
+      <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-900 dark:text-amber-200">
         <div className="flex items-center space-x-2.5">
-          <span className="text-lg">🔐</span>
+          <Lock className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" aria-hidden="true" />
           <div>
             <strong className="block font-bold">Role-Based Access Control Enforced</strong>
             <span>You must authenticate to access the requested portal. Session is audit-logged and scoped to your organization.</span>
@@ -185,7 +185,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       </div>
 
       {/* Role Selector Tabs (5 Roles) */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 p-1.5 rounded-2xl dark:bg-slate-900/90 bg-white border dark:border-slate-800 border-slate-200 shadow-sm">
+      <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-5 gap-2 p-1.5 rounded-xl dark:bg-slate-900/90 bg-white border dark:border-slate-800 border-slate-200 shadow-sm" role="tablist" aria-label="Select portal role">
         {(Object.keys(roleConfigs) as (keyof typeof roleConfigs)[]).map((r) => {
           const cfg = roleConfigs[r];
           const Icon = cfg.icon;
@@ -259,28 +259,30 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           )}
           {/* Identity/Username Field */}
           <div>
-            <label className="block text-xs font-mono font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+            <label htmlFor="login-username" className="block text-xs font-mono font-bold text-slate-700 dark:text-slate-300 mb-1.5">
               {activeConfig.idFieldLabel}
             </label>
             <div className="relative">
-              <Mail className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
+              <Mail className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" aria-hidden="true" />
               <input
+                id="login-username"
                 type="text"
                 required
+                autoComplete="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder={activeConfig.idPlaceholder}
-                className="w-full pl-10 pr-4 py-2.5 dark:bg-slate-950 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-xl text-xs sm:text-sm font-medium dark:text-white text-slate-900 focus:outline-none focus:border-blue-700 font-mono"
+                className="w-full pl-10 pr-4 py-2.5 dark:bg-slate-950 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-xl text-xs sm:text-sm font-medium dark:text-white text-slate-900 focus:outline-none focus:border-blue-700 dark:focus:border-blue-400 font-mono transition-colors"
               />
             </div>
-            <p className="text-[11px] text-slate-500 mt-1">{activeConfig.hint}</p>
+            <p className="text-[11px] text-slate-500 mt-1" id="login-username-hint">{activeConfig.hint}</p>
           </div>
 
           {/* Password or OTP Flow Toggle */}
           {!useOtpFlow ? (
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300">
+                <label htmlFor="login-password" className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300">
                   Secure Password / Parichay SSO Key
                 </label>
                 <button
@@ -292,28 +294,31 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 </button>
               </div>
               <div className="relative">
-                <Key className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
+                <Key className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" aria-hidden="true" />
                 <input
+                  id="login-password"
                   type={showPassword ? 'text' : 'password'}
                   required
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your confidential password"
-                  className="w-full pl-10 pr-10 py-2.5 dark:bg-slate-950 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-xl text-xs sm:text-sm font-medium dark:text-white text-slate-900 focus:outline-none focus:border-blue-700"
+                  className="w-full pl-10 pr-10 py-2.5 dark:bg-slate-950 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-xl text-xs sm:text-sm font-medium dark:text-white text-slate-900 focus:outline-none focus:border-blue-700 dark:focus:border-blue-400 transition-colors"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? <EyeOff className="w-4 h-4" aria-hidden="true" /> : <Eye className="w-4 h-4" aria-hidden="true" />}
                 </button>
               </div>
             </div>
           ) : (
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300">
+                <label htmlFor="login-otp" className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300">
                   Government Two-Factor OTP Code
                 </label>
                 <button
@@ -325,15 +330,19 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 </button>
               </div>
               <div className="relative">
-                <Fingerprint className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
+                <Fingerprint className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" aria-hidden="true" />
                 <input
+                  id="login-otp"
                   type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   maxLength={6}
                   required
+                  autoComplete="one-time-code"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
                   placeholder="6-digit OTP code"
-                  className="w-full pl-10 pr-4 py-2.5 dark:bg-slate-950 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-xl text-xs sm:text-sm font-bold dark:text-white text-slate-900 font-mono focus:outline-none focus:border-blue-700 tracking-widest"
+                  className="w-full pl-10 pr-4 py-2.5 dark:bg-slate-950 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-xl text-xs sm:text-sm font-bold dark:text-white text-slate-900 font-mono focus:outline-none focus:border-blue-700 dark:focus:border-blue-400 tracking-widest transition-colors"
                 />
               </div>
               <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 font-semibold">

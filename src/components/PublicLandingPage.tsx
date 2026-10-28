@@ -165,8 +165,8 @@ export const PublicLandingPage: React.FC<PublicLandingPageProps> = ({
           <div className="rounded-2xl border dark:bg-slate-900 bg-white dark:border-slate-800 border-slate-200 p-6 flex flex-col justify-between shadow-xs hover:border-blue-400 hover:shadow-md transition-all group relative overflow-hidden">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/80 border border-blue-200 dark:border-blue-900 flex items-center justify-center text-2xl shadow-inner">
-                  🎓
+                <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/80 border border-blue-200 dark:border-blue-900 flex items-center justify-center shadow-inner">
+                  <GraduationCap className="w-6 h-6 text-blue-600 dark:text-blue-400" aria-hidden="true" />
                 </div>
                 <span className="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-300">
                   STUDENT SOVEREIGN
@@ -223,8 +223,8 @@ export const PublicLandingPage: React.FC<PublicLandingPageProps> = ({
           <div className="rounded-2xl border-2 border-amber-400 dark:border-amber-600/80 dark:bg-slate-900 bg-white p-6 flex flex-col justify-between shadow-md hover:shadow-lg transition-all group relative overflow-hidden">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/80 border border-amber-200 dark:border-amber-900 flex items-center justify-center text-2xl shadow-inner">
-                  🏛️
+                <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/80 border border-amber-200 dark:border-amber-900 flex items-center justify-center shadow-inner">
+                  <Building2 className="w-6 h-6 text-amber-600 dark:text-amber-400" aria-hidden="true" />
                 </div>
                 <span className="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300">
                   INSTITUTION NODAL
@@ -281,8 +281,8 @@ export const PublicLandingPage: React.FC<PublicLandingPageProps> = ({
           <div className="rounded-2xl border dark:bg-slate-900 bg-white dark:border-slate-800 border-slate-200 p-6 flex flex-col justify-between shadow-xs hover:border-emerald-400 hover:shadow-md transition-all group relative overflow-hidden">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900 flex items-center justify-center text-2xl shadow-inner">
-                  🔍
+                <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900 flex items-center justify-center shadow-inner">
+                  <Search className="w-6 h-6 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
                 </div>
                 <span className="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-300">
                   AUTHORIZED AUDIT

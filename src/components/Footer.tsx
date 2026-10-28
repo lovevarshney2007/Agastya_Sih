@@ -18,9 +18,9 @@ export const Footer: React.FC<FooterProps> = ({
     <footer className="border-t py-10 transition-colors dark:border-slate-800 dark:bg-[#070D19] bg-white border-slate-200 font-sans mt-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         {/* Top 4-Column Directory Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 text-xs">
           {/* Column 1: Platform Overview */}
-          <div className="space-y-3 col-span-2 md:col-span-1">
+          <div className="space-y-3 col-span-1 sm:col-span-2 md:col-span-1">
             <div className="flex items-center space-x-2">
               <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
               <span className="font-black text-slate-900 dark:text-white text-sm">

@@ -28,17 +28,23 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
 }) => {
   const isHi = language === 'HI';
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
   // Search Bar inside Hero state
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Continuous Auto-play timer (4.5 seconds)
+  // Check reduced motion preference
+  const prefersReducedMotion = typeof window !== 'undefined' 
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Continuous Auto-play timer (4.5 seconds) — pauses on user request or reduced motion
   useEffect(() => {
+    if (isPaused || prefersReducedMotion) return;
     const interval = setInterval(() => {
       setCurrentSlideIndex((prev) => (prev + 1) % HERO_CAROUSEL_SLIDES.length);
     }, 4500);
     return () => clearInterval(interval);
-  }, []);
+  }, [isPaused, prefersReducedMotion]);
 
   const slide = HERO_CAROUSEL_SLIDES[currentSlideIndex];
 
@@ -90,38 +96,60 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
             </div>
           ))}
 
-          {/* Left / Right Carousel Controls - Hidden by default, visible only on hover / interaction */}
+          {/* Left / Right Carousel Controls — always visible on mobile, hover-visible on desktop */}
           <button
             onClick={handlePrev}
-            className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-3 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-md border border-white/30 transition-all cursor-pointer shadow-xl opacity-0 group-hover:opacity-100 focus:opacity-100 duration-300 hover:scale-110"
-            aria-label="Previous Slide"
+            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-30 p-1.5 sm:p-2.5 rounded-full bg-black/60 hover:bg-black/90 text-white border border-white/30 transition-all cursor-pointer shadow-md sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100 sm:duration-300"
+            aria-label="Previous slide"
           >
-            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
           </button>
 
           <button
             onClick={handleNext}
-            className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-3 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-md border border-white/30 transition-all cursor-pointer shadow-xl opacity-0 group-hover:opacity-100 focus:opacity-100 duration-300 hover:scale-110"
-            aria-label="Next Slide"
+            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-30 p-1.5 sm:p-2.5 rounded-full bg-black/60 hover:bg-black/90 text-white border border-white/30 transition-all cursor-pointer shadow-md sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100 sm:duration-300"
+            aria-label="Next slide"
           >
-            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
           </button>
 
-          {/* Slider Indicators Bottom-Center - Subtle and elegant */}
-          <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center space-x-2 bg-black/30 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10 opacity-70 group-hover:opacity-100 transition-opacity">
+          {/* Pause/Play + Slide Indicators */}
+          <div className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 z-30 flex items-center space-x-2 bg-black/30 px-2.5 py-1 rounded-full border border-white/10">
+            {/* Pause/Play button */}
+            <button
+              onClick={() => setIsPaused(p => !p)}
+              className="text-white/70 hover:text-white transition-colors mr-1"
+              aria-label={isPaused ? 'Resume slideshow' : 'Pause slideshow'}
+            >
+              {isPaused ? (
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                </svg>
+              ) : (
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              )}
+            </button>
             {HERO_CAROUSEL_SLIDES.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => setCurrentSlideIndex(idx)}
-                className={`h-2 sm:h-2.5 rounded-full transition-all cursor-pointer ${
+                className={`h-1.5 sm:h-2 rounded-full transition-all cursor-pointer ${
                   currentSlideIndex === idx 
-                    ? 'w-7 sm:w-9 bg-[#FF9933]' 
-                    : 'w-2 sm:w-2.5 bg-white/50 hover:bg-white/80'
+                    ? 'w-6 sm:w-8 bg-[#FF9933]' 
+                    : 'w-1.5 sm:w-2 bg-white/50 hover:bg-white/80'
                 }`}
-                aria-label={`Slide ${idx + 1}`}
+                aria-label={`Go to slide ${idx + 1}`}
+                aria-current={currentSlideIndex === idx ? 'true' : undefined}
               />
             ))}
           </div>
+        </div>
+
+        {/* Screen reader slide announcer */}
+        <div aria-live="polite" aria-atomic="true" className="sr-only">
+          Slide {currentSlideIndex + 1} of {HERO_CAROUSEL_SLIDES.length}
         </div>
       </section>
 

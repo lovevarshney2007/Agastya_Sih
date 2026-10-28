@@ -184,24 +184,28 @@ export const VerifierPortal: React.FC<VerifierPortalProps> = ({
 
           <form onSubmit={handleSearch} className="space-y-4">
             <div>
-              <label className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">Verifier Organization</label>
+              <label htmlFor="verifier-org" className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">
+                Verifier Organization
+              </label>
               <input
+                id="verifier-org"
                 type="text"
                 required
                 value={verifierName}
                 onChange={(e) => setVerifierName(e.target.value)}
-                className="w-full dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg px-3 py-2 text-xs dark:text-white text-slate-900 focus:outline-none focus:border-emerald-600 font-medium"
+                className="w-full dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg px-3 py-2 text-xs dark:text-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent font-medium"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">
+              <label htmlFor="verifier-purpose" className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">
                 {t.verifierPurposeLabel || 'Stated Purpose for Access'}
               </label>
               <select
+                id="verifier-purpose"
                 value={purpose}
                 onChange={(e) => setPurpose(e.target.value)}
-                className="w-full dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg px-3 py-2 text-xs dark:text-white text-slate-900 focus:outline-none focus:border-emerald-600 font-medium"
+                className="w-full dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg px-3 py-2 text-xs dark:text-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent font-medium"
               >
                 <option value="Employment Background Academic Verification">Employment Background Academic Verification</option>
                 <option value="Higher Studies / Postgraduate Admission">Higher Studies / Postgraduate Admission</option>
@@ -211,17 +215,18 @@ export const VerifierPortal: React.FC<VerifierPortalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">
+              <label htmlFor="verifier-apaar" className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">
                 {t.verifierSearchLabel || 'Candidate 12-Digit APAAR ID'}
               </label>
               <input
+                id="verifier-apaar"
                 type="text"
                 required
                 maxLength={14}
                 placeholder={t.verifierSearchPlaceholder || 'e.g. 892019482019'}
                 value={apaarInput}
                 onChange={(e) => setApaarInput(e.target.value)}
-                className="w-full dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg px-3 py-2 text-sm dark:text-white text-slate-900 font-mono font-bold focus:outline-none focus:border-emerald-600"
+                className="w-full dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg px-3 py-2 text-sm dark:text-white text-slate-900 font-mono font-bold focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent"
               />
               <div className="mt-2 flex flex-wrap gap-1.5">
                 <span className="text-[10px] text-slate-500 font-bold">Quick Test:</span>
@@ -433,11 +438,11 @@ export const VerifierPortal: React.FC<VerifierPortalProps> = ({
             <table className="w-full text-xs text-left">
               <thead>
                 <tr className="border-b dark:border-slate-800 border-slate-200 text-slate-500 font-mono">
-                  <th className="py-2 px-3">Token</th>
-                  <th className="py-2 px-3">Purpose</th>
-                  <th className="py-2 px-3">Time</th>
-                  <th className="py-2 px-3">Status</th>
-                  <th className="py-2 px-3 text-right">Certificate</th>
+                  <th scope="col" className="py-2 px-3">Token</th>
+                  <th scope="col" className="py-2 px-3">Purpose</th>
+                  <th scope="col" className="py-2 px-3">Time</th>
+                  <th scope="col" className="py-2 px-3">Status</th>
+                  <th scope="col" className="py-2 px-3 text-right">Certificate</th>
                 </tr>
               </thead>
               <tbody className="divide-y dark:divide-slate-800 divide-slate-100">

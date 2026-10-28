@@ -14,7 +14,10 @@ import {
   Database,
   Lock,
   CheckCircle2,
-  Users
+  Users,
+  Building,
+  Zap,
+  FileText
 } from 'lucide-react';
 import { UserRole, MainNavPage } from '../types';
 import { Language, TRANSLATIONS } from '../data/translations';
@@ -106,8 +109,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           >
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900 flex items-center justify-center text-xl">
-                  🎓
+                <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900 flex items-center justify-center">
+                  <GraduationCap className="w-6 h-6 text-blue-700 dark:text-blue-400" />
                 </div>
                 <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300">
                   DPDP ACT 2023
@@ -156,8 +159,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           >
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <div className="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 flex items-center justify-center text-xl">
-                  🏛️
+                <div className="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 flex items-center justify-center">
+                  <Building className="w-6 h-6 text-amber-600 dark:text-amber-400" />
                 </div>
                 <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">
                   REAL-TIME AUDIT
@@ -206,8 +209,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           >
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-xl">
-                  🛡️
+                <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center">
+                  <ShieldCheck className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
                   NATIONAL OVERSIGHT
@@ -313,22 +316,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <section className="max-w-4xl mx-auto pt-4 pb-6">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
           <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50">
-            <span className="text-lg">🔒</span>
+            <Lock className="w-5 h-5 text-blue-600 dark:text-blue-400 mx-auto" />
             <p className="text-[11px] font-bold text-slate-800 dark:text-slate-200 mt-1">AES-256 Storage</p>
             <p className="text-[10px] text-slate-500">Aadhaar Privacy Assured</p>
           </div>
           <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50">
-            <span className="text-lg">⚡</span>
+            <Zap className="w-5 h-5 text-amber-500 mx-auto" />
             <p className="text-[11px] font-bold text-slate-800 dark:text-slate-200 mt-1">Kafka Risk Pipeline</p>
             <p className="text-[10px] text-slate-500">Real-time Collision Engine</p>
           </div>
           <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50">
-            <span className="text-lg">📜</span>
+            <FileText className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mx-auto" />
             <p className="text-[11px] font-bold text-slate-800 dark:text-slate-200 mt-1">Immutable JPA Ledger</p>
             <p className="text-[10px] text-slate-500">Full Audit Traceability</p>
           </div>
           <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50">
-            <span className="text-lg">🇮🇳</span>
+            <Building2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mx-auto" />
             <p className="text-[11px] font-bold text-slate-800 dark:text-slate-200 mt-1">AICTE Regulation</p>
             <p className="text-[10px] text-slate-500">All 28 States & UTs Active</p>
           </div>

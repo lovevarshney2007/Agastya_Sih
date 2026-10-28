@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   Building2, 
   ShieldCheck, 
@@ -63,6 +63,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loginDropdownOpen, setLoginDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownMenuRef = useRef<HTMLDivElement>(null);
+  const hamburgerRef = useRef<HTMLButtonElement>(null);
+  const firstDrawerItemRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const updateTime = () => {
@@ -85,7 +88,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => clearInterval(timer);
   }, [language]);
 
-  // Click outside listener for dropdown
+  // Close dropdown on outside click — include trigger button in ref
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -95,6 +98,55 @@ export const Navbar: React.FC<NavbarProps> = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Keyboard navigation for dropdown menu
+  const handleDropdownKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!loginDropdownOpen) return;
+    const items = dropdownMenuRef.current?.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]');
+    if (!items || items.length === 0) return;
+    const currentIndex = Array.from(items).findIndex(el => el === document.activeElement);
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const next = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+      items[next].focus();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const prev = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+      items[prev].focus();
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      items[0].focus();
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      items[items.length - 1].focus();
+    } else if (e.key === 'Escape') {
+      setLoginDropdownOpen(false);
+    }
+  }, [loginDropdownOpen]);
+
+  // Focus management for mobile drawer
+  useEffect(() => {
+    if (mobileMenuOpen && firstDrawerItemRef.current) {
+      firstDrawerItemRef.current.focus();
+    }
+  }, [mobileMenuOpen]);
+
+  // Close mobile drawer on Escape
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (mobileMenuOpen) {
+          setMobileMenuOpen(false);
+          hamburgerRef.current?.focus();
+        }
+        if (loginDropdownOpen) {
+          setLoginDropdownOpen(false);
+        }
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [mobileMenuOpen, loginDropdownOpen]);
 
   const handlePortalNavigation = (targetRole: UserRole) => {
     setMobileMenuOpen(false);
@@ -146,20 +198,40 @@ export const Navbar: React.FC<NavbarProps> = ({
     },
   ];
 
-  return (
-    <header className="sticky top-0 z-50 transition-colors shadow-sm font-sans w-full">
-      {/* 1. TOP TRI-COLOR ACCENT LINE */}
-      <div className="h-1 sm:h-1.5 w-full bg-gradient-to-r from-[#FF9933] via-[#FFFFFF] to-[#138808]" />
+  // Role display names for authenticated header
+  const roleDisplayName: Record<string, string> = {
+    INSTITUTION: 'COEP Registrar',
+    AICTE_OFFICER: 'AICTE Maker',
+    AICTE_SUPER_ADMIN: 'AICTE Checker',
+    VERIFIER: 'Verifier (TCS)',
+    STUDENT: 'Priya Nair',
+  };
 
-      {/* 2. TOP META STRIP (Clean & Full Width) */}
+  // Only show regulatory alerts to officers/admins
+  const canSeeAlerts = currentUserRole === 'AICTE_OFFICER' || currentUserRole === 'AICTE_SUPER_ADMIN';
+
+  const isPortalOrLoginActive = activeNavPage === 'PORTALS' || activeNavPage === 'LOGIN';
+
+  return (
+    <header className="sticky top-0 z-50 transition-colors shadow-sm font-sans w-full" role="banner">
+      {/* Skip Navigation — visible only on focus */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-1 focus:left-1 focus:z-[100] focus:px-4 focus:py-2 focus:bg-blue-700 focus:text-white focus:rounded focus:text-sm focus:font-bold"
+      >
+        {language === 'HI' ? 'मुख्य सामग्री पर जाएं' : 'Skip to main content'}
+      </a>
+
+      {/* 1. TOP TRI-COLOR ACCENT LINE */}
+      <div className="h-1 sm:h-1.5 w-full bg-gradient-to-r from-[#FF9933] via-[#FFFFFF] to-[#138808]" aria-hidden="true" />
+
+      {/* 2. TOP META STRIP */}
       <div className="bg-[#0b1b3d] text-white px-3 sm:px-6 lg:px-8 py-1 sm:py-1.5 text-[10px] sm:text-[11px] font-medium flex items-center justify-between border-b border-blue-950 w-full">
-        {/* Left: Desktop timestamp / Mobile minimal status */}
+        {/* Left: Timestamp */}
         <div className="flex items-center space-x-2 text-slate-300">
-          <span className="hidden sm:inline">{currentDateStr}</span>
-          <span className="hidden sm:inline">|</span>
-          <span className="inline sm:hidden flex items-center space-x-1 font-bold text-amber-300">
-            <span>AICTE</span>
-          </span>
+          <span className="hidden sm:inline" aria-live="polite" aria-atomic="true">{currentDateStr}</span>
+          <span className="hidden sm:inline" aria-hidden="true">|</span>
+          <span className="inline sm:hidden font-bold text-amber-300">AICTE</span>
           <span className="hidden md:inline">
             Smart Automation • SIH26263 • AICTE Regulation Bureau
           </span>
@@ -167,53 +239,46 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right Controls */}
         <div className="flex items-center space-x-2">
-          {/* Active Session Info */}
+          {/* Active Session Info — no logout here (avoid duplicate) */}
           {isAuthenticated && currentUserRole && (
-            <div className="flex items-center space-x-1 px-2 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-700 text-emerald-300 font-mono text-[9px] sm:text-[10px]">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span className="truncate max-w-[120px] sm:max-w-none">{currentUserRole} ACTIVE</span>
+            <div className="flex items-center space-x-1 px-1.5 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-700 text-emerald-300 font-mono text-[9px] sm:text-[10px]">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" aria-hidden="true"></span>
+              <span className="truncate max-w-[90px] sm:max-w-[130px]">{currentUserRole}</span>
             </div>
           )}
 
-          {/* Language Toggle Hindi <-> English */}
+          {/* Language Toggle */}
           <button
             onClick={onToggleLanguage}
-            className="flex items-center space-x-1 px-2 py-0.5 rounded-md border border-blue-800 bg-blue-950/70 hover:bg-blue-900 text-slate-200 text-[10px] sm:text-[11px] font-bold cursor-pointer transition-colors"
-            title="Toggle Hindi/English Language"
+            className="flex items-center space-x-1 px-2 py-0.5 rounded border border-blue-800 bg-blue-950/70 hover:bg-blue-900 text-slate-200 text-[10px] sm:text-[11px] font-bold cursor-pointer transition-colors"
+            aria-label={language === 'HI' ? 'Switch to English' : 'हिंदी में बदलें'}
           >
-            <Globe className="w-3 h-3 text-amber-400" />
+            <Globe className="w-3 h-3 text-amber-400" aria-hidden="true" />
             <span>{language === 'HI' ? 'English' : 'हिंदी'}</span>
           </button>
 
-          {/* Theme Toggle Button */}
+          {/* Theme Toggle */}
           <button
             onClick={onToggleTheme}
-            className="p-1 rounded-md border border-blue-800 bg-blue-950/70 hover:bg-blue-900 text-amber-400 cursor-pointer transition-colors"
-            aria-label="Toggle Theme"
+            className="p-1 rounded border border-blue-800 bg-blue-950/70 hover:bg-blue-900 text-amber-400 cursor-pointer transition-colors"
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
           >
-            {isDark ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+            {isDark ? <Sun className="w-3.5 h-3.5" aria-hidden="true" /> : <Moon className="w-3.5 h-3.5" aria-hidden="true" />}
           </button>
-
-          {/* Logout if authenticated */}
-          {isAuthenticated && (
-            <button
-              onClick={onLogout}
-              className="flex items-center space-x-1 px-2.5 py-0.5 rounded-md bg-rose-700 hover:bg-rose-800 text-white font-bold text-[10px] sm:text-[11px] transition-colors cursor-pointer"
-            >
-              <LogOut className="w-3 h-3" />
-              <span>{t.logout}</span>
-            </button>
-          )}
         </div>
       </div>
 
-      {/* 3. OFFICIAL HEADER WITH AICTE SEAL & UNIFIED LOGIN DROPDOWN */}
+      {/* 3. OFFICIAL HEADER WITH AICTE SEAL */}
       <div className="dark:bg-[#0b1120] bg-white border-b dark:border-slate-800 border-slate-200 px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 transition-colors w-full">
         <div className="w-full flex items-center justify-between gap-3">
           {/* Logo & Emblem */}
           <div 
             onClick={() => onSelectNavPage('HOME')}
             className="flex items-center space-x-2.5 sm:space-x-3.5 cursor-pointer group select-none min-w-0"
+            role="link"
+            tabIndex={0}
+            aria-label="Go to home page"
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectNavPage('HOME'); } }}
           >
             <div className="w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center shrink-0">
               <img 
@@ -224,37 +289,38 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
             <div className="min-w-0">
               <div className="flex items-center space-x-1.5 flex-wrap">
-                <h1 className="text-xs sm:text-lg font-black tracking-tight text-slate-900 dark:text-white leading-tight font-serif truncate">
+                <span className="text-xs sm:text-lg font-black tracking-tight text-slate-900 dark:text-white leading-tight font-serif truncate">
                   {t.councilHindi}
-                </h1>
-                <span className="px-1.5 py-0.2 rounded text-[8px] sm:text-[9px] font-mono font-bold bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800 uppercase shrink-0">
+                </span>
+                <span className="px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-mono font-bold bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800 uppercase shrink-0">
                   {t.regulationBureau}
                 </span>
               </div>
-              <h2 className="text-[11px] sm:text-sm font-bold text-slate-800 dark:text-slate-200 leading-tight truncate">
+              <p className="text-[11px] sm:text-sm font-bold text-slate-800 dark:text-slate-200 leading-tight truncate">
                 {t.councilEnglish}
-              </h2>
+              </p>
               <p className="hidden sm:block text-[10px] text-slate-500 font-medium truncate">
                 {t.deptName}
               </p>
             </div>
           </div>
 
-          {/* Desktop Right: Unified Portal Login with Dropdown + Verify Shortcut */}
-          <div className="flex items-center space-x-3 shrink-0">
-            {/* Direct Public Verify Shortcut */}
+          {/* Desktop Right: Portal Login / User Info */}
+          <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
+            {/* Public Verify Shortcut */}
             <button
               onClick={() => {
                 onSelectRole('PUBLIC_VERIFY');
                 onSelectNavPage('PORTALS');
               }}
-              className="hidden sm:flex items-center space-x-1.5 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
+              className="hidden sm:flex items-center space-x-1.5 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
+              aria-label="Verify APAAR ID publicly"
             >
-              <QrCode className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+              <QrCode className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
               <span>{t.verifyApaarId}</span>
             </button>
 
-            {/* UNIFIED LOGIN / LOGOUT BUTTON (Only show Login when NOT authenticated) */}
+            {/* Authenticated User Controls */}
             {isAuthenticated ? (
               <div className="flex items-center space-x-2">
                 <button
@@ -263,44 +329,51 @@ export const Navbar: React.FC<NavbarProps> = ({
                     if (currentUserRole) onSelectRole(currentUserRole);
                     onSelectNavPage('PORTALS');
                   }}
-                  className="hidden sm:flex items-center space-x-2 px-3 py-2 rounded-xl bg-blue-50 dark:bg-slate-800 border border-blue-200 dark:border-slate-700 text-xs font-bold text-blue-900 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                  className="hidden sm:flex items-center space-x-2 px-3 py-2 rounded-lg bg-blue-50 dark:bg-slate-800 border border-blue-200 dark:border-slate-700 text-xs font-bold text-blue-900 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                  aria-label="Open your portal"
                 >
-                  <User className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                  <User className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
                   <span className="truncate max-w-[130px] font-mono">
-                    {currentUserRole === 'INSTITUTION' && 'COEP Registrar'}
-                    {currentUserRole === 'AICTE_OFFICER' && 'AICTE Maker'}
-                    {currentUserRole === 'AICTE_SUPER_ADMIN' && 'AICTE Checker'}
-                    {currentUserRole === 'VERIFIER' && 'Verifier (TCS)'}
-                    {currentUserRole === 'STUDENT' && 'Priya Nair'}
-                    {!currentUserRole && 'Active Portal'}
+                    {currentUserRole ? (roleDisplayName[currentUserRole] || currentUserRole) : 'Active Portal'}
                   </span>
                 </button>
 
                 <button
                   type="button"
                   onClick={onLogout}
-                  className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs sm:text-sm font-bold flex items-center space-x-1.5 shadow-md transition-all cursor-pointer"
-                  title="Logout from session"
+                  className="px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center space-x-1.5 transition-colors cursor-pointer"
+                  aria-label="Log out of your session"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-4 h-4" aria-hidden="true" />
                   <span>{language === 'HI' ? 'लॉगआउट' : 'Logout'}</span>
                 </button>
               </div>
             ) : (
-              <div className="relative" ref={dropdownRef}>
+              /* Unauthenticated: Login Dropdown */
+              <div className="relative" ref={dropdownRef} onKeyDown={handleDropdownKeyDown}>
                 <button
                   type="button"
+                  id="portal-login-btn"
                   onClick={() => setLoginDropdownOpen(prev => !prev)}
-                  className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-[#0B2559] hover:bg-[#113880] text-white text-xs sm:text-sm font-bold flex items-center space-x-2 shadow-md transition-all cursor-pointer"
+                  className="px-4 py-2 rounded-lg bg-[#0B2559] hover:bg-[#113880] text-white text-xs font-bold flex items-center space-x-2 transition-colors cursor-pointer"
+                  aria-haspopup="menu"
+                  aria-expanded={loginDropdownOpen}
+                  aria-controls="portal-login-menu"
                 >
-                  <LogIn className="w-4 h-4 text-amber-300" />
+                  <LogIn className="w-4 h-4 text-amber-300" aria-hidden="true" />
                   <span>{language === 'HI' ? 'लॉगिन पोर्टल' : 'Portal Login'}</span>
-                  <ChevronDown className={`w-3.5 h-3.5 text-slate-300 transition-transform ${loginDropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-3.5 h-3.5 text-slate-300 transition-transform duration-200 ${loginDropdownOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
                 </button>
 
                 {/* Login Dropdown Menu */}
                 {loginDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-72 sm:w-80 rounded-2xl dark:bg-slate-900 bg-white border-2 dark:border-slate-700 border-slate-200 shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div
+                    id="portal-login-menu"
+                    ref={dropdownMenuRef}
+                    role="menu"
+                    aria-labelledby="portal-login-btn"
+                    className="absolute right-0 mt-2 w-72 sm:w-80 rounded-xl dark:bg-slate-900 bg-white border dark:border-slate-700 border-slate-200 shadow-xl p-2 z-50"
+                  >
                     <div className="px-3 py-2 border-b dark:border-slate-800 border-slate-100 mb-1">
                       <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block">
                         Select Access Level
@@ -310,16 +383,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </span>
                     </div>
 
-                    <div className="space-y-1">
+                    <div className="space-y-0.5">
                       {loginOptions.map((opt) => (
                         <button
                           key={opt.role}
                           type="button"
+                          role="menuitem"
                           onClick={() => handlePortalNavigation(opt.role)}
-                          className="w-full p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/80 text-left transition-colors flex items-center justify-between group cursor-pointer"
+                          className="w-full p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/80 text-left transition-colors flex items-center justify-between group cursor-pointer"
                         >
                           <div className="flex items-center space-x-3">
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center border shrink-0 ${opt.color}`}>
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center border shrink-0 ${opt.color}`} aria-hidden="true">
                               <opt.Icon className="w-4 h-4" />
                             </div>
                             <div>
@@ -331,14 +405,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                               </span>
                             </div>
                           </div>
-                          <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-1 group-hover:text-blue-600 transition-all shrink-0 ml-2" />
+                          <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-1 group-hover:text-blue-600 transition-all shrink-0 ml-2" aria-hidden="true" />
                         </button>
                       ))}
                     </div>
 
                     <div className="pt-2 mt-1 border-t dark:border-slate-800 border-slate-100 px-3 py-1 flex items-center justify-between text-[10px] text-slate-400">
                       <span className="flex items-center space-x-1">
-                        <Lock className="w-3 h-3 text-emerald-500" />
+                        <Lock className="w-3 h-3 text-emerald-500" aria-hidden="true" />
                         <span>Encrypted TLS 1.3</span>
                       </span>
                       <span className="font-mono text-blue-600 dark:text-blue-400 font-bold">2FA Ready</span>
@@ -348,22 +422,25 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             )}
 
-            {/* Mobile Hamburger Menu Toggle */}
+            {/* Mobile Hamburger */}
             <div className="flex lg:hidden items-center shrink-0">
               <button
+                ref={hamburgerRef}
                 onClick={() => setMobileMenuOpen(prev => !prev)}
                 className="p-2 rounded-lg border dark:border-slate-700 border-slate-300 dark:bg-slate-800 bg-slate-100 text-slate-800 dark:text-slate-200 cursor-pointer"
-                aria-label="Toggle Navigation Menu"
+                aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+                aria-expanded={mobileMenuOpen}
+                aria-controls="mobile-nav-drawer"
               >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {mobileMenuOpen ? <X className="w-5 h-5" aria-hidden="true" /> : <Menu className="w-5 h-5" aria-hidden="true" />}
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 4. SOLID NAVY MENU RIBBON (Clean Educational Navigation without duplicate login clutter) */}
-      <div className="hidden lg:block bg-[#0b2559] text-white px-4 sm:px-6 lg:px-8 border-y border-blue-900 shadow-inner w-full">
+      {/* 4. DESKTOP NAV RIBBON */}
+      <div className="hidden lg:block bg-[#0b2559] text-white px-4 sm:px-6 lg:px-8 border-y border-blue-900 shadow-inner w-full" role="navigation" aria-label="Main navigation">
         <div className="w-full flex items-center justify-between">
           <nav className="flex items-center text-xs font-bold">
             <button
@@ -373,6 +450,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   ? 'border-amber-400 text-white bg-[#15469e]/60'
                   : 'border-transparent text-slate-200 hover:bg-[#113880] hover:text-white'
               }`}
+              aria-current={activeNavPage === 'HOME' ? 'page' : undefined}
             >
               {t.home}
             </button>
@@ -412,8 +490,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   ? 'border-amber-400 text-white bg-[#15469e]/60'
                   : 'border-transparent text-slate-200 hover:bg-[#113880] hover:text-white'
               }`}
+              aria-current={activeNavPage === 'ANALYTICS' ? 'page' : undefined}
             >
-              <BarChart3 className="w-3.5 h-3.5" />
+              <BarChart3 className="w-3.5 h-3.5" aria-hidden="true" />
               <span>{t.analytics}</span>
             </button>
 
@@ -424,8 +503,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   ? 'border-amber-400 text-white bg-[#15469e]/60'
                   : 'border-transparent text-slate-200 hover:bg-[#113880] hover:text-white'
               }`}
+              aria-current={activeNavPage === 'COMPLIANCE_STANDARDS' ? 'page' : undefined}
             >
-              <FileText className="w-3.5 h-3.5" />
+              <FileText className="w-3.5 h-3.5" aria-hidden="true" />
               <span>{t.aphRules}</span>
             </button>
 
@@ -436,20 +516,37 @@ export const Navbar: React.FC<NavbarProps> = ({
                   ? 'border-amber-400 text-white bg-[#15469e]/60'
                   : 'border-transparent text-slate-200 hover:bg-[#113880] hover:text-white'
               }`}
+              aria-current={activeNavPage === 'DOCUMENTATION' ? 'page' : undefined}
             >
-              <BookOpen className="w-3.5 h-3.5" />
+              <BookOpen className="w-3.5 h-3.5" aria-hidden="true" />
               <span>{t.docsSpec}</span>
             </button>
+
+            {/* Portal active indicator */}
+            {isPortalOrLoginActive && (
+              <button
+                onClick={() => {
+                  if (currentUserRole) onSelectRole(currentUserRole);
+                  onSelectNavPage('PORTALS');
+                }}
+                className="px-4 py-2.5 flex items-center space-x-1.5 border-b-2 border-amber-400 text-white bg-[#15469e]/60 cursor-pointer whitespace-nowrap"
+                aria-current="page"
+              >
+                <User className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>{isAuthenticated ? (language === 'HI' ? 'पोर्टल' : 'My Portal') : (language === 'HI' ? 'लॉगिन' : 'Login')}</span>
+              </button>
+            )}
           </nav>
 
-          {/* Right Ribbon Alert Counter */}
+          {/* Right Ribbon: Regulatory Alerts (role-gated) */}
           <div className="flex items-center space-x-3 text-xs">
-            {openViolationsCount > 0 && (
+            {canSeeAlerts && openViolationsCount > 0 && (
               <button
                 onClick={() => handlePortalNavigation('AICTE_OFFICER')}
-                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-md bg-rose-600 hover:bg-rose-700 text-white font-mono text-[11px] font-bold transition-colors cursor-pointer"
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded bg-rose-600 hover:bg-rose-700 text-white font-mono text-[11px] font-bold transition-colors cursor-pointer"
+                aria-label={`${openViolationsCount} regulatory alerts pending`}
               >
-                <AlertCircle className="w-3.5 h-3.5" />
+                <AlertCircle className="w-3.5 h-3.5" aria-hidden="true" />
                 <span>{openViolationsCount} Regulatory Alerts</span>
               </button>
             )}
@@ -457,22 +554,30 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* 5. MOBILE DRAWER MENU */}
+      {/* 5. MOBILE DRAWER */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-[#0b2559] text-white border-b border-blue-900 shadow-xl px-4 py-3 space-y-1 divide-y divide-blue-800/60 animate-in slide-in-from-top-2 duration-150">
-          <div className="space-y-1 pb-2">
+        <div
+          id="mobile-nav-drawer"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Navigation menu"
+          className="lg:hidden bg-[#0b2559] text-white border-b border-blue-900 shadow-xl px-4 py-3 space-y-1 divide-y divide-blue-800/60"
+        >
+          {/* Navigation Links — always shown */}
+          <div className="space-y-0.5 pb-3">
             <button
+              ref={firstDrawerItemRef}
               onClick={() => {
                 onSelectNavPage('HOME');
                 setMobileMenuOpen(false);
               }}
-              className="w-full text-left px-3 py-2 rounded-lg font-bold text-xs text-white hover:bg-blue-900/80 flex items-center justify-between"
+              className="w-full text-left px-3 py-2.5 rounded-lg font-bold text-xs text-white hover:bg-blue-900/80 flex items-center justify-between"
             >
               <span className="flex items-center space-x-2">
-                <Home className="w-4 h-4 text-blue-300" />
+                <Home className="w-4 h-4 text-blue-300" aria-hidden="true" />
                 <span>{t.home}</span>
               </span>
-              <ChevronRight className="w-4 h-4 text-slate-400" />
+              <ChevronRight className="w-4 h-4 text-slate-400" aria-hidden="true" />
             </button>
 
             <button
@@ -480,13 +585,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onSelectNavPage('ANALYTICS');
                 setMobileMenuOpen(false);
               }}
-              className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-200 hover:bg-blue-900/80 flex items-center justify-between"
+              className="w-full text-left px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-200 hover:bg-blue-900/80 flex items-center justify-between"
             >
               <span className="flex items-center space-x-2">
-                <BarChart3 className="w-4 h-4 text-blue-300" />
+                <BarChart3 className="w-4 h-4 text-blue-300" aria-hidden="true" />
                 <span>{t.analytics}</span>
               </span>
-              <ChevronRight className="w-4 h-4 text-slate-400" />
+              <ChevronRight className="w-4 h-4 text-slate-400" aria-hidden="true" />
             </button>
 
             <button
@@ -494,13 +599,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onSelectNavPage('COMPLIANCE_STANDARDS');
                 setMobileMenuOpen(false);
               }}
-              className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-200 hover:bg-blue-900/80 flex items-center justify-between"
+              className="w-full text-left px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-200 hover:bg-blue-900/80 flex items-center justify-between"
             >
               <span className="flex items-center space-x-2">
-                <FileText className="w-4 h-4 text-blue-300" />
+                <FileText className="w-4 h-4 text-blue-300" aria-hidden="true" />
                 <span>{t.aphRules}</span>
               </span>
-              <ChevronRight className="w-4 h-4 text-slate-400" />
+              <ChevronRight className="w-4 h-4 text-slate-400" aria-hidden="true" />
             </button>
 
             <button
@@ -508,54 +613,70 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onSelectNavPage('DOCUMENTATION');
                 setMobileMenuOpen(false);
               }}
-              className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-200 hover:bg-blue-900/80 flex items-center justify-between"
+              className="w-full text-left px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-200 hover:bg-blue-900/80 flex items-center justify-between"
             >
               <span className="flex items-center space-x-2">
-                <BookOpen className="w-4 h-4 text-blue-300" />
+                <BookOpen className="w-4 h-4 text-blue-300" aria-hidden="true" />
                 <span>{t.docsSpec}</span>
               </span>
-              <ChevronRight className="w-4 h-4 text-slate-400" />
+              <ChevronRight className="w-4 h-4 text-slate-400" aria-hidden="true" />
+            </button>
+
+            <button
+              onClick={() => {
+                onSelectRole('PUBLIC_VERIFY');
+                onSelectNavPage('PORTALS');
+                setMobileMenuOpen(false);
+              }}
+              className="w-full text-left px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-200 hover:bg-blue-900/80 flex items-center justify-between"
+            >
+              <span className="flex items-center space-x-2">
+                <QrCode className="w-4 h-4 text-blue-300" aria-hidden="true" />
+                <span>{t.verifyApaarId}</span>
+              </span>
+              <ChevronRight className="w-4 h-4 text-slate-400" aria-hidden="true" />
             </button>
           </div>
 
+          {/* Portal / Auth Actions */}
           {isAuthenticated ? (
-            <div className="pt-2 space-y-2">
+            <div className="pt-3 space-y-2">
               <button
                 onClick={() => {
                   if (currentUserRole) onSelectRole(currentUserRole);
                   onSelectNavPage('PORTALS');
                   setMobileMenuOpen(false);
                 }}
-                className="w-full text-left px-3 py-2 rounded-lg text-xs font-bold text-white bg-blue-800 hover:bg-blue-700 flex items-center justify-between"
+                className="w-full text-left px-3 py-2.5 rounded-lg text-xs font-bold text-white bg-blue-800 hover:bg-blue-700 flex items-center justify-between"
               >
                 <span>{language === 'HI' ? 'सक्रिय पोर्टल खोलें' : 'Open Active Portal'}</span>
-                <ChevronRight className="w-4 h-4 text-slate-300" />
+                <ChevronRight className="w-4 h-4 text-slate-300" aria-hidden="true" />
               </button>
               <button
                 onClick={() => {
                   onLogout();
                   setMobileMenuOpen(false);
                 }}
-                className="w-full text-left px-3 py-2 rounded-lg text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 flex items-center space-x-2"
+                className="w-full text-left px-3 py-2.5 rounded-lg text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 flex items-center space-x-2"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-4 h-4" aria-hidden="true" />
                 <span>{language === 'HI' ? 'लॉगआउट करें' : 'Log Out'}</span>
               </button>
             </div>
           ) : (
-            <div className="pt-2 space-y-1">
-              <span className="text-[10px] font-mono text-slate-400 uppercase font-bold px-3">Quick Login</span>
+            <div className="pt-3 space-y-0.5">
+              <span className="text-[10px] font-mono text-slate-400 uppercase font-bold px-3 block pb-1">Quick Login</span>
               {loginOptions.map((opt) => (
                 <button
                   key={opt.role}
                   onClick={() => handlePortalNavigation(opt.role)}
-                  className="w-full text-left px-3 py-2 rounded-lg text-xs font-bold text-slate-200 hover:bg-blue-900/80 flex items-center justify-between"
+                  className="w-full text-left px-3 py-2.5 rounded-lg text-xs font-bold text-slate-200 hover:bg-blue-900/80 flex items-center justify-between"
                 >
                   <span className="flex items-center space-x-2.5">
-                    <opt.Icon className="w-3.5 h-3.5 text-blue-300" />
+                    <opt.Icon className="w-3.5 h-3.5 text-blue-300" aria-hidden="true" />
                     <span>{opt.title}</span>
                   </span>
-                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                  <ChevronRight className="w-4 h-4 text-slate-400" aria-hidden="true" />
                 </button>
               ))}
             </div>

@@ -84,13 +84,17 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({ students }) => {
       <div className="dark:bg-slate-900 bg-white border dark:border-slate-800 border-slate-200 rounded-2xl p-6 shadow-sm">
         <form onSubmit={handleVerify} className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
+            <label htmlFor="public-verify-token" className="sr-only">
+              12-digit APAAR ID or Token
+            </label>
             <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
             <input
+              id="public-verify-token"
               type="text"
               placeholder="Enter 12-digit APAAR ID or Token (e.g. 892019482019)"
               value={inputToken}
               onChange={(e) => setInputToken(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 dark:bg-slate-950 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-xl text-sm dark:text-white text-slate-900 font-mono font-bold placeholder-slate-400 focus:outline-none focus:border-blue-600"
+              className="w-full pl-10 pr-4 py-2.5 dark:bg-slate-950 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-xl text-sm dark:text-white text-slate-900 font-mono font-bold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
             />
           </div>
           <button

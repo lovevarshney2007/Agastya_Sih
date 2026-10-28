@@ -525,12 +525,12 @@ export const AuthenticatedDashboardHome: React.FC<AuthenticatedDashboardHomeProp
           <table className="w-full text-left text-xs">
             <thead className="dark:bg-slate-950 bg-slate-100/80 text-[10px] font-mono font-bold uppercase text-slate-500 border-b dark:border-slate-800 border-slate-200">
               <tr>
-                <th className="px-4 py-3">Student Name</th>
-                <th className="px-4 py-3">Masked APAAR ID</th>
-                <th className="px-4 py-3">Institution & Program</th>
-                <th className="px-4 py-3">Category</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3 text-right">Actions</th>
+                <th scope="col" className="px-4 py-3">Student Name</th>
+                <th scope="col" className="px-4 py-3">Masked APAAR ID</th>
+                <th scope="col" className="px-4 py-3">Institution & Program</th>
+                <th scope="col" className="px-4 py-3">Category</th>
+                <th scope="col" className="px-4 py-3">Status</th>
+                <th scope="col" className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y dark:divide-slate-800 divide-slate-100 font-medium">

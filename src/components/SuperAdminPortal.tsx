@@ -78,6 +78,17 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = ({
       .catch(() => {});
   }, []);
 
+  // Handle ESC key to dismiss modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showOnboardModal) {
+        setShowOnboardModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showOnboardModal]);
+
   const handleVerifyChain = async () => {
     setIsVerifyingChain(true);
     setTamperAlert(null);
@@ -538,15 +549,15 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = ({
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-[#0b2559] text-white uppercase text-[10px] tracking-wider font-bold">
-                <th className="py-3 px-4 font-extrabold whitespace-nowrap">CODE</th>
-                <th className="py-3 px-4 font-extrabold min-w-[240px]">COLLEGE NAME & STATE</th>
-                <th className="py-3 px-4 font-extrabold text-center whitespace-nowrap">APPROVED INTAKE</th>
-                <th className="py-3 px-4 font-extrabold text-center whitespace-nowrap">ACTUAL ENROLMENT</th>
-                <th className="py-3 px-4 font-extrabold text-center whitespace-nowrap">INTAKE VARIANCE</th>
-                <th className="py-3 px-4 font-extrabold text-center whitespace-nowrap">SUPERNUMERARY (TFW)</th>
-                <th className="py-3 px-4 font-extrabold text-center whitespace-nowrap">NRI / FN</th>
-                <th className="py-3 px-4 font-extrabold text-center whitespace-nowrap">VERIFICATION %</th>
-                <th className="py-3 px-4 font-extrabold text-center whitespace-nowrap">STATUS</th>
+                <th scope="col" className="py-3 px-4 font-extrabold whitespace-nowrap">CODE</th>
+                <th scope="col" className="py-3 px-4 font-extrabold min-w-[240px]">COLLEGE NAME & STATE</th>
+                <th scope="col" className="py-3 px-4 font-extrabold text-center whitespace-nowrap">APPROVED INTAKE</th>
+                <th scope="col" className="py-3 px-4 font-extrabold text-center whitespace-nowrap">ACTUAL ENROLMENT</th>
+                <th scope="col" className="py-3 px-4 font-extrabold text-center whitespace-nowrap">INTAKE VARIANCE</th>
+                <th scope="col" className="py-3 px-4 font-extrabold text-center whitespace-nowrap">SUPERNUMERARY (TFW)</th>
+                <th scope="col" className="py-3 px-4 font-extrabold text-center whitespace-nowrap">NRI / FN</th>
+                <th scope="col" className="py-3 px-4 font-extrabold text-center whitespace-nowrap">VERIFICATION %</th>
+                <th scope="col" className="py-3 px-4 font-extrabold text-center whitespace-nowrap">STATUS</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -613,7 +624,7 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = ({
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-2">
-              <span className="text-base">🚨</span>
+              <AlertOctagon className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
               <h4 className="text-sm font-bold text-slate-900 dark:text-white">
                 Kafka Duplicate Anomaly Stream
               </h4>
@@ -687,7 +698,7 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = ({
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
             <div className="flex items-center space-x-2">
-              <span className="text-base">📜</span>
+              <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
               <h4 className="text-sm font-bold text-slate-900 dark:text-white">
                 Immutable System Audit Ledger
               </h4>
@@ -803,7 +814,7 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = ({
       {/* 6. Bottom Security & Regulatory Architecture Strip */}
       <div className="bg-[#071329] border border-blue-950 text-white rounded-xl px-4 py-3 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
         <div className="flex items-center space-x-2 text-slate-300 font-medium">
-          <span className="text-amber-400">🛡️</span>
+          <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />
           <span className="font-bold uppercase tracking-wider text-[11px]">
             Security & Regulatory Architecture:
           </span>
@@ -835,103 +846,135 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = ({
 
       {/* Onboard EoA Institution Modal */}
       {showOnboardModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="dark:bg-slate-900 bg-white border dark:border-slate-800 border-slate-200 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+        <div 
+          onClick={(e) => { if (e.target === e.currentTarget) setShowOnboardModal(false); }}
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+        >
+          <div 
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="onboard-modal-title"
+            className="dark:bg-slate-900 bg-white border dark:border-slate-800 border-slate-200 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto my-auto"
+          >
             <div className="flex items-center justify-between border-b dark:border-slate-800 border-slate-200 pb-3">
               <div>
                 <span className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 font-bold uppercase tracking-wider">AICTE EoA Bureau</span>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">Onboard New Approved Institution</h3>
+                <h3 id="onboard-modal-title" className="text-base font-bold text-slate-900 dark:text-white">
+                  Onboard New Approved Institution
+                </h3>
               </div>
               <button 
                 onClick={() => setShowOnboardModal(false)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer font-bold"
+                aria-label="Close dialog"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleOnboardSubmit} className="space-y-3 text-xs">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-500 font-mono mb-1 font-bold">AICTE Permanent ID *</label>
+                  <label htmlFor="onboard-aicte-id" className="block text-slate-600 dark:text-slate-400 font-mono mb-1 font-bold">
+                    AICTE Permanent ID *
+                  </label>
                   <input
+                    id="onboard-aicte-id"
                     type="text"
                     required
                     placeholder="e.g. 1-1049281"
                     value={onboardForm.aicte_permanent_id}
                     onChange={(e) => setOnboardForm({ ...onboardForm, aicte_permanent_id: e.target.value })}
-                    className="w-full p-2.5 dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg text-slate-900 dark:text-white font-mono"
+                    className="w-full p-2.5 dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent font-medium"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-500 font-mono mb-1 font-bold">State *</label>
+                  <label htmlFor="onboard-state" className="block text-slate-600 dark:text-slate-400 font-mono mb-1 font-bold">
+                    State *
+                  </label>
                   <input
+                    id="onboard-state"
                     type="text"
                     required
                     value={onboardForm.state}
                     onChange={(e) => setOnboardForm({ ...onboardForm, state: e.target.value })}
-                    className="w-full p-2.5 dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg text-slate-900 dark:text-white"
+                    className="w-full p-2.5 dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent font-medium"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-500 font-mono mb-1 font-bold">Institution Full Name *</label>
+                <label htmlFor="onboard-name" className="block text-slate-600 dark:text-slate-400 font-mono mb-1 font-bold">
+                  Institution Full Name *
+                </label>
                 <input
+                  id="onboard-name"
                   type="text"
                   required
                   placeholder="e.g. Indian Institute of Technology Bombay"
                   value={onboardForm.name}
                   onChange={(e) => setOnboardForm({ ...onboardForm, name: e.target.value })}
-                  className="w-full p-2.5 dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg text-slate-900 dark:text-white"
+                  className="w-full p-2.5 dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent font-medium"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-500 font-mono mb-1 font-bold">Nodal Officer Name *</label>
+                  <label htmlFor="onboard-officer-name" className="block text-slate-600 dark:text-slate-400 font-mono mb-1 font-bold">
+                    Nodal Officer Name *
+                  </label>
                   <input
+                    id="onboard-officer-name"
                     type="text"
                     required
                     placeholder="e.g. Dr. Rajesh Kumar"
                     value={onboardForm.nodal_officer_name}
                     onChange={(e) => setOnboardForm({ ...onboardForm, nodal_officer_name: e.target.value })}
-                    className="w-full p-2.5 dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg text-slate-900 dark:text-white"
+                    className="w-full p-2.5 dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent font-medium"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-500 font-mono mb-1 font-bold">Nodal Officer Email *</label>
+                  <label htmlFor="onboard-officer-email" className="block text-slate-600 dark:text-slate-400 font-mono mb-1 font-bold">
+                    Nodal Officer Email *
+                  </label>
                   <input
+                    id="onboard-officer-email"
                     type="email"
                     required
                     placeholder="e.g. registrar@iitb.ac.in"
                     value={onboardForm.nodal_officer_email}
                     onChange={(e) => setOnboardForm({ ...onboardForm, nodal_officer_email: e.target.value })}
-                    className="w-full p-2.5 dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg text-slate-900 dark:text-white"
+                    className="w-full p-2.5 dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent font-medium"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-500 font-mono mb-1 font-bold">Approved Program *</label>
+                  <label htmlFor="onboard-course" className="block text-slate-600 dark:text-slate-400 font-mono mb-1 font-bold">
+                    Approved Program *
+                  </label>
                   <input
+                    id="onboard-course"
                     type="text"
                     required
                     value={onboardForm.course}
                     onChange={(e) => setOnboardForm({ ...onboardForm, course: e.target.value })}
-                    className="w-full p-2.5 dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg text-slate-900 dark:text-white"
+                    className="w-full p-2.5 dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent font-medium"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-500 font-mono mb-1 font-bold">Sanctioned Intake *</label>
+                  <label htmlFor="onboard-intake" className="block text-slate-600 dark:text-slate-400 font-mono mb-1 font-bold">
+                    Sanctioned Intake *
+                  </label>
                   <input
+                    id="onboard-intake"
                     type="number"
                     required
                     min={1}
                     value={onboardForm.approved_intake}
                     onChange={(e) => setOnboardForm({ ...onboardForm, approved_intake: Number(e.target.value) })}
-                    className="w-full p-2.5 dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg text-slate-900 dark:text-white font-mono"
+                    className="w-full p-2.5 dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent font-medium"
                   />
                 </div>
               </div>
@@ -948,14 +991,14 @@ export const SuperAdminPortal: React.FC<SuperAdminDashboardProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowOnboardModal(false)}
-                  className="px-4 py-2 dark:bg-slate-800 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-bold cursor-pointer"
+                  className="px-4 py-2 dark:bg-slate-800 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-bold cursor-pointer transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={onboardLoading}
-                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold cursor-pointer shadow-sm disabled:opacity-50"
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold cursor-pointer shadow-sm transition-colors disabled:opacity-50"
                 >
                   {onboardLoading ? 'Onboarding…' : 'Submit & Register EoA'}
                 </button>

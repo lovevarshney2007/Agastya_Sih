@@ -10,7 +10,8 @@ import {
   CheckCircle2,
   Loader2,
   RefreshCw,
-  Lock
+  Lock,
+  X
 } from 'lucide-react';
 import { Institution, StudentRecord, ViolationCase } from '../types';
 import { aicteApi, reportsApi, userStore } from '../api/client';
@@ -76,6 +77,17 @@ export const AictePortal: React.FC<AictePortalProps> = ({
       .catch(err => setApiError(err instanceof Error ? err.message : 'Backend load failed'))
       .finally(() => setApiLoading(false));
   }, []);
+
+  // Handle ESC key to dismiss modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedViolation) {
+        setSelectedViolation(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedViolation]);
 
   const handleProposeAction = async (caseId: string) => {
     setActionMsg(null);
@@ -223,8 +235,9 @@ export const AictePortal: React.FC<AictePortalProps> = ({
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex items-center space-x-2 border-b dark:border-slate-800 border-slate-200 pb-2">
+      {/* Tabs — horizontally scrollable on small screens */}
+      <div className="overflow-x-auto -mx-1">
+        <div className="flex items-center space-x-2 border-b dark:border-slate-800 border-slate-200 pb-2 min-w-max px-1">
         <button
           onClick={() => setActiveTab('DASHBOARD')}
           className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
@@ -257,17 +270,18 @@ export const AictePortal: React.FC<AictePortalProps> = ({
           <AlertOctagon className="w-4 h-4" />
           <span>{t.aicteTabViolations || 'Violation Centre'} ({openViolations.length})</span>
         </button>
-        <button
-          onClick={() => setActiveTab('REPORT_BUILDER')}
-          className={`px-4 py-2 text-xs font-bold rounded-lg flex items-center space-x-1.5 transition-colors cursor-pointer ${
-            activeTab === 'REPORT_BUILDER'
-              ? 'bg-blue-700 text-white'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'
-          }`}
-        >
-          <FileText className="w-4 h-4" />
-          <span>Report & Audit Builder</span>
-        </button>
+          <button
+            onClick={() => setActiveTab('REPORT_BUILDER')}
+            className={`px-4 py-2 text-xs font-bold rounded-lg flex items-center space-x-1.5 transition-colors cursor-pointer ${
+              activeTab === 'REPORT_BUILDER'
+                ? 'bg-blue-700 text-white'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            <span>Report & Audit Builder</span>
+          </button>
+        </div>
       </div>
 
       {/* TAB 1: NATIONAL OVERVIEW */}
@@ -460,7 +474,13 @@ export const AictePortal: React.FC<AictePortalProps> = ({
                   : 'bg-rose-50 dark:bg-rose-950/80 border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-300'
               }`}>
                 <span>{actionMsg.text}</span>
-                <button onClick={() => setActionMsg(null)} className="text-slate-400 hover:text-slate-600 font-bold ml-2">✕</button>
+                <button 
+                  onClick={() => setActionMsg(null)} 
+                  aria-label="Dismiss message"
+                  className="p-1 rounded text-slate-400 hover:text-slate-600 dark:hover:text-white ml-2 cursor-pointer transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
             )}
 
@@ -810,18 +830,29 @@ export const AictePortal: React.FC<AictePortalProps> = ({
 
       {/* RESOLUTION MODAL */}
       {selectedViolation && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="dark:bg-slate-900 bg-white border dark:border-slate-800 border-slate-200 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+        <div 
+          onClick={(e) => { if (e.target === e.currentTarget) setSelectedViolation(null); }}
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+        >
+          <div 
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="resolution-modal-title"
+            className="dark:bg-slate-900 bg-white border dark:border-slate-800 border-slate-200 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto my-auto"
+          >
             <div className="flex items-center justify-between border-b dark:border-slate-800 border-slate-200 pb-3">
               <div>
                 <span className="text-[10px] font-mono text-blue-700 dark:text-blue-400 font-bold">{selectedViolation.id}</span>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">Record Official Resolution</h3>
+                <h3 id="resolution-modal-title" className="text-base font-bold text-slate-900 dark:text-white">
+                  Record Official Resolution
+                </h3>
               </div>
               <button 
                 onClick={() => setSelectedViolation(null)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer font-bold"
+                aria-label="Close dialog"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -830,16 +861,17 @@ export const AictePortal: React.FC<AictePortalProps> = ({
                 <p className="text-xs text-slate-700 dark:text-slate-300 mb-2 font-medium">
                   <strong>Case:</strong> {selectedViolation.title}
                 </p>
-                <label className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">
+                <label htmlFor="resolution-finding" className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">
                   Hearing Finding / Corrective Action Imposed
                 </label>
                 <textarea
+                  id="resolution-finding"
                   required
                   rows={4}
                   value={resolutionNote}
                   onChange={(e) => setResolutionNote(e.target.value)}
                   placeholder="e.g. Institution provided proof of withdrawal for duplicate student. Excess seats ratified under revised supernumerary sanction..."
-                  className="w-full dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg p-3 text-xs dark:text-white text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-700"
+                  className="w-full dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg p-3 text-xs dark:text-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent font-medium"
                 />
               </div>
 
@@ -847,13 +879,13 @@ export const AictePortal: React.FC<AictePortalProps> = ({
                 <button
                   type="button"
                   onClick={() => setSelectedViolation(null)}
-                  className="px-4 py-2 dark:bg-slate-800 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-bold cursor-pointer"
+                  className="px-4 py-2 dark:bg-slate-800 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-bold cursor-pointer transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold cursor-pointer shadow-sm"
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold cursor-pointer shadow-sm transition-colors"
                 >
                   Mark Case Resolved & Update Ledger
                 </button>

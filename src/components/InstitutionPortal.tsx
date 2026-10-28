@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
-  Building2, 
   Upload, 
   FileSpreadsheet, 
   CheckCircle2, 
@@ -13,7 +12,9 @@ import {
   UserCheck,
   AlertOctagon,
   RefreshCw,
-  Loader2
+  Loader2,
+  X,
+  Zap
 } from 'lucide-react';
 import { StudentRecord, Institution, UploadBatch } from '../types';
 import { institutionApi, reportsApi } from '../api/client';
@@ -97,6 +98,17 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
   }, [activeInstId]);
 
   useEffect(() => { loadBackendData(); }, [loadBackendData]);
+
+  // Handle ESC key to dismiss modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showAddModal) {
+        setShowAddModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showAddModal]);
   // ─────────────────────────────────────────────────────────────────────────
 
   // New Student Form State
@@ -592,13 +604,13 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
             <table className="w-full text-left text-xs">
               <thead className="dark:bg-slate-950 bg-slate-50 border-b dark:border-slate-800 border-slate-200 text-slate-600 dark:text-slate-400 font-mono uppercase tracking-wider">
                 <tr>
-                  <th className="py-3 px-4 font-bold">Student & ID</th>
-                  <th className="py-3 px-4 font-bold">12-Digit APAAR ID</th>
-                  <th className="py-3 px-4 font-bold">Program / Branch</th>
-                  <th className="py-3 px-4 font-bold">Quota / Category</th>
-                  <th className="py-3 px-4 font-bold">Verification State</th>
-                  <th className="py-3 px-4 font-bold">Duplicate Integrity</th>
-                  <th className="py-3 px-4 font-bold text-right">Version</th>
+                  <th scope="col" className="py-3 px-4 font-bold">Student & ID</th>
+                  <th scope="col" className="py-3 px-4 font-bold">12-Digit APAAR ID</th>
+                  <th scope="col" className="py-3 px-4 font-bold">Program / Branch</th>
+                  <th scope="col" className="py-3 px-4 font-bold">Quota / Category</th>
+                  <th scope="col" className="py-3 px-4 font-bold">Verification State</th>
+                  <th scope="col" className="py-3 px-4 font-bold">Duplicate Integrity</th>
+                  <th scope="col" className="py-3 px-4 font-bold text-right">Version</th>
                 </tr>
               </thead>
               <tbody className="divide-y dark:divide-slate-800 divide-slate-100">
@@ -752,7 +764,8 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
               <div className="mt-4 p-4 rounded-xl dark:bg-slate-950/80 bg-blue-50/70 border border-blue-200 dark:border-blue-900 flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div className="text-left">
                   <h4 className="text-xs font-bold text-blue-900 dark:text-blue-200 flex items-center space-x-1.5">
-                    <span>⚡ Quick Evaluator Demo Batch Upload</span>
+                    <Zap className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Quick Evaluator Demo Batch Upload</span>
                     <span className="px-2 py-0.5 rounded-full text-[10px] bg-blue-200 dark:bg-blue-800 text-blue-900 dark:text-blue-100 font-mono">POST /upload-demo</span>
                   </h4>
                   <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
@@ -783,8 +796,9 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b dark:border-slate-800 border-slate-200 gap-4">
                 <div>
                   <div className="flex items-center space-x-2 text-xs font-mono text-blue-700 dark:text-blue-400 font-bold">
-                    <span className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300">
-                      🔴 LIVE BACKEND BATCH
+                    <span className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 inline-flex items-center space-x-1.5">
+                      <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                      <span>LIVE BACKEND BATCH</span>
                     </span>
                     <span>BATCH ID: {String(activeBatchReport.batch_id).slice(-8)}</span>
                     <span>•</span>
@@ -800,10 +814,10 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
                     {activeBatchReport.status === 'READY_TO_COMMIT' && (
                       <button
                         onClick={() => handleCommitBatch(String(activeBatchReport.batch_id))}
-                        className="px-3.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg cursor-pointer transition-colors shadow-sm flex items-center space-x-1"
+                        className="px-3.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg cursor-pointer transition-colors shadow-sm flex items-center space-x-1.5"
                       >
                         <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>✅ Commit to Immutable Ledger</span>
+                        <span>Commit to Immutable Ledger</span>
                       </button>
                     )}
                   </div>
@@ -847,8 +861,9 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
                   </span>
                 </h4>
                 {((activeBatchReport.issues as Record<string, unknown>[]) || []).length === 0 ? (
-                  <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-300 font-medium">
-                    ✅ All rows passed schema and quota validation. Ready to be committed into the national ledger.
+                  <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-300 font-medium flex items-center space-x-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>All rows passed schema and quota validation. Ready to be committed into the national ledger.</span>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -1082,22 +1097,34 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
 
       {/* SINGLE STUDENT ADD MODAL */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="dark:bg-slate-900 bg-white border dark:border-slate-800 border-slate-200 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+        <div 
+          onClick={(e) => { if (e.target === e.currentTarget) setShowAddModal(false); }}
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+        >
+          <div 
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="student-modal-title"
+            className="dark:bg-slate-900 bg-white border dark:border-slate-800 border-slate-200 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto my-auto"
+          >
             <div className="flex items-center justify-between border-b dark:border-slate-800 border-slate-200 pb-3">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Add Individual Student Enrolment</h3>
+              <h3 id="student-modal-title" className="text-base font-bold text-slate-900 dark:text-white">
+                Add Individual Student Enrolment
+              </h3>
               <button 
                 onClick={() => setShowAddModal(false)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer font-bold"
+                aria-label="Close dialog"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* 1-Click Test Data Presets */}
             <div className="p-2.5 rounded-lg bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60">
-              <span className="text-[11px] font-bold text-blue-900 dark:text-blue-300 block mb-1.5 flex items-center space-x-1">
-                <span>⚡ 1-Click Test Autofill:</span>
+              <span className="text-xs font-bold text-blue-900 dark:text-blue-300 block mb-1.5 flex items-center space-x-1">
+                <Zap className="w-3.5 h-3.5 text-amber-500" />
+                <span>1-Click Test Autofill:</span>
               </span>
               <div className="flex flex-wrap gap-1.5">
                 <button
@@ -1111,7 +1138,7 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
                     studentIdNo: `COEP-CSE-${Math.floor(100 + Math.random() * 900)}`,
                     seatCategory: 'General'
                   })}
-                  className="px-2 py-1 text-[10px] font-bold rounded bg-white dark:bg-slate-800 border border-blue-200 dark:border-slate-700 text-blue-800 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                  className="px-2.5 py-1 text-xs font-bold rounded bg-white dark:bg-slate-800 border border-blue-200 dark:border-slate-700 text-blue-800 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                 >
                   Rahul Sharma (Verified)
                 </button>
@@ -1126,7 +1153,7 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
                     studentIdNo: `COEP-CSE-${Math.floor(100 + Math.random() * 900)}`,
                     seatCategory: 'General'
                   })}
-                  className="px-2 py-1 text-[10px] font-bold rounded bg-white dark:bg-slate-800 border border-blue-200 dark:border-slate-700 text-blue-800 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                  className="px-2.5 py-1 text-xs font-bold rounded bg-white dark:bg-slate-800 border border-blue-200 dark:border-slate-700 text-blue-800 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                 >
                   Priya Nair (Verified)
                 </button>
@@ -1144,7 +1171,7 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
                       seatCategory: 'General'
                     });
                   }}
-                  className="px-2 py-1 text-[10px] font-bold rounded bg-white dark:bg-slate-800 border border-blue-200 dark:border-slate-700 text-blue-800 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                  className="px-2.5 py-1 text-xs font-bold rounded bg-white dark:bg-slate-800 border border-blue-200 dark:border-slate-700 text-blue-800 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                 >
                   New Random Student
                 </button>
@@ -1153,60 +1180,75 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
 
             <form onSubmit={handleFormSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">Full Legal Name</label>
+                <label htmlFor="student-name" className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">
+                  Full Legal Name
+                </label>
                 <input 
+                  id="student-name"
                   type="text"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
                   placeholder="e.g. Priyanshu Sharma"
-                  className="w-full dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg px-3 py-2 text-xs dark:text-white text-slate-900 focus:outline-none focus:border-blue-700 font-medium"
+                  className="w-full dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg px-3 py-2 text-xs dark:text-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent font-medium"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">12-Digit APAAR ID</label>
+                  <label htmlFor="student-apaar" className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">
+                    12-Digit APAAR ID
+                  </label>
                   <input 
+                    id="student-apaar"
                     type="text"
                     required
                     maxLength={12}
                     value={formData.apaarId}
                     onChange={(e) => setFormData({...formData, apaarId: e.target.value})}
                     placeholder="12 digits"
-                    className="w-full dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg px-3 py-2 text-xs dark:text-white text-slate-900 font-mono focus:outline-none focus:border-blue-700 font-medium"
+                    className="w-full dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg px-3 py-2 text-xs dark:text-white text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent font-medium"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">Date of Birth</label>
+                  <label htmlFor="student-dob" className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">
+                    Date of Birth
+                  </label>
                   <input 
+                    id="student-dob"
                     type="date"
                     required
                     value={formData.dob}
                     onChange={(e) => setFormData({...formData, dob: e.target.value})}
-                    className="w-full dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg px-3 py-2 text-xs dark:text-white text-slate-900 focus:outline-none focus:border-blue-700 font-medium"
+                    className="w-full dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg px-3 py-2 text-xs dark:text-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent font-medium"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">College Roll / Reg No.</label>
+                  <label htmlFor="student-roll" className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">
+                    College Roll / Reg No.
+                  </label>
                   <input 
+                    id="student-roll"
                     type="text"
                     required
                     value={formData.studentIdNo}
                     onChange={(e) => setFormData({...formData, studentIdNo: e.target.value})}
                     placeholder="e.g. 2025-CSE-091"
-                    className="w-full dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg px-3 py-2 text-xs dark:text-white text-slate-900 font-mono focus:outline-none focus:border-blue-700 font-medium"
+                    className="w-full dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg px-3 py-2 text-xs dark:text-white text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent font-medium"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">Seat Category</label>
+                  <label htmlFor="student-seat" className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">
+                    Seat Category
+                  </label>
                   <select
+                    id="student-seat"
                     value={formData.seatCategory}
                     onChange={(e) => setFormData({...formData, seatCategory: e.target.value})}
-                    className="w-full dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg px-3 py-2 text-xs dark:text-white text-slate-900 focus:outline-none focus:border-blue-700 font-medium"
+                    className="w-full dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg px-3 py-2 text-xs dark:text-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent font-medium"
                   >
                     <option value="General">General</option>
                     <option value="OBC">OBC</option>
@@ -1221,14 +1263,17 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
 
               {/* Course input */}
               <div>
-                <label className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">Course / Program</label>
+                <label htmlFor="student-course" className="block text-xs font-mono text-slate-600 dark:text-slate-400 mb-1 font-bold">
+                  Course / Program
+                </label>
                 <input
+                  id="student-course"
                   type="text"
                   required
                   value={formData.course}
                   onChange={(e) => setFormData({...formData, course: e.target.value})}
                   placeholder="e.g. Computer Science and Engineering"
-                  className="w-full dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg px-3 py-2 text-xs dark:text-white text-slate-900 focus:outline-none focus:border-blue-700 font-medium"
+                  className="w-full dark:bg-slate-800 bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-lg px-3 py-2 text-xs dark:text-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent font-medium"
                 />
               </div>
 
@@ -1263,3 +1308,4 @@ export const InstitutionPortal: React.FC<InstitutionPortalProps> = ({
     </div>
   );
 };
+
