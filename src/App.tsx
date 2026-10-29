@@ -25,6 +25,7 @@ import { VerificationResult } from './pages/verifier/Result';
 import { StudentHome } from './pages/student/Home';
 import { ConsentCentre } from './pages/student/Consent';
 import { ShareRecord } from './pages/student/Share';
+import { PublicDashboard } from './pages/PublicDashboard';
 
 interface Route {
   pattern: string;
@@ -36,6 +37,7 @@ interface Route {
 
 const ROUTES: Route[] = [
   { pattern: '/', render: () => <Home />, full: true },
+  { pattern: '/public-dashboard', render: () => <PublicDashboard />, full: true },
   { pattern: '/sign-in', render: () => <SignIn /> },
   { pattern: '/activate', render: () => <Activate /> },
   { pattern: '/verify', render: () => <PublicVerify /> },

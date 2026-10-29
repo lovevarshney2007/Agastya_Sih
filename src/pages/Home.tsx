@@ -1,5 +1,5 @@
 import { useRef, useState, type KeyboardEvent } from 'react';
-import { ArrowRight, Building2, ChevronRight, GraduationCap, Landmark, SearchCheck } from 'lucide-react';
+import { ArrowRight, BarChart3, Building2, ChevronRight, GraduationCap, Landmark, SearchCheck, ShieldCheck, Users } from 'lucide-react';
 import { api } from '../api/client';
 import { HeroIllustration } from '../components/Illustrations';
 import { CountUp } from '../components/ui';
@@ -166,10 +166,37 @@ export function Home() {
       <section className="bg-white border-b border-line">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
           <LiveFigures />
+          <div className="mt-4 flex justify-center sm:justify-end">
+            <Link to="/public-dashboard" className="text-sm text-brand no-underline hover:underline flex items-center gap-1.5 font-medium">
+              <BarChart3 size={15} aria-hidden="true" /> See full live seats dashboard &rarr;
+            </Link>
+          </div>
         </div>
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 space-y-14">
+        <section aria-labelledby="live-h" className="panel border-t-4 !border-t-india-green overflow-hidden">
+          <div className="p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-6">
+            <span className="w-14 h-14 shrink-0 rounded-xl bg-ok-wash text-ok flex items-center justify-center">
+              <BarChart3 size={28} aria-hidden="true" />
+            </span>
+            <div className="flex-1 min-w-0">
+              <h2 id="live-h" className="text-xl font-bold">Live Seats Dashboard</h2>
+              <p className="text-muted mt-1 max-w-2xl">
+                Real-time seat availability across every AICTE-approved college in India. Approved intake vs enrolled, state-wise breakdown, and programme-level utilization. No login required.
+              </p>
+              <div className="flex flex-wrap gap-3 mt-3 text-sm text-muted">
+                <span className="flex items-center gap-1.5"><Users size={14} aria-hidden="true" /> 5+ lakh seats tracked</span>
+                <span className="flex items-center gap-1.5"><Building2 size={14} aria-hidden="true" /> 1,500+ colleges</span>
+                <span className="flex items-center gap-1.5"><ShieldCheck size={14} aria-hidden="true" /> No personal data shown</span>
+              </div>
+            </div>
+            <Link to="/public-dashboard" className="btn btn-primary no-underline shrink-0 flex items-center gap-2">
+              View live seats <ChevronRight size={16} aria-hidden="true" />
+            </Link>
+          </div>
+        </section>
+
         <section aria-labelledby="portals-h">
           <h2 id="portals-h" className="text-2xl font-bold">Sign in to your portal</h2>
           <p className="text-muted mt-1">Each portal shows only what that role needs.</p>
@@ -218,6 +245,26 @@ export function Home() {
                 <li>Student phone numbers or addresses</li>
                 <li>More than a verifier needs to know</li>
               </ul>
+            </div>
+            <div className="panel p-5 border-t-4 !border-t-brand">
+              <h3 className="font-bold flex items-center gap-2"><GraduationCap size={16} aria-hidden="true" /> For students</h3>
+              <p className="text-sm text-muted mt-2">
+                Your APAAR ID is your lifelong academic identity. Sign in to see what your college reported,
+                approve employer verification requests, and share your record on your terms.
+              </p>
+              <Link to="/sign-in?as=student" className="btn btn-sm btn-secondary no-underline mt-3 inline-flex items-center gap-1.5">
+                My APAAR record <ArrowRight size={14} aria-hidden="true" />
+              </Link>
+            </div>
+            <div className="panel p-5 border-t-4 !border-t-teal">
+              <h3 className="font-bold flex items-center gap-2"><SearchCheck size={16} aria-hidden="true" /> For employers &amp; universities</h3>
+              <p className="text-sm text-muted mt-2">
+                Verify a student's enrolment instantly. AICTE-signed, tamper-evident, consent-based.
+                Request access through the Verifier portal or scan the QR on a certificate.
+              </p>
+              <Link to="/sign-in?as=verifier" className="btn btn-sm btn-secondary no-underline mt-3 inline-flex items-center gap-1.5">
+                Verifier portal <ArrowRight size={14} aria-hidden="true" />
+              </Link>
             </div>
             <div className="panel p-5 border-t-4 !border-t-india-green">
               <h3 className="font-bold">Need help?</h3>

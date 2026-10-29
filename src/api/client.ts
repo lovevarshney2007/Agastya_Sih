@@ -1,7 +1,7 @@
 import type {
   AddStudentInput, AddStudentResult, AuditLedger, BatchReport, BatchSummary, CaseDetail, CaseSummary, ChainCheck,
   CommitResult, Consent, CredentialResult, DemoAccounts, InstitutionDashboard, InstitutionListItem, LoginResponse,
-  NationalDashboard, OnboardInput, PublicStats, PublicVerifyResult, RecordHistory, RiskRanking, SessionUser, StudentPage,
+  NationalDashboard, OnboardInput, PublicSeatsResponse, PublicStats, PublicVerifyResult, RecordHistory, RiskRanking, SessionUser, StudentPage,
   StudentRecord, StudentRow, StudentShare, VerificationRequestSummary, VerifierTracker,
 } from './types';
 
@@ -194,6 +194,8 @@ export const api = {
   },
 
   publicStats: () => json<PublicStats>('/public/stats', { auth: false }),
+  publicSeats: (params: { state?: string; level?: string; search?: string; page?: number; page_size?: number } = {}) =>
+    json<PublicSeatsResponse>(`/public/seats${q(params)}`, { auth: false }),
   publicVerify: (token: string) => json<PublicVerifyResult>(`/verify/public/${encodeURIComponent(token)}`, { auth: false }),
   templateDownload: () => downloadFile('/reports/admission-template.csv', 'upload_template.csv'),
 };

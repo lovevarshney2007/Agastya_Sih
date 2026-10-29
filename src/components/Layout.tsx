@@ -83,6 +83,7 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
 
           <div className={`${menuOpen ? 'flex' : 'hidden'} sm:flex absolute sm:static top-full left-0 right-0 z-40 bg-white sm:bg-transparent border-b sm:border-0 border-line px-4 sm:px-0 py-3 sm:py-0 flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 text-sm`}>
             <Link to="/verify" className="no-underline hover:underline text-ink" onClick={() => setMenuOpen(false)}>Verify a record</Link>
+            <Link to="/public-dashboard" className="no-underline hover:underline text-ink" onClick={() => setMenuOpen(false)}>Live seats</Link>
             {user ? (
               <>
                 <div className="sm:text-right leading-tight sm:border-l sm:border-line sm:pl-5">

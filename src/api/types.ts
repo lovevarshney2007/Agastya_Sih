@@ -393,3 +393,61 @@ export interface PublicStats {
   credentials_issued: number;
   submission_deadline: string;
 }
+
+// -- Public Seats Dashboard ----------------------------------------------------
+export interface PublicStateRow {
+  state: string;
+  institutions_count: number;
+  approved_seats: number;
+  enrolled: number;
+  utilization_pct: number;
+  verified_pct: number;
+}
+
+export interface PublicProgrammeRow {
+  course: string;
+  level: string;
+  approved_intake: number;
+  enrolled: number;
+  supernumerary: number;
+}
+
+export interface PublicInstitutionProgramme {
+  course: string;
+  level: string;
+  approved_intake: number;
+  enrolled: number;
+  supernumerary: number;
+  supernumerary_cap: number;
+}
+
+export interface PublicInstitutionRow {
+  id: string;
+  name: string;
+  code: string;
+  state: string;
+  district: string | null;
+  type: string;
+  programmes: PublicInstitutionProgramme[];
+  total_approved: number;
+  total_enrolled: number;
+  seats_remaining: number;
+  identity_verified_pct: number;
+  as_of: string;
+  last_submission: string | null;
+}
+
+export interface PublicSeatsResponse {
+  as_of: string;
+  academic_year: number;
+  total_approved_seats: number;
+  total_enrolled: number;
+  total_institutions: number;
+  institutions_reporting: number;
+  states: PublicStateRow[];
+  programmes: PublicProgrammeRow[];
+  institutions: PublicInstitutionRow[];
+  page: number;
+  page_size: number;
+  total_institution_count: number;
+}
