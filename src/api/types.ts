@@ -451,3 +451,103 @@ export interface PublicSeatsResponse {
   page_size: number;
   total_institution_count: number;
 }
+
+
+// ─────────────────────────────────────────────────────────────
+// Machine Learning & AI Intelligence Types
+// ─────────────────────────────────────────────────────────────
+
+export interface DisciplineForecast {
+  discipline: string;
+  approved_intake_2025: number;
+  actual_enrolled_2025: number;
+  current_fill_rate: number;
+  projected_demand_2026: number;
+  projected_fill_rate_2026: number;
+  projected_vacancy_seats: number;
+  market_demand_trend: string;
+  policy_action_status: string;
+  statutory_recommendation: string;
+}
+
+export interface ForecastingResult {
+  target_academic_year: string;
+  state: string;
+  summary: {
+    total_sanctioned_intake: number;
+    total_current_enrolled: number;
+    total_projected_demand: number;
+    current_fill_rate_pct: number;
+    projected_fill_rate_pct: number;
+    projected_unfilled_seats: number;
+  };
+  discipline_breakdown: DisciplineForecast[];
+}
+
+export interface FuzzyMatchCandidate {
+  student_id: string;
+  enrolled_name: string;
+  enrolled_dob: string | null;
+  apaar_id: string | null;
+  institution_name: string;
+  institution_state: string;
+  course_name: string;
+  academic_year: string;
+  match_score: number;
+  confidence_pct: number;
+  risk_tier: string;
+  metrics: {
+    name_jaro_winkler: number;
+    levenshtein_ratio: number;
+    phonetic_soundex_match: boolean;
+    dob_match_score: number;
+    guardian_match_score: number;
+  };
+}
+
+export interface FuzzyDedupResponse {
+  mode: string;
+  comparison?: {
+    score: number;
+    confidence_pct: number;
+    risk_tier: string;
+    metrics: {
+      name_jaro_winkler: number;
+      levenshtein_ratio: number;
+      phonetic_soundex_match: boolean;
+      dob_match_score: number;
+      guardian_match_score: number;
+    };
+  };
+  total_matches?: number;
+  candidates?: FuzzyMatchCandidate[];
+}
+
+export interface BatchFraudAnalysis {
+  batch_id: string;
+  filename: string;
+  total_records: number;
+  fraud_score: number;
+  risk_level: RiskLevel;
+  is_suspicious: boolean;
+  findings: string[];
+  metrics: {
+    birth_year_std_dev: number;
+    missing_apaar_pct: number;
+    dominant_category_share_pct: number;
+  };
+}
+
+export interface CohortAnomalyItem {
+  institution_id: string;
+  aicte_permanent_id: string;
+  name: string;
+  state: string;
+  total_enrolled: number;
+  birth_year_std_dev: number;
+  missing_apaar_pct: number;
+  dominant_category_pct: number;
+  fraud_score: number;
+  risk_level: RiskLevel;
+  findings: string[];
+}

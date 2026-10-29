@@ -3,6 +3,7 @@ import type {
   CommitResult, Consent, CredentialResult, DemoAccounts, InstitutionDashboard, InstitutionListItem, LoginResponse,
   NationalDashboard, OnboardInput, PublicSeatsResponse, PublicStats, PublicVerifyResult, RecordHistory, RiskRanking, SessionUser, StudentPage,
   StudentRecord, StudentRow, StudentShare, VerificationRequestSummary, VerifierTracker,
+  ForecastingResult, FuzzyDedupResponse, BatchFraudAnalysis, CohortAnomalyItem,
 } from './types';
 
 // In development Vite proxies /api to the local backend (see vite.config.ts).
@@ -198,4 +199,19 @@ export const api = {
     json<PublicSeatsResponse>(`/public/seats${q(params)}`, { auth: false }),
   publicVerify: (token: string) => json<PublicVerifyResult>(`/verify/public/${encodeURIComponent(token)}`, { auth: false }),
   templateDownload: () => downloadFile('/reports/admission-template.csv', 'upload_template.csv'),
+
+  ml: {
+    forecasting: (state?: string) => json<ForecastingResult>(`/ml/forecasting${q({ state })}`),
+    fuzzyDedup: (body: {
+      student_name: string;
+      dob?: string;
+      father_name?: string;
+      target_name?: string;
+      target_dob?: string;
+      institution_id?: string;
+      threshold?: number;
+    }) => json<FuzzyDedupResponse>('/ml/fuzzy-dedup', { method: 'POST', body }),
+    batchFraud: (batchId: string) => json<BatchFraudAnalysis>(`/ml/batch-fraud/${encodeURIComponent(batchId)}`),
+    cohortAnomalies: () => json<CohortAnomalyItem[]>('/ml/cohort-anomalies'),
+  },
 };

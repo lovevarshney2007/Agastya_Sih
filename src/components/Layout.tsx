@@ -21,6 +21,7 @@ const PORTAL_NAV: Record<Portal, { title: string; links: { to: string; label: st
       { to: '/aicte', label: 'National overview' },
       { to: '/aicte/cases', label: 'Cases' },
       { to: '/aicte/risk', label: 'Risk ranking' },
+      { to: '/aicte/ml-intelligence', label: 'Policy & ML Intel' },
       { to: '/aicte/institutions', label: 'Institutions' },
       { to: '/aicte/audit', label: 'Audit ledger' },
     ],

@@ -17,6 +17,7 @@ import { NationalOverview } from './pages/aicte/Overview';
 import { Cases } from './pages/aicte/Cases';
 import { CaseDetailPage } from './pages/aicte/CaseDetail';
 import { RiskRankingPage } from './pages/aicte/Risk';
+import { MLIntelligencePage } from './pages/aicte/MLIntelligence';
 import { Institutions } from './pages/aicte/Institutions';
 import { InstitutionProfile } from './pages/aicte/InstitutionProfile';
 import { AuditLedgerPage } from './pages/aicte/Audit';
@@ -54,6 +55,7 @@ const ROUTES: Route[] = [
   { pattern: '/aicte/cases', portal: 'aicte', wide: true, render: () => <Cases /> },
   { pattern: '/aicte/cases/:id', portal: 'aicte', wide: true, render: (p) => <CaseDetailPage caseId={p.id} /> },
   { pattern: '/aicte/risk', portal: 'aicte', wide: true, render: () => <RiskRankingPage /> },
+  { pattern: '/aicte/ml-intelligence', portal: 'aicte', wide: true, render: () => <MLIntelligencePage /> },
   { pattern: '/aicte/institutions', portal: 'aicte', wide: true, render: () => <Institutions /> },
   { pattern: '/aicte/institutions/:id', portal: 'aicte', wide: true, render: (p) => <InstitutionProfile institutionId={p.id} /> },
   { pattern: '/aicte/audit', portal: 'aicte', wide: true, render: () => <AuditLedgerPage /> },
