@@ -188,6 +188,9 @@ export const api = {
       json<any>(`/aicte/verifier-orgs/${encodeURIComponent(orgId)}/quota`, { method: 'POST', body: { monthly_quota } }),
     downloadShowCausePdf: (caseId: string) =>
       downloadFile(`/aicte/violations/${encodeURIComponent(caseId)}/show-cause-pdf`, `AICTE-Show-Cause-Notice-${caseId}.pdf`),
+    securityScenarios: () => json<any[]>('/security/simulator/scenarios'),
+    executeAttack: (scenario_id: string, custom_payload?: Record<string, any>) =>
+      json<any>('/security/simulator/execute', { method: 'POST', body: { scenario_id, custom_payload } }),
   },
 
   verifier: {

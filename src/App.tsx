@@ -30,6 +30,7 @@ import { GuardianConsent } from './pages/student/GuardianConsent';
 import { DataRights } from './pages/student/DataRights';
 import { RulesConfig } from './pages/aicte/RulesConfig';
 import { VerifierApprovals } from './pages/aicte/VerifierApprovals';
+import { SecuritySandboxPage } from './pages/aicte/SecuritySandbox';
 import { PublicDashboard } from './pages/PublicDashboard';
 import { I18nProvider } from './lib/i18n';
 
@@ -66,6 +67,7 @@ const ROUTES: Route[] = [
   { pattern: '/aicte/rules', portal: 'aicte', wide: true, render: () => <RulesConfig /> },
   { pattern: '/aicte/verifier-approvals', portal: 'aicte', wide: true, render: () => <VerifierApprovals /> },
   { pattern: '/aicte/audit', portal: 'aicte', wide: true, render: () => <AuditLedgerPage /> },
+  { pattern: '/aicte/security-sandbox', portal: 'aicte', wide: true, render: () => <SecuritySandboxPage /> },
 
   { pattern: '/verifier', portal: 'verifier', wide: true, render: () => <VerifierHome /> },
   { pattern: '/verifier/requests/:token', portal: 'verifier', render: (p) => <VerificationResult token={p.token} /> },

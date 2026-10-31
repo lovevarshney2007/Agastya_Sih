@@ -43,6 +43,7 @@ const DICTIONARY: Record<Language, Record<string, string>> = {
     nav_audit: 'Audit ledger',
     nav_rules_config: 'Rules & seat caps',
     nav_verifier_approvals: 'Verifier approvals',
+    nav_security_sandbox: 'Security Sandbox',
 
     // Verifier Nav
     nav_verifications: 'Verification requests',
@@ -94,6 +95,7 @@ const DICTIONARY: Record<Language, Record<string, string>> = {
     nav_audit: 'ऑडिट लेजर',
     nav_rules_config: 'नियम व कोटा विन्यास',
     nav_verifier_approvals: 'सत्यापनकर्ता अनुमोदन',
+    nav_security_sandbox: 'सुरक्षा सैंडबॉक्स (हमला परीक्षण)',
 
     // Verifier Nav
     nav_verifications: 'सत्यापन अनुरोध',

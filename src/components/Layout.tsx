@@ -36,6 +36,7 @@ const PORTAL_NAV: Record<Portal, { titleKey: string; defaultTitle: string; links
       { to: '/aicte/verifier-approvals', label: 'Verifier approvals', key: 'nav_verifier_approvals' },
       { to: '/aicte/institutions', label: 'Institutions', key: 'nav_institutions' },
       { to: '/aicte/audit', label: 'Audit ledger', key: 'nav_audit' },
+      { to: '/aicte/security-sandbox', label: 'Security Sandbox', key: 'nav_security_sandbox' },
     ],
   },
   verifier: {
