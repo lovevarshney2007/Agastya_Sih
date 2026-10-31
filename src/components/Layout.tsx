@@ -5,6 +5,7 @@ import { Link, useRouter } from '../lib/router';
 import { ROLE_LABEL, useSession, type Portal } from '../lib/session';
 import { useI18n, LanguageToggle } from '../lib/i18n';
 import { JuryTourWidget } from './JuryTourWidget';
+import { NotificationBell } from './NotificationBell';
 
 interface NavLinkItem {
   to: string;
@@ -108,6 +109,7 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
             <Link to="/public-dashboard" className="no-underline hover:underline text-ink" onClick={() => setMenuOpen(false)}>{t('live_seats')}</Link>
             {user ? (
               <>
+                <NotificationBell />
                 <div className="sm:text-right leading-tight sm:border-l sm:border-line sm:pl-5">
                   <div className="font-semibold">{user.full_name}</div>
                   <div className="text-xs text-muted">{ROLE_LABEL[user.role]}{user.org_name ? ` · ${user.org_name}` : ''}</div>

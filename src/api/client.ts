@@ -266,4 +266,22 @@ export const api = {
     batchFraud: (batchId: string) => json<BatchFraudAnalysis>(`/ml/batch-fraud/${encodeURIComponent(batchId)}`),
     cohortAnomalies: () => json<CohortAnomalyItem[]>('/ml/cohort-anomalies'),
   },
+
+  notifications: {
+    list: () => json<{
+      unread_count: number;
+      notifications: Array<{
+        id: string;
+        title: string;
+        message: string;
+        severity: 'INFO' | 'WARNING' | 'URGENT' | 'SUCCESS';
+        category: string;
+        action_link?: string;
+        is_read: boolean;
+        created_at: string;
+      }>;
+    }>('/notifications'),
+    markRead: (id: string) => json<any>(`/notifications/${encodeURIComponent(id)}/read`, { method: 'POST' }),
+    markAllRead: () => json<any>('/notifications/mark-all-read', { method: 'POST' }),
+  },
 };
