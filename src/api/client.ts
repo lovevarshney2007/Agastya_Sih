@@ -174,6 +174,7 @@ export const api = {
     restore: () => json<{ status: string; message: string }>('/aicte/audit/restore', { method: 'POST' }),
     anchor: () => json<{ status: string; message?: string; merkle_root?: string; events_anchored?: number }>('/aicte/audit/anchor', { method: 'POST' }),
     exportNational: () => downloadFile('/reports/national-summary.csv', 'national_summary.csv'),
+    downloadExecutivePdf: () => downloadFile('/aicte/reports/national-briefing-pdf', 'AICTE-National-Compliance-Briefing-2026.pdf'),
     rules: () => json<any>('/aicte/rules'),
     updateRule: (body: { rule_id: string; enabled: boolean; severity: string }) =>
       json<any>('/aicte/rules/update', { method: 'POST', body }),
@@ -212,6 +213,12 @@ export const api = {
     submitRightsRequest: (body: { request_type: string; subject: string; description: string; evidence_notes?: string }) =>
       json<any>('/student/rights/requests', { method: 'POST', body }),
     exportDataPortability: () => json<any>('/student/rights/data-export'),
+    digilockerStatus: () =>
+      json<{ is_linked: boolean; digilocker_id?: string; linked_at?: string; synced_credentials_count?: number; last_synced_at?: string }>('/student/digilocker/status'),
+    linkDigiLocker: (body: { security_pin: string; aadhaar_last4?: string }) =>
+      json<{ success: boolean; message: string; digilocker_id: string }>('/student/digilocker/link', { method: 'POST', body }),
+    pushToDigiLocker: (enrolment_id: string) =>
+      json<{ success: boolean; message: string; doc_uri: string; status: string; synced_at: string }>('/student/digilocker/push-credential', { method: 'POST', body: { enrolment_id } }),
   },
 
   get: <T>(path: string) => json<T>(path),

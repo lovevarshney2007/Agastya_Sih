@@ -4,6 +4,7 @@ import { API_ORIGIN } from '../api/client';
 import { Link, useRouter } from '../lib/router';
 import { ROLE_LABEL, useSession, type Portal } from '../lib/session';
 import { useI18n, LanguageToggle } from '../lib/i18n';
+import { JuryTourWidget } from './JuryTourWidget';
 
 interface NavLinkItem {
   to: string;
@@ -172,6 +173,7 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
           </div>
         </div>
       </footer>
+      <JuryTourWidget />
     </div>
   );
 }

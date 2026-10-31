@@ -1,0 +1,243 @@
+import { useState } from 'react';
+import { api } from '../api/client';
+import { useRouter } from '../lib/router';
+import { useSession } from '../lib/session';
+import { Sparkles, ChevronRight, ChevronLeft, X, Play, RotateCcw } from 'lucide-react';
+
+interface TourStep {
+  step: number;
+  personaId: string;
+  roleTitle: string;
+  targetPath: string;
+  title: string;
+  headline: string;
+  description: string;
+  highlightAction: string;
+}
+
+const TOUR_STEPS: TourStep[] = [
+  {
+    step: 1,
+    personaId: 'INSTITUTION_REGISTRAR',
+    roleTitle: 'Dr. S. K. Mahajan (Registrar, COEP Pune)',
+    targetPath: '/institution/batches',
+    title: '1. Ingestion & Rule Ladder',
+    headline: 'Batch Upload with Live APH Rule Validation',
+    description: 'Institutions upload student batches (CSV/Excel). The ingestion pipeline tests 14 AICTE Approval Process Handbook (APH) rules in real-time.',
+    highlightAction: 'Switch to Registrar & Open Batches',
+  },
+  {
+    step: 2,
+    personaId: 'AICTE_MAKER',
+    roleTitle: 'Rajesh Verma (AICTE Maker, Regulation Bureau)',
+    targetPath: '/aicte/cases',
+    title: '2. Anomaly Interception',
+    headline: 'Cross-Institution Conflict Interception',
+    description: 'A dual full-time enrolment between COEP and VJTI was intercepted using salted HMAC blind-indexing without exposing plaintext student identity.',
+    highlightAction: 'Switch to AICTE Maker & Inspect Cases',
+  },
+  {
+    step: 3,
+    personaId: 'AICTE_CHECKER',
+    roleTitle: 'Dr. Anil Deshpande (AICTE Checker, Director)',
+    targetPath: '/aicte/cases',
+    title: '3. 4-Eyes Dual-Key Governance',
+    headline: 'Strict Maker-Checker Resolution',
+    description: 'Under the 4-Eyes principle, regulatory citations and case resolutions proposed by the Maker require independent senior Checker sign-off.',
+    highlightAction: 'Switch to AICTE Checker & Authorise',
+  },
+  {
+    step: 4,
+    personaId: 'STUDENT',
+    roleTitle: 'Priya Nair (Student, COEP)',
+    targetPath: '/student',
+    title: '4. Student Wallet & DPDP Rights',
+    headline: 'W3C Credential, DigiLocker & Data Rights',
+    description: 'Student receives a tamper-evident JWS credential with Dual-QR code, links DigiLocker, and exercises DPDP Section 11-14 data rights.',
+    highlightAction: 'Switch to Student & View Credentials',
+  },
+  {
+    step: 5,
+    personaId: 'VERIFIER',
+    roleTitle: 'Vikram Malhotra (Lead Verifier, TCS)',
+    targetPath: '/verifier',
+    title: '5. Zero-Trust Verification',
+    headline: 'Consent-Gated Offline Credential Verification',
+    description: 'Authorised employers check student authenticity through OTP-assisted consent and cryptographic signature verification against AICTE keys.',
+    highlightAction: 'Switch to Verifier & Scan QR',
+  },
+];
+
+export function JuryTourWidget() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [currentStepIdx, setCurrentStepIdx] = useState(0);
+  const [switching, setSwitching] = useState(false);
+  const { signIn } = useSession();
+  const { navigate } = useRouter();
+
+  const currentStep = TOUR_STEPS[currentStepIdx];
+
+  const handleExecuteStep = async (step: TourStep) => {
+    setSwitching(true);
+    try {
+      const res = await api.auth.demoLogin(step.personaId);
+      signIn(res);
+      navigate(step.targetPath);
+    } catch (e: any) {
+      alert(`Login failed: ${e.message || 'Error switching persona'}`);
+    } finally {
+      setSwitching(false);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentStepIdx < TOUR_STEPS.length - 1) {
+      const nextIdx = currentStepIdx + 1;
+      setCurrentStepIdx(nextIdx);
+      void handleExecuteStep(TOUR_STEPS[nextIdx]);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentStepIdx > 0) {
+      const prevIdx = currentStepIdx - 1;
+      setCurrentStepIdx(prevIdx);
+      void handleExecuteStep(TOUR_STEPS[prevIdx]);
+    }
+  };
+
+  const handleReset = () => {
+    setCurrentStepIdx(0);
+    void handleExecuteStep(TOUR_STEPS[0]);
+  };
+
+  return (
+    <div className="fixed bottom-4 right-4 z-50 font-sans no-print">
+      {!isOpen ? (
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          className="bg-navy hover:bg-navy-dark text-white px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border-2 border-saffron text-sm font-bold transition-all hover:scale-105 active:scale-95"
+          title="Open interactive 5-step walkthrough for Jury evaluation"
+        >
+          <Sparkles size={16} className="text-saffron animate-pulse" />
+          <span>Jury Demo Mode</span>
+          <span className="bg-saffron text-navy text-[11px] font-extrabold px-1.5 py-0.5 rounded-full ml-1">
+            {currentStepIdx + 1}/5
+          </span>
+        </button>
+      ) : (
+        <div className="bg-white rounded-xl shadow-2xl border-2 border-navy w-96 max-w-[calc(100vw-2rem)] overflow-hidden transition-all animate-in fade-in slide-in-from-bottom-4">
+          {/* Header */}
+          <div className="bg-navy text-white px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles size={16} className="text-saffron" />
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-saffron">AICTE Grand Finale</h4>
+                <div className="text-sm font-bold leading-none">Jury Interactive Walkthrough</div>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="text-gray-300 hover:text-white p-1 rounded-md transition-colors"
+            >
+              <X size={16} />
+            </button>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="w-full bg-gray-100 h-1.5">
+            <div
+              className="bg-saffron h-1.5 transition-all duration-300"
+              style={{ width: `${((currentStepIdx + 1) / TOUR_STEPS.length) * 100}%` }}
+            />
+          </div>
+
+          {/* Body */}
+          <div className="p-4 space-y-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-navy">{currentStep.title}</span>
+              <span className="text-muted font-mono">Step {currentStep.step} of 5</span>
+            </div>
+
+            <div className="bg-surface p-2.5 rounded-lg border border-line">
+              <div className="text-[11px] font-bold text-muted uppercase">Active Demo Persona:</div>
+              <div className="text-xs font-bold text-navy mt-0.5">{currentStep.roleTitle}</div>
+            </div>
+
+            <div>
+              <h5 className="text-xs font-bold text-ink">{currentStep.headline}</h5>
+              <p className="text-xs text-muted mt-1 leading-relaxed">{currentStep.description}</p>
+            </div>
+
+            {/* Step Action Button */}
+            <button
+              type="button"
+              onClick={() => handleExecuteStep(currentStep)}
+              disabled={switching}
+              className="w-full btn btn-primary btn-sm flex items-center justify-center gap-2 py-2 font-bold shadow-md"
+            >
+              <Play size={14} className="fill-current" />
+              <span>{switching ? 'Switching Persona...' : currentStep.highlightAction}</span>
+            </button>
+
+            {/* Quick step pills */}
+            <div className="grid grid-cols-5 gap-1 pt-1">
+              {TOUR_STEPS.map((s, idx) => (
+                <button
+                  key={s.step}
+                  type="button"
+                  onClick={() => {
+                    setCurrentStepIdx(idx);
+                    void handleExecuteStep(s);
+                  }}
+                  className={`py-1 text-[11px] font-bold rounded border transition-colors ${
+                    idx === currentStepIdx
+                      ? 'bg-navy text-white border-navy'
+                      : 'bg-surface text-muted border-line hover:border-navy'
+                  }`}
+                >
+                  {s.step}
+                </button>
+              ))}
+            </div>
+
+            {/* Navigation buttons */}
+            <div className="flex items-center justify-between pt-2 border-t border-line text-xs">
+              <button
+                type="button"
+                onClick={handlePrev}
+                disabled={currentStepIdx === 0 || switching}
+                className="flex items-center gap-1 font-semibold text-muted hover:text-navy disabled:opacity-30"
+              >
+                <ChevronLeft size={14} />
+                <span>Prev</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleReset}
+                title="Restart walkthrough from Step 1"
+                className="flex items-center gap-1 font-semibold text-muted hover:text-navy"
+              >
+                <RotateCcw size={12} />
+                <span>Restart</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={currentStepIdx === TOUR_STEPS.length - 1 || switching}
+                className="flex items-center gap-1 font-semibold text-navy hover:text-navy-dark disabled:opacity-30"
+              >
+                <span>Next</span>
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

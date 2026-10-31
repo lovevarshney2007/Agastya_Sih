@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Download } from 'lucide-react';
+import { Download, FileText } from 'lucide-react';
 import { api } from '../../api/client';
 import { Alert, AsOf, ErrorState, Loading, PageHeader, Panel, Stat, StatusTag } from '../../components/ui';
 import { fmtNum, fmtRelative, pct } from '../../lib/format';
@@ -50,6 +50,10 @@ export function NationalOverview() {
               setExportError(null);
               try { await api.aicte.exportNational(); } catch (e) { setExportError(e instanceof Error ? e.message : 'Export failed.'); }
             }}><Download size={16} aria-hidden="true" /> National summary (CSV)</button>
+            <button type="button" className="btn btn-primary" onClick={async () => {
+              setExportError(null);
+              try { await api.aicte.downloadExecutivePdf(); } catch (e) { setExportError(e instanceof Error ? e.message : 'PDF generation failed.'); }
+            }}><FileText size={16} aria-hidden="true" /> Executive Briefing (PDF)</button>
           </>
         }
       />
