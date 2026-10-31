@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { FileText } from 'lucide-react';
+import { FileText, Volume2, VolumeX } from 'lucide-react';
 import { api } from '../../api/client';
+import { bhashiniVoice } from '../../utils/bhashiniVoice';
 import type { CaseDetail } from '../../api/types';
 import { Alert, ErrorState, Field, KeyValue, Loading, PageHeader, Panel, Spinner, StatusTag } from '../../components/ui';
 import { fmtDate, fmtDateTime, humanize } from '../../lib/format';
@@ -18,6 +19,25 @@ export function CaseDetailPage({ caseId }: { caseId: string }) {
   const { data, error, reload, setData } = useApi(() => api.aicte.case(caseId), [caseId]);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  const handleVoiceNotice = () => {
+    if (isSpeaking) {
+      bhashiniVoice.stop();
+      setIsSpeaking(false);
+      return;
+    }
+
+    if (!data) return;
+
+    const noticeSummary = `Statutory Show-Cause Notice for Case number ${data.case_number}. Status: ${data.status}. Flagged on rule ${data.rule_id}. Cross-institution conflict detected involving duplicate full-time admissions. This notice is issued under AICTE Act 1987 and UGC simultaneous enrolment regulations.`;
+
+    setIsSpeaking(true);
+    bhashiniVoice.speak(noticeSummary, 'en-IN', {
+      onEnd: () => setIsSpeaking(false),
+      onError: () => setIsSpeaking(false),
+    });
+  };
 
   if (error && !data) return <ErrorState message={error} onRetry={reload} />;
   if (!data) return <Loading rows={10} />;
@@ -32,25 +52,48 @@ export function CaseDetailPage({ caseId }: { caseId: string }) {
         title={<span className="flex flex-wrap items-center gap-3"><span className="mono">{data.case_number}</span> <StatusTag value={data.status} /></span>}
         description={<>Cross-institution duplicate · rule <span className="mono">{data.rule_id}</span> version {data.rule_version} · flagged {fmtDate(data.created_at)} ({data.age_days} days ago)</>}
         actions={
-          <button
-            type="button"
-            className="btn btn-primary flex items-center gap-2"
-            disabled={pdfLoading}
-            onClick={async () => {
-              setPdfLoading(true);
-              setPdfError(null);
-              try {
-                await api.aicte.downloadShowCausePdf(data.case_number);
-              } catch (e) {
-                setPdfError(e instanceof Error ? e.message : 'Failed to generate Show-Cause notice');
-              } finally {
-                setPdfLoading(false);
-              }
-            }}
-          >
-            {pdfLoading ? <Spinner /> : <FileText size={16} aria-hidden="true" />}
-            Issue Show-Cause Notice (PDF)
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              className={`btn flex items-center gap-1.5 transition-all ${
+                isSpeaking ? 'bg-amber-600 hover:bg-amber-700 text-white animate-pulse' : 'btn-secondary'
+              }`}
+              onClick={handleVoiceNotice}
+              title="Bhashini Voice Readout of Show-Cause Notice"
+            >
+              {isSpeaking ? (
+                <>
+                  <VolumeX size={16} />
+                  <span>Stop Voice</span>
+                </>
+              ) : (
+                <>
+                  <Volume2 size={16} className="text-indigo-600" />
+                  <span>Listen Notice (Bhashini)</span>
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
+              className="btn btn-primary flex items-center gap-2"
+              disabled={pdfLoading}
+              onClick={async () => {
+                setPdfLoading(true);
+                setPdfError(null);
+                try {
+                  await api.aicte.downloadShowCausePdf(data.case_number);
+                } catch (e) {
+                  setPdfError(e instanceof Error ? e.message : 'Failed to generate Show-Cause notice');
+                } finally {
+                  setPdfLoading(false);
+                }
+              }}
+            >
+              {pdfLoading ? <Spinner /> : <FileText size={16} aria-hidden="true" />}
+              Issue Show-Cause Notice (PDF)
+            </button>
+          </div>
         }
       />
 

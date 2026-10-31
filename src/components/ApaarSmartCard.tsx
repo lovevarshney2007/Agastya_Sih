@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { CheckCircle2, Copy, Printer, QrCode, RotateCw, Shield, ShieldCheck, Sparkles } from 'lucide-react';
+import { CheckCircle2, Copy, Printer, QrCode, RotateCw, Shield, ShieldCheck, Sparkles, Volume2, VolumeX } from 'lucide-react';
 import { shortHash } from '../lib/format';
+import { bhashiniVoice } from '../utils/bhashiniVoice';
 
 interface ApaarSmartCardProps {
   name: string;
@@ -23,12 +24,29 @@ export function ApaarSmartCard({
 }: ApaarSmartCardProps) {
   const [flipped, setFlipped] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
     navigator.clipboard.writeText(maskedApaar);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleSpeakCard = () => {
+    if (isSpeaking) {
+      bhashiniVoice.stop();
+      setIsSpeaking(false);
+      return;
+    }
+
+    const narrative = `APAAR Smart ID Card for student ${name}. Enrolled in ${course} at ${institution}. Academic year ${academicYear}. Student registration number: ${studentIdNo}. Cryptographic verification status: Active and verified under Digital Personal Data Protection Act 2023.`;
+
+    setIsSpeaking(true);
+    bhashiniVoice.speak(narrative, 'en-IN', {
+      onEnd: () => setIsSpeaking(false),
+      onError: () => setIsSpeaking(false),
+    });
   };
 
   return (
@@ -184,7 +202,7 @@ export function ApaarSmartCard({
       </div>
 
       {/* Card Action Controls */}
-      <div className="flex items-center gap-3 mt-4">
+      <div className="flex flex-wrap items-center justify-center gap-2.5 mt-4">
         <button
           type="button"
           className="btn btn-secondary btn-sm flex items-center gap-1.5 shadow-sm"
@@ -196,11 +214,32 @@ export function ApaarSmartCard({
 
         <button
           type="button"
+          className={`btn btn-sm flex items-center gap-1.5 shadow-sm transition-all ${
+            isSpeaking ? 'bg-amber-600 hover:bg-amber-700 text-white animate-pulse' : 'btn-secondary'
+          }`}
+          onClick={handleSpeakCard}
+          title="Bhashini Multilingual Speech Synthesis"
+        >
+          {isSpeaking ? (
+            <>
+              <VolumeX size={14} />
+              <span>Stop Voice</span>
+            </>
+          ) : (
+            <>
+              <Volume2 size={14} className="text-indigo-600" />
+              <span>Bhashini Voice Assist</span>
+            </>
+          )}
+        </button>
+
+        <button
+          type="button"
           className="btn btn-primary btn-sm flex items-center gap-1.5 shadow-sm"
           onClick={() => window.print()}
         >
           <Printer size={14} />
-          <span>Print / Download PVC ID Card</span>
+          <span>Print / PVC ID Card</span>
         </button>
       </div>
 

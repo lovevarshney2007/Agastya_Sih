@@ -6,6 +6,7 @@ import { ROLE_LABEL, useSession, type Portal } from '../lib/session';
 import { useI18n, LanguageToggle } from '../lib/i18n';
 import { JuryTourWidget } from './JuryTourWidget';
 import { NotificationBell } from './NotificationBell';
+import { RegulatoryCopilot } from './RegulatoryCopilot';
 
 interface NavLinkItem {
   to: string;
@@ -177,6 +178,7 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
           </div>
         </div>
       </footer>
+      <RegulatoryCopilot onNavigate={(route) => navigate(route)} userRole={user?.role} />
       <JuryTourWidget />
     </div>
   );
