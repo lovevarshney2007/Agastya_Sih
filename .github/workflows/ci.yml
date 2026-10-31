@@ -5,10 +5,11 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
-    name: Build & Typecheck
+    name: Build, Typecheck & Docker Check
     runs-on: ubuntu-latest
 
     steps:
@@ -26,3 +27,7 @@ jobs:
 
       - name: Typecheck and Build Production Bundle
         run: npm run build
+
+      - name: Validate Docker Container Build
+        run: |
+          docker build -t agastya-frontend:test .
