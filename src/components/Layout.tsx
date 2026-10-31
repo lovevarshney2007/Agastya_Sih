@@ -38,6 +38,7 @@ const PORTAL_NAV: Record<Portal, { titleKey: string; defaultTitle: string; links
       { to: '/aicte/institutions', label: 'Institutions', key: 'nav_institutions' },
       { to: '/aicte/audit', label: 'Audit ledger', key: 'nav_audit' },
       { to: '/aicte/security-sandbox', label: 'Security Sandbox', key: 'nav_security_sandbox' },
+      { to: '/aicte/dual-approvals', label: 'Dual-Key Sanctions', key: 'nav_dual_approvals' },
     ],
   },
   verifier: {

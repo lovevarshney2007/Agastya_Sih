@@ -191,6 +191,52 @@ export const api = {
     securityScenarios: () => json<any[]>('/security/simulator/scenarios'),
     executeAttack: (scenario_id: string, custom_payload?: Record<string, any>) =>
       json<any>('/security/simulator/execute', { method: 'POST', body: { scenario_id, custom_payload } }),
+    sanctions: {
+      list: () => json<{
+        total_count: number;
+        pending_count: number;
+        executed_count: number;
+        rejected_count: number;
+        sanctions: any[];
+      }>('/aicte/sanctions'),
+      propose: (body: {
+        institution_id: string;
+        sanction_type: string;
+        legal_clause: string;
+        penalty_value: string;
+        rationale: string;
+        evidence_summary?: string;
+      }) => json<{ success: boolean; sanction_id: string; status: string; maker_hash: string; message: string }>('/aicte/sanctions/propose', { method: 'POST', body }),
+      signOff: (sanctionId: string, body: { action: 'APPROVE' | 'REJECT'; checker_note: string; authorization_token?: string }) =>
+        json<{ success: boolean; sanction_id: string; status: string; joint_crypto_seal?: string; message: string }>(`/aicte/sanctions/${encodeURIComponent(sanctionId)}/sign-off`, { method: 'POST', body }),
+    },
+    auditCertificate: (seq: number) =>
+      json<{
+        certificate_id: string;
+        sequence: number;
+        occurred_at: string;
+        actor_id: string;
+        actor_type: string;
+        action: string;
+        entity: string;
+        entity_id?: string;
+        purpose: string;
+        prev_hash: string;
+        recorded_hash: string;
+        recomputed_hash: string;
+        is_valid: boolean;
+        algorithm: string;
+        statutory_mandate: string;
+        merkle_anchor: {
+          anchored: boolean;
+          anchor_id?: string;
+          merkle_root: string;
+          worm_uri: string;
+          anchored_at?: string;
+        };
+        digital_seal: string;
+        qr_verification_url: string;
+      }>(`/aicte/audit/${seq}/certificate`),
   },
 
   verifier: {

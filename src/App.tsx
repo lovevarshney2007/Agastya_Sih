@@ -31,6 +31,7 @@ import { DataRights } from './pages/student/DataRights';
 import { RulesConfig } from './pages/aicte/RulesConfig';
 import { VerifierApprovals } from './pages/aicte/VerifierApprovals';
 import { SecuritySandboxPage } from './pages/aicte/SecuritySandbox';
+import { DualKeyApprovalsPage } from './pages/aicte/DualKeyApprovals';
 import { PublicDashboard } from './pages/PublicDashboard';
 import { I18nProvider } from './lib/i18n';
 
@@ -68,6 +69,7 @@ const ROUTES: Route[] = [
   { pattern: '/aicte/verifier-approvals', portal: 'aicte', wide: true, render: () => <VerifierApprovals /> },
   { pattern: '/aicte/audit', portal: 'aicte', wide: true, render: () => <AuditLedgerPage /> },
   { pattern: '/aicte/security-sandbox', portal: 'aicte', wide: true, render: () => <SecuritySandboxPage /> },
+  { pattern: '/aicte/dual-approvals', portal: 'aicte', wide: true, render: () => <DualKeyApprovalsPage /> },
 
   { pattern: '/verifier', portal: 'verifier', wide: true, render: () => <VerifierHome /> },
   { pattern: '/verifier/requests/:token', portal: 'verifier', render: (p) => <VerificationResult token={p.token} /> },

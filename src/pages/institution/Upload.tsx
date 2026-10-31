@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { CircleCheck, Download, FileSpreadsheet, Upload } from 'lucide-react';
+import { CircleCheck, Download, Eye, EyeOff, FileSpreadsheet, Sparkles, Upload } from 'lucide-react';
 import { api, API_BASE } from '../../api/client';
 import type { BatchReport, CommitResult } from '../../api/types';
 import { Alert, ErrorState, PageHeader, Panel, Spinner, StatusTag } from '../../components/ui';
@@ -7,6 +7,151 @@ import { Link } from '../../lib/router';
 import { useAction } from '../../lib/useApi';
 import { CountsRow, useInstitutionId } from './shared';
 import { IssueSummary, downloadIssuesCsv } from './BatchDetail';
+
+interface PreFlightRow {
+  rowNum: number;
+  data: Record<string, string>;
+  issues: { field: string; severity: 'ERROR' | 'WARNING'; message: string }[];
+}
+
+interface PreFlightResult {
+  totalRows: number;
+  cleanRows: number;
+  warningCount: number;
+  errorCount: number;
+  hasAadhaarLeak: boolean;
+  duplicateApaars: string[];
+  rows: PreFlightRow[];
+  headers: string[];
+}
+
+function runPreFlightCheck(csvText: string): PreFlightResult {
+  const lines = csvText.split(/\r?\n/).filter((l) => l.trim().length > 0);
+  if (lines.length < 2) {
+    return {
+      totalRows: 0,
+      cleanRows: 0,
+      warningCount: 0,
+      errorCount: 0,
+      hasAadhaarLeak: false,
+      duplicateApaars: [],
+      rows: [],
+      headers: [],
+    };
+  }
+
+  const headers = lines[0].split(',').map((h) => h.trim().replace(/^["']|["']$/g, '').toLowerCase());
+  const hasAadhaarHeader = headers.some((h) => h.includes('aadhaar') || h.includes('aadhar') || h === 'uid');
+
+  const apaarOccurrences = new Map<string, number[]>();
+  const parsedRows: PreFlightRow[] = [];
+  let warningCount = 0;
+  let errorCount = 0;
+
+  for (let i = 1; i < lines.length; i++) {
+    const rawCols = lines[i].split(',').map((c) => c.trim().replace(/^["']|["']$/g, ''));
+    const rowData: Record<string, string> = {};
+    headers.forEach((h, idx) => {
+      rowData[h] = rawCols[idx] || '';
+    });
+
+    const apaar = rowData['apaar_id'] || '';
+    if (apaar && /^\d{12}$/.test(apaar)) {
+      const list = apaarOccurrences.get(apaar) || [];
+      list.push(i + 1);
+      apaarOccurrences.set(apaar, list);
+    }
+  }
+
+  const duplicates = Array.from(apaarOccurrences.entries())
+    .filter(([_, list]) => list.length > 1)
+    .map(([apaar]) => apaar);
+
+  for (let i = 1; i < lines.length; i++) {
+    const rawCols = lines[i].split(',').map((c) => c.trim().replace(/^["']|["']$/g, ''));
+    const rowData: Record<string, string> = {};
+    headers.forEach((h, idx) => {
+      rowData[h] = rawCols[idx] || '';
+    });
+
+    const issues: { field: string; severity: 'ERROR' | 'WARNING'; message: string }[] = [];
+
+    if (hasAadhaarHeader) {
+      issues.push({ field: 'headers', severity: 'ERROR', message: 'Aadhaar/UID column detected. Prohibited under DPDP Act Sec 6.' });
+      errorCount++;
+    }
+
+    const apaar = rowData['apaar_id'] || '';
+    if (apaar) {
+      if (!/^\d{12}$/.test(apaar)) {
+        issues.push({ field: 'apaar_id', severity: 'ERROR', message: 'APAAR ID must be 12 numeric digits.' });
+        errorCount++;
+      } else if (duplicates.includes(apaar)) {
+        const rowsList = apaarOccurrences.get(apaar)?.join(', ');
+        issues.push({ field: 'apaar_id', severity: 'ERROR', message: `Duplicate APAAR ID in rows: ${rowsList}` });
+        errorCount++;
+      }
+    } else {
+      issues.push({ field: 'apaar_id', severity: 'WARNING', message: 'No APAAR provided. Student record will be held for verification.' });
+      warningCount++;
+    }
+
+    if (!rowData['name'] || rowData['name'].trim().length === 0) {
+      issues.push({ field: 'name', severity: 'ERROR', message: 'Student name is required.' });
+      errorCount++;
+    }
+
+    const dob = rowData['dob'] || '';
+    if (dob && !/^\d{4}-\d{2}-\d{2}$/.test(dob)) {
+      issues.push({ field: 'dob', severity: 'WARNING', message: 'DOB should follow YYYY-MM-DD standard format.' });
+      warningCount++;
+    }
+
+    if (!rowData['course'] || rowData['course'].trim().length === 0) {
+      issues.push({ field: 'course', severity: 'ERROR', message: 'Course programme is required.' });
+      errorCount++;
+    }
+
+    parsedRows.push({
+      rowNum: i + 1,
+      data: rowData,
+      issues,
+    });
+  }
+
+  const cleanRows = parsedRows.filter((r) => r.issues.length === 0).length;
+
+  return {
+    totalRows: parsedRows.length,
+    cleanRows,
+    warningCount,
+    errorCount,
+    hasAadhaarLeak: hasAadhaarHeader,
+    duplicateApaars: duplicates,
+    rows: parsedRows,
+    headers,
+  };
+}
+
+function downloadCleanCsv(preFlight: PreFlightResult, filename: string) {
+  const cleanRows = preFlight.rows.filter((r) => !r.issues.some((i) => i.severity === 'ERROR'));
+  if (cleanRows.length === 0) return;
+  const filteredHeaders = preFlight.headers.filter((h) => !h.includes('aadhaar') && !h.includes('aadhar') && h !== 'uid');
+  const headerLine = filteredHeaders.join(',');
+  const rowLines = cleanRows.map((r) => {
+    return filteredHeaders.map((h) => `"${(r.data[h] || '').replace(/"/g, '""')}"`).join(',');
+  });
+  const csvContent = [headerLine, ...rowLines].join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `sanitized_${filename.replace(/\.[^/.]+$/, '')}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
 const FIELDS: [string, string, string][] = [
   ['apaar_id', '12-digit APAAR ID. Leave blank if the student has none yet — the row is held, not rejected.', '412398765431'],
@@ -32,6 +177,8 @@ export function UploadWizard() {
   const [declared, setDeclared] = useState(false);
   const [committed, setCommitted] = useState<CommitResult | null>(null);
   const [typeError, setTypeError] = useState<string | null>(null);
+  const [preFlight, setPreFlight] = useState<PreFlightResult | null>(null);
+  const [showInspector, setShowInspector] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const upload = useAction((f: File | null) => (f ? api.institution.upload(instId!, f) : api.institution.uploadSample(instId!)));
@@ -47,11 +194,21 @@ export function UploadWizard() {
     upload.clearError();
     if (!/\.(csv|xlsx)$/i.test(f.name)) {
       setFile(null);
+      setPreFlight(null);
       setTypeError('Only .csv and .xlsx files are accepted.');
       return;
     }
     setTypeError(null);
     setFile(f);
+    if (f.name.toLowerCase().endsWith('.csv')) {
+      f.text().then((text) => {
+        setPreFlight(runPreFlightCheck(text));
+      }).catch(() => {
+        setPreFlight(null);
+      });
+    } else {
+      setPreFlight(null);
+    }
   }
 
   async function runUpload(useSample: boolean) {
@@ -73,7 +230,7 @@ export function UploadWizard() {
   }
 
   function reset() {
-    setFile(null); setReport(null); setCommitted(null); setDeclared(false);
+    setFile(null); setReport(null); setCommitted(null); setDeclared(false); setPreFlight(null); setShowInspector(false);
     upload.clearError(); commit.clearError(); discard.clearError();
     if (inputRef.current) inputRef.current.value = '';
   }
@@ -224,6 +381,105 @@ export function UploadWizard() {
                   </div>
                 )}
 
+                {preFlight && (
+                  <div className="mt-4 p-4 rounded-lg border border-line bg-wash space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="font-bold text-xs uppercase text-navy tracking-wider flex items-center gap-1.5">
+                        <Sparkles size={14} className="text-brand" /> Instant In-Browser Pre-Flight Scan
+                      </div>
+                      <span className="text-xs text-muted">0-latency client inspection</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
+                      <div className="p-2 bg-white rounded border border-line-soft">
+                        <div className="text-muted">Total Rows</div>
+                        <div className="text-base font-bold text-navy">{preFlight.totalRows}</div>
+                      </div>
+                      <div className="p-2 bg-emerald-50 rounded border border-emerald-200">
+                        <div className="text-emerald-800">Clean Rows</div>
+                        <div className="text-base font-bold text-emerald-900">{preFlight.cleanRows}</div>
+                      </div>
+                      <div className="p-2 bg-amber-50 rounded border border-amber-200">
+                        <div className="text-amber-800">Warnings</div>
+                        <div className="text-base font-bold text-amber-900">{preFlight.warningCount}</div>
+                      </div>
+                      <div className="p-2 bg-bad-wash rounded border border-bad/30">
+                        <div className="text-bad">Anomalies</div>
+                        <div className="text-base font-bold text-bad">{preFlight.errorCount}</div>
+                      </div>
+                    </div>
+
+                    {preFlight.hasAadhaarLeak && (
+                      <Alert tone="bad" title="Critical DPDP Act Violation: Aadhaar Field Detected">
+                        Aadhaar numbers or UID column found. The immutable ledger strictly rejects files containing biometric/UID numbers. Please click 'Sanitize & Download Clean CSV' below.
+                      </Alert>
+                    )}
+
+                    {preFlight.duplicateApaars.length > 0 && (
+                      <Alert tone="warn" title="In-File Concurrent Duplicate APAARs">
+                        Found {preFlight.duplicateApaars.length} APAAR ID(s) repeated across multiple rows in this file (e.g. {preFlight.duplicateApaars[0]}).
+                      </Alert>
+                    )}
+
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm flex items-center gap-1.5"
+                        onClick={() => setShowInspector((prev) => !prev)}
+                      >
+                        {showInspector ? <EyeOff size={14} /> : <Eye size={14} />}
+                        {showInspector ? 'Hide Anomaly Table' : `Inspect ${preFlight.errorCount + preFlight.warningCount} Row Issues`}
+                      </button>
+
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm flex items-center gap-1.5 text-brand"
+                        onClick={() => file && downloadCleanCsv(preFlight, file.name)}
+                      >
+                        <Sparkles size={14} /> Sanitize & Download Clean CSV
+                      </button>
+                    </div>
+
+                    {showInspector && (
+                      <div className="mt-2 border border-line-soft rounded bg-white overflow-x-auto max-h-60 overflow-y-auto">
+                        <table className="data-table !text-xs">
+                          <thead>
+                            <tr>
+                              <th>Row</th>
+                              <th>Name</th>
+                              <th>APAAR</th>
+                              <th>Issues Detected</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {preFlight.rows.filter((r) => r.issues.length > 0).map((r) => (
+                              <tr key={r.rowNum}>
+                                <td className="mono font-bold text-muted">#{r.rowNum}</td>
+                                <td>{r.data['name'] || <span className="text-bad font-semibold">Missing</span>}</td>
+                                <td className="mono">{r.data['apaar_id'] || <span className="text-muted">None</span>}</td>
+                                <td>
+                                  <div className="space-y-1">
+                                    {r.issues.map((iss, idx) => (
+                                      <span
+                                        key={idx}
+                                        className={`inline-block mr-1.5 px-2 py-0.5 rounded text-[11px] font-medium ${
+                                          iss.severity === 'ERROR' ? 'bg-bad/10 text-bad border border-bad/20' : 'bg-amber-100 text-amber-800'
+                                        }`}
+                                      >
+                                        {iss.message}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className="mt-4">
                   <Alert tone="warn">Do not include Aadhaar numbers. Files with an Aadhaar column are refused.</Alert>
                 </div>
@@ -234,7 +490,14 @@ export function UploadWizard() {
                   <div className="mt-4 text-sm flex items-center gap-2"><Spinner /> Checking every row. Large files can take a minute — you can leave this page and find the result under Uploads.</div>
                 ) : (
                   <div className="flex flex-wrap items-center gap-3 mt-4">
-                    <button type="button" className="btn btn-primary" disabled={!file} onClick={() => runUpload(false)}>Upload and check</button>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      disabled={!file || (preFlight ? preFlight.hasAadhaarLeak : false)}
+                      onClick={() => runUpload(false)}
+                    >
+                      Upload and check
+                    </button>
                     <span className="text-sm text-muted">or</span>
                     <button type="button" className="btn btn-ghost" onClick={() => runUpload(true)}>Use the sample file</button>
                   </div>
