@@ -186,6 +186,8 @@ export const api = {
       json<any>(`/aicte/verifier-orgs/${encodeURIComponent(orgId)}/status`, { method: 'POST', body: { status, reason } }),
     updateVerifierOrgQuota: (orgId: string, monthly_quota: number) =>
       json<any>(`/aicte/verifier-orgs/${encodeURIComponent(orgId)}/quota`, { method: 'POST', body: { monthly_quota } }),
+    downloadShowCausePdf: (caseId: string) =>
+      downloadFile(`/aicte/violations/${encodeURIComponent(caseId)}/show-cause-pdf`, `AICTE-Show-Cause-Notice-${caseId}.pdf`),
   },
 
   verifier: {
@@ -195,6 +197,23 @@ export const api = {
     result: (token: string) => json<CredentialResult>(`/verifier/requests/${encodeURIComponent(token)}`),
     withdraw: (token: string) => json<VerificationRequestSummary>(`/verifier/requests/${encodeURIComponent(token)}/withdraw`, { method: 'POST' }),
     downloadPdf: (token: string) => downloadFile(`/verifier/requests/${encodeURIComponent(token)}/pdf`, 'credential.pdf'),
+    zkpVerify: (body: { token: string; verify_age_gte_18?: boolean; verify_accredited?: boolean; verify_active?: boolean }) =>
+      json<{
+        success: boolean;
+        status: string;
+        protocol: string;
+        zkp_proof_standard: string;
+        pii_redacted: boolean;
+        timestamp: string;
+        selective_claims: Record<string, {
+          verified: boolean;
+          attribute: string;
+          finding: string;
+          proof_mode: string;
+          note: string;
+          institution_status?: string;
+        }>;
+      }>('/verifier/zkp-verify', { method: 'POST', body }),
   },
 
   student: {

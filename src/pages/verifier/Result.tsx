@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CircleCheck, Download, ShieldAlert } from 'lucide-react';
+import { CheckCircle2, CircleCheck, Download, Lock, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { api } from '../../api/client';
 import { Alert, ErrorState, KeyValue, Loading, PageHeader, Panel, Spinner, StatusTag } from '../../components/ui';
 import { fmtDate, fmtDateTime, fmtTime, humanize, verifyLink } from '../../lib/format';
@@ -9,6 +9,31 @@ export function VerificationResult({ token }: { token: string }) {
   const { data, error, loading, loadedAt, reload } = useApi(() => api.verifier.result(token), [token]);
   const pdf = useAction(() => api.verifier.downloadPdf(token));
   const [copied, setCopied] = useState(false);
+  const [zkpAge, setZkpAge] = useState(true);
+  const [zkpAccredited, setZkpAccredited] = useState(true);
+  const [zkpActive, setZkpActive] = useState(true);
+  const [zkpResult, setZkpResult] = useState<any>(null);
+  const [zkpLoading, setZkpLoading] = useState(false);
+  const [zkpError, setZkpError] = useState<string | null>(null);
+
+  const runZkp = async () => {
+    if (!data) return;
+    setZkpLoading(true);
+    setZkpError(null);
+    try {
+      const res = await api.verifier.zkpVerify({
+        token: data.token,
+        verify_age_gte_18: zkpAge,
+        verify_accredited: zkpAccredited,
+        verify_active: zkpActive,
+      });
+      setZkpResult(res);
+    } catch (err) {
+      setZkpError(err instanceof Error ? err.message : 'Failed to run ZKP verification');
+    } finally {
+      setZkpLoading(false);
+    }
+  };
 
   if (error && !data) return <ErrorState message={error} onRetry={reload} />;
   if (!data) return <Loading rows={8} />;
@@ -89,6 +114,113 @@ export function VerificationResult({ token }: { token: string }) {
             </Panel>
           )}
         </div>
+      </div>
+
+      {/* ── Zero-Knowledge Proof (ZKP) Selective Disclosure ── */}
+      <div className="mt-6">
+        <Panel
+          title="Zero-Knowledge Proof (ZKP) Selective Disclosure"
+          actions={
+            <span className="tag tag-ok flex items-center gap-1 text-xs">
+              <ShieldCheck size={14} /> DPDP Act Sec 6 Compliant
+            </span>
+          }
+        >
+          <p className="text-sm text-muted mt-0">
+            Verify specific student eligibility claims using cryptographic selective disclosure without disclosing or storing
+            unnecessary Personal Identifiable Information (PII) such as exact Date of Birth, Aadhaar, or complete academic dossier.
+          </p>
+
+          <div className="mt-4 p-4 border border-line rounded bg-wash space-y-4">
+            <div className="text-xs font-semibold text-muted uppercase tracking-wider">Select Claims to Verify via ZKP</div>
+            <div className="grid gap-3 sm:grid-cols-3 text-sm">
+              <label className="flex items-center gap-2 cursor-pointer border border-line bg-surface p-2.5 rounded hover:border-brand">
+                <input
+                  type="checkbox"
+                  checked={zkpAge}
+                  onChange={(e) => setZkpAge(e.target.checked)}
+                  className="rounded text-brand"
+                />
+                <span>
+                  <strong className="block text-ink">Age &ge; 18</strong>
+                  <span className="text-xs text-muted">Redacts raw birthdate</span>
+                </span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer border border-line bg-surface p-2.5 rounded hover:border-brand">
+                <input
+                  type="checkbox"
+                  checked={zkpAccredited}
+                  onChange={(e) => setZkpAccredited(e.target.checked)}
+                  className="rounded text-brand"
+                />
+                <span>
+                  <strong className="block text-ink">AICTE Accredited</strong>
+                  <span className="text-xs text-muted">Statutory college validity</span>
+                </span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer border border-line bg-surface p-2.5 rounded hover:border-brand">
+                <input
+                  type="checkbox"
+                  checked={zkpActive}
+                  onChange={(e) => setZkpActive(e.target.checked)}
+                  className="rounded text-brand"
+                />
+                <span>
+                  <strong className="block text-ink">Active Enrolment</strong>
+                  <span className="text-xs text-muted">Seat active confirmation</span>
+                </span>
+              </label>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                className="btn btn-primary flex items-center gap-1.5"
+                disabled={zkpLoading || (!zkpAge && !zkpAccredited && !zkpActive)}
+                onClick={runZkp}
+              >
+                {zkpLoading ? <Spinner /> : <Lock size={15} />}
+                Generate &amp; Evaluate ZKP Proof
+              </button>
+              <span className="text-xs text-muted">Zero raw data stored in verifier session</span>
+            </div>
+
+            {zkpError && <Alert tone="bad">{zkpError}</Alert>}
+
+            {zkpResult && (
+              <div className="mt-4 border-t border-line pt-4 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="text-sm font-bold text-ok flex items-center gap-1.5">
+                    <CheckCircle2 size={18} /> Cryptographic Proof Validated
+                  </div>
+                  <span className="mono text-xs text-muted">
+                    {zkpResult.protocol} · {zkpResult.zkp_proof_standard}
+                  </span>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {Object.entries(zkpResult.selective_claims || {}).map(([key, claim]: [string, any]) => (
+                    <div key={key} className="border border-line rounded bg-surface p-3 text-xs space-y-1">
+                      <div className="font-semibold text-ink flex items-center justify-between">
+                        <span>{claim.attribute}</span>
+                        <span className="tag tag-ok text-[10px] py-0">PASSED</span>
+                      </div>
+                      <div className="text-muted">{claim.note}</div>
+                      <div className="text-[10px] mono text-faint">Mode: {claim.proof_mode}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="text-xs text-muted bg-surface border border-line-soft rounded p-2.5 flex items-center justify-between">
+                  <span>Audit Event: <strong className="mono">ZKP_SELECTIVE_DISCLOSURE_EVALUATED</strong></span>
+                  <span className="text-ok font-semibold">Immutable Hash Added to Chain</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </Panel>
       </div>
 
       <p className="text-sm text-muted mt-4">

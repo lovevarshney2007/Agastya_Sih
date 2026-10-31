@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FileText } from 'lucide-react';
 import { api } from '../../api/client';
 import type { CaseDetail } from '../../api/types';
 import { Alert, ErrorState, Field, KeyValue, Loading, PageHeader, Panel, Spinner, StatusTag } from '../../components/ui';
@@ -15,6 +16,8 @@ const ACTIONS = [
 export function CaseDetailPage({ caseId }: { caseId: string }) {
   const { user } = useSession();
   const { data, error, reload, setData } = useApi(() => api.aicte.case(caseId), [caseId]);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   if (error && !data) return <ErrorState message={error} onRetry={reload} />;
   if (!data) return <Loading rows={10} />;
@@ -28,8 +31,30 @@ export function CaseDetailPage({ caseId }: { caseId: string }) {
         back={{ to: '/aicte/cases', label: 'All cases' }}
         title={<span className="flex flex-wrap items-center gap-3"><span className="mono">{data.case_number}</span> <StatusTag value={data.status} /></span>}
         description={<>Cross-institution duplicate · rule <span className="mono">{data.rule_id}</span> version {data.rule_version} · flagged {fmtDate(data.created_at)} ({data.age_days} days ago)</>}
+        actions={
+          <button
+            type="button"
+            className="btn btn-primary flex items-center gap-2"
+            disabled={pdfLoading}
+            onClick={async () => {
+              setPdfLoading(true);
+              setPdfError(null);
+              try {
+                await api.aicte.downloadShowCausePdf(data.case_number);
+              } catch (e) {
+                setPdfError(e instanceof Error ? e.message : 'Failed to generate Show-Cause notice');
+              } finally {
+                setPdfLoading(false);
+              }
+            }}
+          >
+            {pdfLoading ? <Spinner /> : <FileText size={16} aria-hidden="true" />}
+            Issue Show-Cause Notice (PDF)
+          </button>
+        }
       />
 
+      {pdfError && <div className="mb-4"><Alert tone="bad" onClose={() => setPdfError(null)}>{pdfError}</Alert></div>}
       {data.overdue && <div className="mb-5"><Alert tone="warn">This case has been open for more than 14 days.</Alert></div>}
 
       <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">

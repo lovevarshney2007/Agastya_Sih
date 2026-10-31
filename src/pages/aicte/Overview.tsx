@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Download, FileText } from 'lucide-react';
+import { Download, FileText, LayoutGrid, List, X } from 'lucide-react';
 import { api } from '../../api/client';
 import { Alert, AsOf, ErrorState, Loading, PageHeader, Panel, Stat, StatusTag } from '../../components/ui';
 import { fmtNum, fmtRelative, pct } from '../../lib/format';
@@ -17,6 +17,8 @@ const METRICS: Record<Metric, string> = {
 export function NationalOverview() {
   const { data, error, loading, reload } = useApi(() => api.aicte.dashboard(), []);
   const [metric, setMetric] = useState<Metric>('enrolled');
+  const [viewMode, setViewMode] = useState<'grid' | 'bars'>('grid');
+  const [selectedStateName, setSelectedStateName] = useState<string | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -37,6 +39,7 @@ export function NationalOverview() {
   })).sort((a, b) => b.value - a.value);
   const maxValue = Math.max(...states.map((s) => s.value), 1);
   const funnelMax = Math.max(...data.reporting_funnel.map((f) => f.count), 1);
+  const selectedState = selectedStateName ? data.state_aggregates.find((s) => s.state === selectedStateName) : null;
 
   return (
     <>
@@ -72,28 +75,129 @@ export function NationalOverview() {
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <Panel
-          title="By state"
+          title="State-wise intelligence & Heatmap"
           actions={
-            <div className="flex items-center gap-2 text-sm">
-              <label htmlFor="state-metric" className="text-muted">Show</label>
-              <select id="state-metric" className="select !py-1 !w-auto" value={metric} onChange={(e) => setMetric(e.target.value as Metric)}>
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <div className="inline-flex rounded border border-line p-0.5 bg-wash">
+                <button
+                  type="button"
+                  className={`px-2 py-0.5 rounded text-xs flex items-center gap-1 ${viewMode === 'grid' ? 'bg-surface font-semibold shadow-xs text-ink' : 'text-muted'}`}
+                  onClick={() => setViewMode('grid')}
+                  title="Heatmap matrix view"
+                >
+                  <LayoutGrid size={13} /> Heatmap
+                </button>
+                <button
+                  type="button"
+                  className={`px-2 py-0.5 rounded text-xs flex items-center gap-1 ${viewMode === 'bars' ? 'bg-surface font-semibold shadow-xs text-ink' : 'text-muted'}`}
+                  onClick={() => setViewMode('bars')}
+                  title="Ranked bar comparison"
+                >
+                  <List size={13} /> Bars
+                </button>
+              </div>
+
+              <select id="state-metric" className="select !py-1 !w-auto text-xs" value={metric} onChange={(e) => setMetric(e.target.value as Metric)}>
                 {Object.entries(METRICS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
               </select>
             </div>
           }
         >
-          <ul className="list-none p-0 space-y-2.5">
-            {states.map((s) => (
-              <li key={s.state} className="grid grid-cols-[130px_1fr_64px] items-center gap-3 text-sm">
-                <span className="truncate" title={s.state}>{s.state}</span>
-                <div className="h-5 bg-line-soft rounded-sm overflow-hidden">
-                  <div className={`h-full ${metric === 'open_cases' && s.value ? 'bg-bad' : 'bg-brand'}`} style={{ width: `${(s.value / maxValue) * 100}%` }} />
+          {selectedState && (
+            <div className="mb-4 p-3.5 border border-brand/40 bg-brand-wash/30 rounded text-sm relative">
+              <button
+                type="button"
+                className="absolute top-2.5 right-2.5 text-muted hover:text-ink p-1"
+                onClick={() => setSelectedStateName(null)}
+                aria-label="Close inspector"
+              >
+                <X size={15} />
+              </button>
+              <div className="font-bold text-ink text-base mb-1">{selectedState.state} Regulatory Profile</div>
+              <div className="grid gap-2 sm:grid-cols-4 text-xs mt-2">
+                <div>
+                  <span className="text-muted block">Approved Institutions</span>
+                  <strong className="text-sm">{selectedState.institutions}</strong> ({pct(selectedState.reported, selectedState.institutions)}% reporting)
                 </div>
-                <span className="num tabular-nums font-semibold">{metric === 'reporting' || metric === 'utilisation' ? `${s.value}%` : fmtNum(s.value)}</span>
-              </li>
-            ))}
-          </ul>
-          <p className="text-xs text-muted mt-4">{states.length} states and UTs with approved institutions.</p>
+                <div>
+                  <span className="text-muted block">Seat Fill Ratio</span>
+                  <strong className="text-sm">{pct(selectedState.enrolled, selectedState.approved_intake)}%</strong> ({fmtNum(selectedState.enrolled)} / {fmtNum(selectedState.approved_intake)})
+                </div>
+                <div>
+                  <span className="text-muted block">Open Regulatory Cases</span>
+                  <strong className={`text-sm ${selectedState.open_cases > 0 ? 'text-bad' : 'text-ok'}`}>{selectedState.open_cases}</strong>
+                </div>
+                <div>
+                  <span className="text-muted block">High Risk Institutions</span>
+                  <strong className={`text-sm ${selectedState.high_risk > 0 ? 'text-bad' : 'text-ok'}`}>{selectedState.high_risk}</strong>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {viewMode === 'grid' ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              {states.map((s) => {
+                const fillPct = pct(s.enrolled, s.approved_intake);
+                const hasAlert = s.open_cases > 0 || s.high_risk > 0;
+                const isSelected = selectedStateName === s.state;
+                return (
+                  <button
+                    key={s.state}
+                    type="button"
+                    onClick={() => setSelectedStateName(isSelected ? null : s.state)}
+                    className={`text-left p-2.5 rounded border transition-all cursor-pointer ${
+                      isSelected
+                        ? 'border-brand ring-2 ring-brand/20 bg-brand-wash/20'
+                        : hasAlert
+                        ? 'border-bad/40 bg-bad/5 hover:border-bad'
+                        : fillPct >= 80
+                        ? 'border-ok/30 bg-ok/5 hover:border-ok'
+                        : 'border-line bg-surface hover:border-line-strong'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-1 mb-1">
+                      <span className="font-semibold text-xs text-ink truncate block" title={s.state}>{s.state}</span>
+                      {hasAlert && (
+                        <span className="tag tag-bad text-[9px] py-0 px-1 font-bold">
+                          {s.open_cases ? `${s.open_cases}c` : ''}{s.high_risk ? ` ${s.high_risk}r` : ''}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-baseline justify-between text-xs mt-1">
+                      <span className="text-muted text-[11px]">{s.institutions} colleges</span>
+                      <strong className="num tabular-nums text-xs">{fillPct}%</strong>
+                    </div>
+                    <div className="h-1.5 bg-line-soft rounded-xs overflow-hidden mt-1.5">
+                      <div
+                        className={`h-full ${hasAlert ? 'bg-bad' : fillPct >= 80 ? 'bg-ok' : 'bg-brand'}`}
+                        style={{ width: `${Math.min(fillPct, 100)}%` }}
+                      />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <ul className="list-none p-0 space-y-2.5">
+              {states.map((s) => (
+                <li
+                  key={s.state}
+                  onClick={() => setSelectedStateName(s.state)}
+                  className={`grid grid-cols-[130px_1fr_64px] items-center gap-3 text-sm p-1.5 rounded cursor-pointer ${
+                    selectedStateName === s.state ? 'bg-brand-wash font-semibold' : 'hover:bg-wash'
+                  }`}
+                >
+                  <span className="truncate" title={s.state}>{s.state}</span>
+                  <div className="h-5 bg-line-soft rounded-sm overflow-hidden">
+                    <div className={`h-full ${metric === 'open_cases' && s.value ? 'bg-bad' : 'bg-brand'}`} style={{ width: `${(s.value / maxValue) * 100}%` }} />
+                  </div>
+                  <span className="num tabular-nums font-semibold">{metric === 'reporting' || metric === 'utilisation' ? `${s.value}%` : fmtNum(s.value)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="text-xs text-muted mt-4">{states.length} states and UTs with approved institutions. Click any state card to inspect details.</p>
         </Panel>
 
         <div className="space-y-6">
