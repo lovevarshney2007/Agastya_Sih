@@ -174,6 +174,17 @@ export const api = {
     restore: () => json<{ status: string; message: string }>('/aicte/audit/restore', { method: 'POST' }),
     anchor: () => json<{ status: string; message?: string; merkle_root?: string; events_anchored?: number }>('/aicte/audit/anchor', { method: 'POST' }),
     exportNational: () => downloadFile('/reports/national-summary.csv', 'national_summary.csv'),
+    rules: () => json<any>('/aicte/rules'),
+    updateRule: (body: { rule_id: string; enabled: boolean; severity: string }) =>
+      json<any>('/aicte/rules/update', { method: 'POST', body }),
+    updateSeatCategory: (body: { category_code: string; cap_percentage: number; is_over_and_above: boolean }) =>
+      json<any>('/aicte/rules/seat-category', { method: 'POST', body }),
+    simulateRuleImpact: () => json<any>('/aicte/rules/simulate-impact', { method: 'POST' }),
+    verifierOrgs: () => json<any[]>('/aicte/verifier-orgs'),
+    updateVerifierOrgStatus: (orgId: string, status: string, reason?: string) =>
+      json<any>(`/aicte/verifier-orgs/${encodeURIComponent(orgId)}/status`, { method: 'POST', body: { status, reason } }),
+    updateVerifierOrgQuota: (orgId: string, monthly_quota: number) =>
+      json<any>(`/aicte/verifier-orgs/${encodeURIComponent(orgId)}/quota`, { method: 'POST', body: { monthly_quota } }),
   },
 
   verifier: {
@@ -192,7 +203,19 @@ export const api = {
     share: (enrolment_id: string, purpose: string, validity_days: number) =>
       json<StudentShare>('/student/shares', { method: 'POST', body: { enrolment_id, purpose, validity_days } }),
     revokeShare: (token: string) => json<VerificationRequestSummary>(`/student/shares/${encodeURIComponent(token)}/revoke`, { method: 'POST' }),
+    guardianRequests: () => json<any[]>('/student/guardian/requests'),
+    verifyGuardianOtp: (phone: string, otp: string) =>
+      json<any>('/student/guardian/verify-otp', { method: 'POST', body: { phone, otp } }),
+    guardianConsentAction: (consentId: string, body: { action: string; guardian_name?: string; guardian_phone?: string; relation?: string; duration_days?: number }) =>
+      json<any>(`/student/guardian/consent/${encodeURIComponent(consentId)}`, { method: 'POST', body }),
+    rightsRequests: () => json<any[]>('/student/rights/requests'),
+    submitRightsRequest: (body: { request_type: string; subject: string; description: string; evidence_notes?: string }) =>
+      json<any>('/student/rights/requests', { method: 'POST', body }),
+    exportDataPortability: () => json<any>('/student/rights/data-export'),
   },
+
+  get: <T>(path: string) => json<T>(path),
+  post: <T>(path: string, body?: unknown) => json<T>(path, { method: 'POST', body }),
 
   publicStats: () => json<PublicStats>('/public/stats', { auth: false }),
   publicSeats: (params: { state?: string; level?: string; search?: string; page?: number; page_size?: number } = {}) =>

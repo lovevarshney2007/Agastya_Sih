@@ -57,14 +57,22 @@ export function StudentHome() {
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 mt-8">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mt-8">
         <Link to="/student/consent" className="panel p-4 no-underline text-ink hover:border-brand">
-          <div className="font-bold">Consent and access log</div>
-          <p className="text-sm text-muted mt-1">{data.active.length} active consent{data.active.length === 1 ? '' : 's'} · {data.access_log.length} verification{data.access_log.length === 1 ? '' : 's'} so far</p>
+          <div className="font-bold">Consent &amp; access log</div>
+          <p className="text-sm text-muted mt-1">{data.active.length} active · {data.access_log.length} verifications</p>
         </Link>
         <Link to="/student/share" className="panel p-4 no-underline text-ink hover:border-brand">
           <div className="font-bold">Share my record</div>
-          <p className="text-sm text-muted mt-1">Create a signed link and QR code for an employer or university.</p>
+          <p className="text-sm text-muted mt-1">Create signed link &amp; QR credential.</p>
+        </Link>
+        <Link to="/student/guardian" className="panel p-4 no-underline text-ink hover:border-brand">
+          <div className="font-bold">Guardian consent</div>
+          <p className="text-sm text-muted mt-1">Parental approval for minors under DPDP Rule 10.</p>
+        </Link>
+        <Link to="/student/rights" className="panel p-4 no-underline text-ink hover:border-brand">
+          <div className="font-bold">My data rights</div>
+          <p className="text-sm text-muted mt-1">Exercise DPDP rights, disputes &amp; portability.</p>
         </Link>
       </div>
     </>

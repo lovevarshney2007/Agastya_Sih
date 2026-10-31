@@ -26,7 +26,12 @@ import { VerificationResult } from './pages/verifier/Result';
 import { StudentHome } from './pages/student/Home';
 import { ConsentCentre } from './pages/student/Consent';
 import { ShareRecord } from './pages/student/Share';
+import { GuardianConsent } from './pages/student/GuardianConsent';
+import { DataRights } from './pages/student/DataRights';
+import { RulesConfig } from './pages/aicte/RulesConfig';
+import { VerifierApprovals } from './pages/aicte/VerifierApprovals';
 import { PublicDashboard } from './pages/PublicDashboard';
+import { I18nProvider } from './lib/i18n';
 
 interface Route {
   pattern: string;
@@ -58,6 +63,8 @@ const ROUTES: Route[] = [
   { pattern: '/aicte/ml-intelligence', portal: 'aicte', wide: true, render: () => <MLIntelligencePage /> },
   { pattern: '/aicte/institutions', portal: 'aicte', wide: true, render: () => <Institutions /> },
   { pattern: '/aicte/institutions/:id', portal: 'aicte', wide: true, render: (p) => <InstitutionProfile institutionId={p.id} /> },
+  { pattern: '/aicte/rules', portal: 'aicte', wide: true, render: () => <RulesConfig /> },
+  { pattern: '/aicte/verifier-approvals', portal: 'aicte', wide: true, render: () => <VerifierApprovals /> },
   { pattern: '/aicte/audit', portal: 'aicte', wide: true, render: () => <AuditLedgerPage /> },
 
   { pattern: '/verifier', portal: 'verifier', wide: true, render: () => <VerifierHome /> },
@@ -66,6 +73,8 @@ const ROUTES: Route[] = [
   { pattern: '/student', portal: 'student', render: () => <StudentHome /> },
   { pattern: '/student/consent', portal: 'student', render: () => <ConsentCentre /> },
   { pattern: '/student/share', portal: 'student', render: () => <ShareRecord /> },
+  { pattern: '/student/guardian', portal: 'student', render: () => <GuardianConsent /> },
+  { pattern: '/student/rights', portal: 'student', render: () => <DataRights /> },
 ];
 
 function RedirectTo({ to }: { to: string }) {
@@ -117,10 +126,12 @@ function Routes() {
 
 export default function App() {
   return (
-    <RouterProvider>
-      <SessionProvider>
-        <Routes />
-      </SessionProvider>
-    </RouterProvider>
+    <I18nProvider>
+      <RouterProvider>
+        <SessionProvider>
+          <Routes />
+        </SessionProvider>
+      </RouterProvider>
+    </I18nProvider>
   );
 }
