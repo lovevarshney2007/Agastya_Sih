@@ -157,6 +157,11 @@
 @keyframes fade-up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes pop { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: scale(1); } }
 @keyframes dash { to { stroke-dashoffset: 0; } }
+@keyframes scan {
+  0% { top: 0%; opacity: 0.8; }
+  50% { top: 96%; opacity: 1; }
+  100% { top: 0%; opacity: 0.8; }
+}
 
 .page-enter { animation: var(--animate-fade-up); }
 .draw { stroke-dasharray: 5 6; stroke-dashoffset: 110; animation: dash 4s linear infinite; }

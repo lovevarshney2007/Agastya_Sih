@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { Camera } from 'lucide-react';
 import { api } from '../../api/client';
 import { Alert, AsOf, Empty, ErrorState, Field, Loading, Meter, PageHeader, Panel, Spinner, StatusTag } from '../../components/ui';
+import { QrCameraScanner } from '../../components/QrCameraScanner';
 import { fmtDateTime } from '../../lib/format';
 import { Link, useRouter } from '../../lib/router';
 import { useAction, useApi } from '../../lib/useApi';
@@ -12,6 +14,7 @@ export function VerifierHome() {
   const [purpose, setPurpose] = useState('');
   const [sent, setSent] = useState<{ message: string; token: string; status: string } | null>(null);
   const [shared, setShared] = useState('');
+  const [cameraOpen, setCameraOpen] = useState(false);
   const submit = useAction(() => api.verifier.submit(apaar, purpose));
   const withdraw = useAction((token: string) => api.verifier.withdraw(token));
 
@@ -65,16 +68,39 @@ export function VerifierHome() {
             )}
           </Panel>
 
-          <Panel title="Open a link a student gave you">
-            <form className="flex gap-2" onSubmit={(e) => {
-              e.preventDefault();
-              const token = shared.trim().split('/').filter(Boolean).pop();
-              if (token) navigate(`/verify/${encodeURIComponent(token)}`);
-            }}>
-              <label htmlFor="v-shared" className="sr-only">Shared link or code</label>
-              <input id="v-shared" className="input mono" value={shared} onChange={(e) => setShared(e.target.value)} placeholder="Link or code" />
-              <button type="submit" className="btn btn-secondary" disabled={!shared.trim()}>Open</button>
-            </form>
+          <Panel
+            title="Instant QR & Link Verifier"
+            actions={
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm flex items-center gap-1.5"
+                onClick={() => setCameraOpen(!cameraOpen)}
+              >
+                <Camera size={14} />
+                {cameraOpen ? 'Hide Camera' : 'Scan Student QR'}
+              </button>
+            }
+          >
+            {cameraOpen ? (
+              <QrCameraScanner
+                onScan={(result) => {
+                  if (result.token) {
+                    navigate(`/verify/${encodeURIComponent(result.token)}`);
+                  }
+                }}
+                onClose={() => setCameraOpen(false)}
+              />
+            ) : (
+              <form className="flex gap-2" onSubmit={(e) => {
+                e.preventDefault();
+                const token = shared.trim().split('/').filter(Boolean).pop();
+                if (token) navigate(`/verify/${encodeURIComponent(token)}`);
+              }}>
+                <label htmlFor="v-shared" className="sr-only">Shared link or code</label>
+                <input id="v-shared" className="input mono flex-1" value={shared} onChange={(e) => setShared(e.target.value)} placeholder="Link or code (e.g. demo-priya-tcs-2026)" />
+                <button type="submit" className="btn btn-secondary" disabled={!shared.trim()}>Open</button>
+              </form>
+            )}
           </Panel>
 
           {data && (

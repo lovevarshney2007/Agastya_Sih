@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { CircleCheck, CircleX, ShieldAlert } from 'lucide-react';
+import { Camera, CircleCheck, CircleX, ShieldAlert } from 'lucide-react';
 import { api } from '../api/client';
 import { ErrorState, KeyValue, Loading } from '../components/ui';
+import { QrCameraScanner } from '../components/QrCameraScanner';
 import { fmtDateTime, fmtTime, humanize } from '../lib/format';
 import { useRouter } from '../lib/router';
 import { useApi } from '../lib/useApi';
@@ -10,13 +11,41 @@ import { useApi } from '../lib/useApi';
 export function PublicVerify({ token }: { token?: string }) {
   const { navigate } = useRouter();
   const [input, setInput] = useState('');
+  const [scannerOpen, setScannerOpen] = useState(false);
   const { data, error, loading, reload } = useApi(token ? () => api.publicVerify(token) : null, [token]);
 
   if (!token) {
     return (
-      <div className="max-w-xl mx-auto">
-        <h1 className="text-2xl font-bold mt-0">Verify a record</h1>
-        <p className="text-muted">Enter the code printed under the QR on a certificate, or paste the full verification link.</p>
+      <div className="max-w-xl mx-auto space-y-4">
+        <div>
+          <h1 className="text-2xl font-bold mt-0">Verify an academic credential</h1>
+          <p className="text-muted">
+            Enter the code printed under the QR on a certificate, paste the verification link, or use your live camera to scan.
+          </p>
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            type="button"
+            className={`btn ${scannerOpen ? 'btn-primary' : 'btn-secondary'} flex items-center gap-1.5`}
+            onClick={() => setScannerOpen(!scannerOpen)}
+          >
+            <Camera size={16} />
+            {scannerOpen ? 'Hide Camera Scanner' : 'Scan QR with Live Camera'}
+          </button>
+        </div>
+
+        {scannerOpen && (
+          <QrCameraScanner
+            onScan={(result) => {
+              if (result.token) {
+                navigate(`/verify/${encodeURIComponent(result.token)}`);
+              }
+            }}
+            onClose={() => setScannerOpen(false)}
+          />
+        )}
+
         <form
           className="panel p-5 flex flex-col sm:flex-row gap-3"
           onSubmit={(e) => {
@@ -26,7 +55,7 @@ export function PublicVerify({ token }: { token?: string }) {
           }}
         >
           <label htmlFor="verify-token" className="sr-only">Verification code</label>
-          <input id="verify-token" className="input mono flex-1" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Verification code or link" />
+          <input id="verify-token" className="input mono flex-1" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Verification code or link (e.g. demo-priya-tcs-2026)" />
           <button className="btn btn-primary" type="submit" disabled={!input.trim()}>Check</button>
         </form>
       </div>
