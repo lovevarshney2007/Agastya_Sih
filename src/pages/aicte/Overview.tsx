@@ -5,6 +5,7 @@ import { Alert, AsOf, ErrorState, Loading, PageHeader, Panel, Stat, StatusTag } 
 import { fmtNum, fmtRelative, pct } from '../../lib/format';
 import { Link } from '../../lib/router';
 import { useApi } from '../../lib/useApi';
+import { RegulatoryTelemetry } from '../../components/RegulatoryTelemetry';
 
 type Metric = 'enrolled' | 'reporting' | 'utilisation' | 'open_cases';
 const METRICS: Record<Metric, string> = {
@@ -61,6 +62,8 @@ export function NationalOverview() {
         }
       />
       {exportError && <div className="mb-4"><Alert tone="bad" onClose={() => setExportError(null)}>{exportError}</Alert></div>}
+
+      <RegulatoryTelemetry />
 
       <div className="grid gap-3 grid-cols-2 md:grid-cols-4 mb-6">
         <Stat label="Institutions reporting" value={`${k.institutions_reported} / ${k.approved_institutions}`} note={`${pct(k.institutions_reported, k.approved_institutions)}% of approved institutions`} />

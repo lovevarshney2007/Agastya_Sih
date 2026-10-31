@@ -3,6 +3,7 @@ import { Alert, AsOf, ErrorState, Loading, Meter, PageHeader, Panel, StatusTag }
 import { Link } from '../../lib/router';
 import { useApi } from '../../lib/useApi';
 import { useInstitutionId } from './shared';
+import { ComplianceRadar } from '../../components/ComplianceRadar';
 
 const CATEGORY_RULES: [string, string, string][] = [
   ['General, OBC-NCL, SC, ST, EWS', 'Within approved intake', 'Counts against the approved intake for the programme.'],
@@ -38,6 +39,8 @@ export function Compliance() {
               {over.map((p) => p.course).join(', ')}. Rows that would exceed a limit are rejected or held at upload; see the <Link to="/institution/batches">upload reports</Link> for rules V-INT-01 and V-INT-02.
             </Alert>}
       </div>
+
+      <ComplianceRadar institutionName={data.institution.name} institutionId={data.institution.id} />
 
       <Panel bodyClassName="" title="By programme, 2026–27" actions={<span className="text-xs text-muted">Caps are illustrative · rules version 2026.1</span>}>
         <div className="table-wrap">

@@ -5,6 +5,7 @@ import { humanize } from '../../lib/format';
 import { Link } from '../../lib/router';
 import { useApi } from '../../lib/useApi';
 import { ShieldCheck, ArrowUpRight, CheckCircle2 } from 'lucide-react';
+import { ApaarSmartCard } from '../../components/ApaarSmartCard';
 
 const IDENTITY_TEXT: Record<string, string> = {
   VERIFIED: 'Your APAAR ID matched the national registry. Nothing to do.',
@@ -77,6 +78,28 @@ export function StudentHome() {
           </Alert>
         </div>
       )}
+
+      {/* 3D APAAR Digital Identity Card Showcase */}
+      <div className="mb-6 p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-navy to-slate-900 border border-slate-700 shadow-xl text-white">
+        <div className="max-w-xl mx-auto text-center mb-4">
+          <span className="text-[11px] font-bold tracking-widest uppercase text-amber-400 bg-amber-400/10 border border-amber-400/30 px-3 py-1 rounded-full">
+            Statutory Verifiable Credential
+          </span>
+          <h2 className="text-xl font-bold mt-2 text-white">AICTE APAAR Holographic Digital ID Card</h2>
+          <p className="text-xs text-slate-300 mt-1">
+            Tamper-evident W3C digital identity credential stored in your National Academic Depository with offline QR signature verification.
+          </p>
+        </div>
+
+        <ApaarSmartCard
+          name={data.student.name}
+          maskedApaar={data.student.masked_apaar}
+          institution={data.enrolments[0]?.institution || 'COEP Technological University, Pune'}
+          course={data.enrolments[0]?.course || 'Computer Science and Engineering'}
+          studentIdNo={data.enrolments[0]?.student_id_no || 'COEP-CSE-2026-101'}
+          academicYear={`${data.enrolments[0]?.academic_year || 2026}–${String((data.enrolments[0]?.academic_year || 2026) + 1).slice(2)}`}
+        />
+      </div>
 
       {/* DigiLocker National Gateway Card */}
       <div className="mb-6 p-4 rounded-lg border border-blue-200 bg-blue-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
