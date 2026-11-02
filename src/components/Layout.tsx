@@ -107,8 +107,8 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
           </button>
 
           <div className={`${menuOpen ? 'flex' : 'hidden'} sm:flex absolute sm:static top-full left-0 right-0 z-40 bg-white sm:bg-transparent border-b sm:border-0 border-line px-4 sm:px-0 py-3 sm:py-0 flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 text-sm`}>
-            <Link to="/verify" className="no-underline hover:underline text-ink" onClick={() => setMenuOpen(false)}>{t('verify_record')}</Link>
-            <Link to="/public-dashboard" className="no-underline hover:underline text-ink" onClick={() => setMenuOpen(false)}>{t('live_seats')}</Link>
+            <Link to="/verify" className="no-underline hover:underline text-ink" onClick={() => setMenuOpen(false)}>{t('verify_record', 'Verify a record')}</Link>
+            <Link to="/public-dashboard" className="no-underline hover:underline text-ink" onClick={() => setMenuOpen(false)}>{t('live_seats', 'Live seats')}</Link>
             {user ? (
               <>
                 <NotificationBell />
@@ -141,6 +141,7 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
                     key={l.to}
                     to={l.to}
                     aria-current={active ? 'page' : undefined}
+                    onClick={() => setMenuOpen(false)}
                     className={`px-3.5 py-2.5 text-sm no-underline whitespace-nowrap border-b-[3px] transition-colors duration-200 ${active ? 'text-white border-saffron font-semibold' : 'text-[#c9d4e5] border-transparent hover:text-white hover:border-white/40'}`}
                   >
                     {l.key ? t(l.key, l.label) : l.label}

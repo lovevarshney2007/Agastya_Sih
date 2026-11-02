@@ -59,6 +59,7 @@ const ROUTES: Route[] = [
   { pattern: '/institution/compliance', portal: 'institution', wide: true, render: () => <Compliance /> },
 
   { pattern: '/aicte', portal: 'aicte', wide: true, render: () => <NationalOverview /> },
+  { pattern: '/aicte/overview', portal: 'aicte', wide: true, render: () => <NationalOverview /> },
   { pattern: '/aicte/cases', portal: 'aicte', wide: true, render: () => <Cases /> },
   { pattern: '/aicte/cases/:id', portal: 'aicte', wide: true, render: (p) => <CaseDetailPage caseId={p.id} /> },
   { pattern: '/aicte/risk', portal: 'aicte', wide: true, render: () => <RiskRankingPage /> },

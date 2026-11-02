@@ -146,9 +146,10 @@
   .faq[open] .faq-body { animation: fade-up .2s ease-out; }
 
   /* Horizontal tab bar: hints that more tabs are off-screen. */
-  .scroll-fade { mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); scrollbar-width: none; }
+  /* UI-04: padding-right keeps last tab clear of the fade zone on mobile */
+  .scroll-fade { mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); scrollbar-width: none; padding-right: 32px; }
   .scroll-fade::-webkit-scrollbar { display: none; }
-  @media (min-width: 640px) { .scroll-fade { mask-image: none; } }
+  @media (min-width: 640px) { .scroll-fade { mask-image: none; padding-right: 0; } }
 
   .tricolour { background: linear-gradient(90deg, #e8811c 0 33.3%, #ffffff 33.3% 66.6%, #13804a 66.6% 100%); }
 }
@@ -167,11 +168,41 @@
 .draw { stroke-dasharray: 5 6; stroke-dashoffset: 110; animation: dash 4s linear infinite; }
 svg .animate-pop, svg .animate-fade-up { transform-box: fill-box; transform-origin: center; }
 
+/* UI-05: CSS-variable-backed utility classes (Tailwind v4 @theme is defined above, these expose them as classes) */
+@layer utilities {
+  .text-ok    { color: var(--color-ok); }
+  .text-bad   { color: var(--color-bad); }
+  .text-warn  { color: var(--color-warn); }
+  .text-muted { color: var(--color-muted); }
+  .text-ink   { color: var(--color-ink); }
+  .text-faint { color: var(--color-faint); }
+  .border-brand   { border-color: var(--color-brand); }
+  .bg-brand-wash  { background-color: var(--color-brand-wash); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
 
+/* BUG-05: Fixed print / PDF layout — proper A4 page sizing and interactive element hiding */
 @media print {
   .no-print { display: none !important; }
-  body { background: #fff; }
+  body { background: #fff; margin: 0; }
+
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+
+  /* Force ID cards / chassis panels to fit the printed page width */
+  .chassis-housing {
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    border: none !important;
+  }
+
+  /* Hide interactive buttons inside the printable area */
+  button, .btn { display: none !important; }
 }
+

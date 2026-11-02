@@ -129,7 +129,8 @@ export const RegulatoryCopilot: React.FC<RegulatoryCopilotProps> = ({ onNavigate
       const errorMsg: CopilotMessage = {
         id: `err-${Date.now()}`,
         sender: 'assistant',
-        text: 'Sorry, unable to contact the regulatory knowledge engine. Please check your backend connection.',
+        text: '⚠️ The regulatory knowledge engine is temporarily unavailable.\n\nThis usually means the backend server is not running. Please ensure the FastAPI backend is started (`uvicorn app.main:app --reload --port 8000`) and try again.',
+        title: 'Knowledge Engine Offline',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, errorMsg]);
