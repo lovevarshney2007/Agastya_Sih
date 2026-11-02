@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": "https://sih.monu14.me/api/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

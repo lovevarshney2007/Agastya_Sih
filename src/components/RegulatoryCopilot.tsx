@@ -3,6 +3,7 @@ import {
   Bot, X, Send, Sparkles, Volume2, VolumeX, Shield, Scale,
   BookOpen, ExternalLink, RefreshCw
 } from 'lucide-react';
+import { api } from '../api/client';
 import { bhashiniVoice, BHASHINI_LANGUAGES, SupportedLanguage } from '../utils/bhashiniVoice';
 
 interface CopilotMessage {
@@ -60,8 +61,7 @@ export const RegulatoryCopilot: React.FC<RegulatoryCopilotProps> = ({ onNavigate
 
   // Fetch presets on mount
   useEffect(() => {
-    fetch('/api/v1/ai/copilot/presets')
-      .then(r => r.ok ? r.json() : null)
+    api.copilot.presets()
       .then(data => {
         if (data?.presets) {
           setPresets(data.presets);
@@ -101,14 +101,7 @@ export const RegulatoryCopilot: React.FC<RegulatoryCopilotProps> = ({ onNavigate
     setLoading(true);
 
     try {
-      const res = await fetch('/api/v1/ai/copilot/query', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: text, user_role: userRole })
-      });
-
-      if (!res.ok) throw new Error('Failed to query copilot');
-      const data = await res.json();
+      const data = await api.copilot.query(text, userRole);
 
       const aiMsg: CopilotMessage = {
         id: `ai-${Date.now()}`,

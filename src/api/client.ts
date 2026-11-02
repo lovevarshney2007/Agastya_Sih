@@ -330,4 +330,21 @@ export const api = {
     markRead: (id: string) => json<any>(`/notifications/${encodeURIComponent(id)}/read`, { method: 'POST' }),
     markAllRead: () => json<any>('/notifications/mark-all-read', { method: 'POST' }),
   },
+
+  copilot: {
+    presets: () => json<{ presets: Array<{ id: string; question: string; category: string }> }>('/ai/copilot/presets', { auth: false }),
+    query: (query: string, user_role: string = 'ALL') =>
+      json<{
+        query: string;
+        title?: string;
+        category?: string;
+        legal_status?: string;
+        clauses?: string[];
+        answer: string;
+        speech_summary?: string;
+        actions?: Array<{ label: string; route: string }>;
+        confidence?: number;
+        matched?: boolean;
+      }>('/ai/copilot/query', { method: 'POST', body: { query, user_role }, auth: false }),
+  },
 };
