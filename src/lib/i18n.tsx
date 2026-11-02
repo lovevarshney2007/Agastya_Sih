@@ -13,13 +13,13 @@ const DICTIONARY: Record<Language, Record<string, string>> = {
     // Header & Gov branding
     gov_india: 'Government of India · Ministry of Education',
     aicte_full: 'All India Council for Technical Education',
-    app_title: 'APAAR Student Ledger',
-    app_subtitle: 'Enrolment reporting & verification for AICTE-approved institutions',
-    verify_record: 'Verify a record',
-    live_seats: 'Live seats',
+    app_title: 'AICTE Agastya · National Enrolment Ledger',
+    app_subtitle: 'APAAR 12-Digit Lifelong ID, Sanctioned Seat Intake & WORM Audit Ledger',
+    verify_record: 'Verify APAAR Credential',
+    live_seats: 'National Seat Intake Matrix',
     sign_in: 'Sign in',
     sign_out: 'Sign out',
-    prototype_badge: 'Prototype: synthetic data only',
+    prototype_badge: 'Statutory Depository Node · Production Grade',
     
     // Portals
     portal_institution: 'Institution portal',

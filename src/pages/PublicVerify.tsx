@@ -241,28 +241,30 @@ export function PublicVerify({ token }: { token?: string }) {
   );
 }
 
+type PublicVerifyData = NonNullable<Awaited<ReturnType<typeof api.publicVerify>>>;
+
 function OfficialCertificateModal({
   data,
   onClose,
 }: {
-  data: any;
+  data: PublicVerifyData;
   onClose: () => void;
 }) {
-  const claims = data.claims || {};
+  const claims = data.claims || { institution: '', programme: '', academic_year: '', status: '' };
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-navy-dark/70 backdrop-blur-xs overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-[#0e2448]/60 overflow-y-auto"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-3xl bg-white rounded-xl shadow-2xl border border-line overflow-hidden my-4 sm:my-6 relative"
+        className="w-full max-w-3xl bg-white rounded-lg shadow-md border border-line overflow-hidden my-4 sm:my-6 relative"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Controls Bar */}
         <div className="no-print bg-wash border-b border-line px-3 sm:px-5 py-2.5 sm:py-3 flex items-center justify-between">
           <div className="flex items-center gap-1.5 sm:gap-2">
             <Award size={18} className="text-saffron shrink-0" />
-            <span className="font-bold text-xs sm:text-sm text-navy truncate">AICTE Verification Attestation</span>
+            <span className="font-bold text-xs sm:text-sm text-navy truncate">AICTE Statutory Verification Attestation</span>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button

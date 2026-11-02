@@ -49,8 +49,8 @@ export function PvcCardModal({
     : `•••• •••• ${apaarId.slice(-4)}`;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5">
-      <div className="relative w-full max-w-xl bg-white rounded-xl shadow-2xl border border-line overflow-hidden flex flex-col my-auto animate-scale-in text-ink">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#0e2448]/60 flex items-center justify-center p-3 sm:p-5">
+      <div className="relative w-full max-w-xl bg-white rounded-lg shadow-md border border-line overflow-hidden flex flex-col my-auto text-ink">
         {/* Header (no-print) */}
         <div className="px-5 py-3.5 bg-navy text-white flex items-center justify-between no-print">
           <div className="flex items-center gap-2">

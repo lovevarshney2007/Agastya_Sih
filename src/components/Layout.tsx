@@ -161,12 +161,12 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
           </div>
           <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
             {/* GIGW Text Resizer */}
-            <div className="flex items-center gap-0.5 bg-white/10 px-1 py-0.5 rounded text-[11px]">
-              <span className="text-white/60 mr-0.5 hidden sm:inline">Text:</span>
+            <div className="flex items-center gap-0.5 bg-white/10 px-1.5 py-0.5 rounded text-xs">
+              <span className="text-white/60 mr-1 hidden sm:inline">Text:</span>
               <button
                 type="button"
-                onClick={() => setFontSize('13.5px')}
-                className={`px-1 rounded hover:text-white transition-colors ${fontSize === '13.5px' ? 'bg-white/20 text-white font-bold' : 'text-white/70'}`}
+                onClick={() => setFontSize('14px')}
+                className={`px-1.5 py-0.5 rounded hover:text-white transition-colors ${fontSize === '14px' ? 'bg-white/20 text-white font-bold' : 'text-white/70'}`}
                 title="Decrease font size (A-)"
               >
                 A-
@@ -174,15 +174,15 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
               <button
                 type="button"
                 onClick={() => setFontSize('15px')}
-                className={`px-1 rounded hover:text-white transition-colors ${fontSize === '15px' ? 'bg-white/20 text-white font-bold' : 'text-white/70'}`}
+                className={`px-1.5 py-0.5 rounded hover:text-white transition-colors ${fontSize === '15px' ? 'bg-white/20 text-white font-bold' : 'text-white/70'}`}
                 title="Normal font size (A)"
               >
                 A
               </button>
               <button
                 type="button"
-                onClick={() => setFontSize('17px')}
-                className={`px-1 rounded hover:text-white transition-colors ${fontSize === '17px' ? 'bg-white/20 text-white font-bold' : 'text-white/70'}`}
+                onClick={() => setFontSize('16px')}
+                className={`px-1.5 py-0.5 rounded hover:text-white transition-colors ${fontSize === '16px' ? 'bg-white/20 text-white font-bold' : 'text-white/70'}`}
                 title="Increase font size (A+)"
               >
                 A+
@@ -193,7 +193,7 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
             <button
               type="button"
               onClick={toggleContrast}
-              className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] transition-colors ${
+              className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-xs transition-colors ${
                 highContrast ? 'bg-saffron text-navy font-bold' : 'bg-white/10 text-white/80 hover:text-white'
               }`}
               title="Toggle High Contrast Mode (GIGW Compliant)"
@@ -214,7 +214,7 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
           <Link to={user && portal ? `/${portal}` : '/'} className="flex items-center gap-2 sm:gap-3 no-underline text-ink min-w-0">
             <img src="/aicte-logo.png" alt="" className="h-9 w-9 sm:h-11 sm:w-11 object-contain shrink-0" />
             <span className="leading-tight min-w-0">
-              <span className="block font-bold text-sm sm:text-[17px] truncate text-navy">{t('app_title')}</span>
+              <span className="block font-bold text-sm sm:text-base truncate text-navy">{t('app_title')}</span>
               <span className="hidden sm:block text-xs text-muted truncate">{t('app_subtitle')}</span>
             </span>
           </Link>
@@ -223,13 +223,13 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
           <button
             type="button"
             onClick={() => setCommandOpen(true)}
-            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-md border border-line bg-wash text-muted text-xs hover:border-brand/40 hover:bg-brand-wash/40 hover:text-ink transition-all shadow-2xs"
+            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-md border border-line bg-wash text-muted text-xs hover:border-brand/40 hover:bg-brand-wash/40 hover:text-ink transition-all shadow-2xs cursor-pointer focus-visible:outline-2 focus-visible:outline-brand"
             title="Press Ctrl+K to search all portals & commands"
           >
             <Search size={14} className="text-muted" />
-            <span className="hidden lg:inline">Search portal, records, rules...</span>
+            <span className="hidden lg:inline">Search statutory portal, APAAR IDs, regulations...</span>
             <span className="lg:hidden">Search...</span>
-            <kbd className="font-mono text-[10px] bg-white border border-line px-1.5 py-0.5 rounded text-faint ml-2 shadow-2xs">Ctrl K</kbd>
+            <kbd className="font-mono text-xs bg-white border border-line px-1.5 py-0.5 rounded text-faint ml-2 shadow-2xs">Ctrl K</kbd>
           </button>
 
           <button type="button" className="sm:hidden btn btn-ghost" onClick={() => setMenuOpen((o) => !o)} aria-expanded={menuOpen} aria-label="Menu">

@@ -4,6 +4,7 @@ import type {
   NationalDashboard, OnboardInput, PublicSeatsResponse, PublicStats, PublicVerifyResult, RecordHistory, RiskRanking, SessionUser, StudentPage,
   StudentRecord, StudentRow, StudentShare, VerificationRequestSummary, VerifierTracker,
   ForecastingResult, FuzzyDedupResponse, BatchFraudAnalysis, CohortAnomalyItem,
+  SanctionItem, AttackScenario, AttackExecutionResult,
 } from './types';
 
 // In development Vite proxies /api to the local backend (see vite.config.ts).
@@ -437,16 +438,16 @@ export const api = {
       json<any>(`/aicte/verifier-orgs/${encodeURIComponent(orgId)}/quota`, { method: 'POST', body: { monthly_quota } }),
     downloadShowCausePdf: (caseId: string) =>
       downloadFile(`/aicte/violations/${encodeURIComponent(caseId)}/show-cause-pdf`, `AICTE-Show-Cause-Notice-${caseId}.pdf`),
-    securityScenarios: () => json<any[]>('/security/simulator/scenarios'),
-    executeAttack: (scenario_id: string, custom_payload?: Record<string, any>) =>
-      json<any>('/security/simulator/execute', { method: 'POST', body: { scenario_id, custom_payload } }),
+    securityScenarios: () => json<AttackScenario[]>('/security/simulator/scenarios'),
+    executeAttack: (scenario_id: string, custom_payload?: Record<string, unknown>) =>
+      json<AttackExecutionResult>('/security/simulator/execute', { method: 'POST', body: { scenario_id, custom_payload } }),
     sanctions: {
       list: () => json<{
         total_count: number;
         pending_count: number;
         executed_count: number;
         rejected_count: number;
-        sanctions: any[];
+        sanctions: SanctionItem[];
       }>('/aicte/sanctions'),
       propose: (body: {
         institution_id: string;

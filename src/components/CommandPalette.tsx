@@ -281,11 +281,11 @@ export function CommandPalette({ isOpen, onClose }: { isOpen: boolean; onClose: 
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center pt-8 sm:pt-20 px-2 sm:px-4 bg-navy-dark/60 backdrop-blur-xs animate-fade-up"
+      className="fixed inset-0 z-50 flex items-start justify-center pt-8 sm:pt-20 px-2 sm:px-4 bg-[#0e2448]/60"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl bg-white rounded-xl shadow-2xl border border-line overflow-hidden flex flex-col max-h-[85vh]"
+        className="w-full max-w-2xl bg-white rounded-lg shadow-md border border-line overflow-hidden flex flex-col max-h-[85vh]"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

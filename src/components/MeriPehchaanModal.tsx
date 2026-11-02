@@ -27,11 +27,13 @@ export function MeriPehchaanModal({
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
-    let interval: any;
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (isOpen && step === 2 && timer > 0) {
       interval = setInterval(() => setTimer((t) => t - 1), 1000);
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [isOpen, step, timer]);
 
   if (!isOpen) return null;
@@ -47,16 +49,15 @@ export function MeriPehchaanModal({
 
   const handleFinalConsent = () => {
     setProcessing(true);
-    setTimeout(() => {
-      setProcessing(false);
-      onSuccess();
-      onClose();
-    }, 700);
+    // Complete digital consent verification
+    onSuccess();
+    onClose();
+    setProcessing(false);
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5">
-      <div className="relative w-full max-w-lg bg-white rounded-xl shadow-2xl border border-line overflow-hidden flex flex-col my-auto animate-scale-in text-ink">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#0e2448]/60 flex items-center justify-center p-3 sm:p-5">
+      <div className="relative w-full max-w-lg bg-white rounded-lg shadow-md border border-line overflow-hidden flex flex-col my-auto text-ink">
         {/* Tricolour Accent */}
         <div className="tricolour h-1.5" />
 

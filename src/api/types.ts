@@ -551,3 +551,67 @@ export interface CohortAnomalyItem {
   risk_level: RiskLevel;
   findings: string[];
 }
+
+// ── Strict Domain Types & Discriminated Unions ──────────────
+
+export type RegulatoryLedgerState =
+  | 'ACCEPTED'
+  | 'HELD_FOR_REVIEW'
+  | 'FLAGGED_DUPLICATE'
+  | 'REJECTED';
+
+export interface SanctionItem {
+  sanction_id: string;
+  institution_id: string;
+  institution_name: string;
+  sanction_type: string;
+  legal_clause: string;
+  penalty_value: string;
+  rationale: string;
+  evidence_summary?: string;
+  status: 'PENDING_CHECKER_SIGNATURE' | 'EXECUTED_DUAL_SIGNED' | 'REJECTED';
+  maker_id: string;
+  maker_name: string;
+  maker_role: string;
+  maker_hash: string;
+  proposed_at: string;
+  checker_id?: string;
+  checker_name?: string;
+  checker_role?: string;
+  checker_hash?: string;
+  executed_at?: string;
+  joint_crypto_seal?: string;
+  checker_note?: string;
+}
+
+export interface AttackScenario {
+  id: string;
+  title: string;
+  category: string;
+  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM';
+  attacker_role: string;
+  attacker_objective: string;
+  red_team_payload: Record<string, unknown>;
+  blue_team_engine: string;
+  defense_rule: string;
+  expected_result: string;
+  statutory_citation: string;
+}
+
+export interface AttackExecutionResult {
+  success: boolean;
+  scenario_id: string;
+  scenario_title: string;
+  status: string;
+  defense_engine: string;
+  rule_triggered: string;
+  statutory_citation: string;
+  latency_ms: number;
+  cryptographic_proof: string;
+  audit_action: string;
+  terminal_logs: string[];
+  payload_inspected: Record<string, unknown>;
+  timestamp: string;
+}
+
+

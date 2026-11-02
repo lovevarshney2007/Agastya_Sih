@@ -41,8 +41,8 @@ export function FormACertificateModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5">
-      <div className="relative w-full max-w-3xl bg-white rounded-xl shadow-2xl border border-line overflow-hidden flex flex-col my-auto max-h-[92vh]">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#0e2448]/60 flex items-center justify-center p-3 sm:p-5">
+      <div className="relative w-full max-w-3xl bg-white rounded-lg shadow-md border border-line overflow-hidden flex flex-col my-auto max-h-[92vh]">
         {/* Top Modal Controls (Excluded in print) */}
         <div className="flex items-center justify-between px-5 py-3 bg-navy text-white no-print">
           <div className="flex items-center gap-2">

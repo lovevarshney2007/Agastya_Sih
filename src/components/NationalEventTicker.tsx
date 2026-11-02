@@ -94,7 +94,7 @@ export function NationalEventTicker() {
         <button
           type="button"
           onClick={() => setIsMinimized(false)}
-          className="bg-navy/90 hover:bg-navy text-white text-[10px] font-bold px-2.5 py-1.5 rounded-full shadow-lg border border-line flex items-center gap-1.5 cursor-pointer backdrop-blur-xs transition-all hover:scale-105"
+          className="bg-navy hover:bg-navy-dark text-white text-xs font-semibold px-2.5 py-1.5 rounded-full shadow-sm border border-slate-600 flex items-center gap-1.5 cursor-pointer transition-colors"
           title="Expand Live National Depository Telemetry Stream"
         >
           <span className="w-2 h-2 rounded-full bg-emerald-400 beacon-pulse shrink-0" />
@@ -107,7 +107,7 @@ export function NationalEventTicker() {
   return (
     <div className="fixed bottom-14 left-3 sm:left-4 z-40 no-print animate-fade-up font-sans max-w-[calc(100vw-1.5rem)] sm:max-w-xs">
       <div
-        className="bg-white/95 backdrop-blur-xs rounded-lg shadow-xl border border-line overflow-hidden text-ink"
+        className="bg-white rounded-lg shadow-md border border-line overflow-hidden text-ink"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >

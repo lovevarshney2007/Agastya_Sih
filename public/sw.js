@@ -1,5 +1,5 @@
 // Offline Verification Service Worker for Field Inspectors (AICTE APAAR Ledger)
-const CACHE_NAME = 'apaar-offline-v1';
+const CACHE_NAME = 'apaar-offline-v2';
 const OFFLINE_URLS = [
   '/',
   '/index.html',
@@ -38,19 +38,35 @@ self.addEventListener('fetch', (event) => {
   // Let API requests pass through to network
   if (event.request.url.includes('/api/')) return;
 
+  // Navigation requests (HTML pages): Network-first with offline cache fallback
+  // This guarantees new deployments load immediately when online.
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put('/index.html', responseClone);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          return caches.match('/index.html').then((cached) => cached || caches.match('/'));
+        })
+    );
+    return;
+  }
+
+  // Static assets: Cache-first with network fallback
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
         return cachedResponse;
       }
-      return fetch(event.request).then((networkResponse) => {
-        return networkResponse;
-      }).catch(() => {
-        // Fallback for navigation requests when offline
-        if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
-        }
-      });
+      return fetch(event.request);
     })
   );
 });
+

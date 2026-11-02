@@ -152,10 +152,10 @@ export function Home() {
             </div>
           </div>
 
-          <form className="bg-white text-ink rounded-xl p-5 sm:p-7 shadow-2xl border border-line-soft card-lift relative" onSubmit={(e) => { e.preventDefault(); check(token); }}>
+          <form className="bg-white text-ink rounded-lg p-5 sm:p-6 shadow-md border border-slate-200 relative" onSubmit={(e) => { e.preventDefault(); check(token); }}>
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-base sm:text-lg font-bold text-navy">Verify Credential Certificate</h2>
-              <span className="text-[10px] font-mono font-bold bg-brand-wash text-brand px-2 py-0.5 rounded">W3C / JWS</span>
+              <span className="text-xs font-mono font-bold bg-brand-wash text-brand px-2 py-0.5 rounded">W3C / JWS</span>
             </div>
             <p className="text-xs text-muted">Scan the QR on an enrolment certificate or paste the verification link or token code. No sign-in required.</p>
             <label htmlFor="home-token" className="label mt-3 sm:mt-4">Verification link or code</label>

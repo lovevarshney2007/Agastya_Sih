@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Building2, ChevronDown, ChevronRight, GraduationCap, LayoutGrid, List, MapPin, RefreshCw,
   Search, ShieldCheck, TrendingUp, Users, X,
@@ -6,6 +6,7 @@ import {
 import { api } from '../api/client';
 import type { PublicInstitutionRow, PublicSeatsResponse } from '../api/types';
 import { AsOf, CountUp, Loading, Meter, MicroSparkline, Pagination } from '../components/ui';
+import { useDebounce } from '../hooks';
 import { fmtDateTime, fmtNum, fmtRelative } from '../lib/format';
 import { Link } from '../lib/router';
 import { useApi } from '../lib/useApi';
@@ -533,16 +534,15 @@ function buildMockData(): PublicSeatsResponse {
 export function PublicDashboard() {
   const [state, setState] = useState('');
   const [level, setLevel] = useState('');
-  const [search, setSearch] = useState('');
   const [inputVal, setInputVal] = useState('');
+  const debouncedSearch = useDebounce(inputVal, 300);
   const [page, setPage] = useState(1);
   const [stateViewMode, setStateViewMode] = useState<'matrix' | 'table'>('matrix');
-  const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const PAGE_SIZE = 20;
 
   const { data: live, error, loading, reload } = useApi(
-    () => api.publicSeats({ state: state || undefined, level: level || undefined, search: search || undefined, page, page_size: PAGE_SIZE }),
-    [state, level, search, page],
+    () => api.publicSeats({ state: state || undefined, level: level || undefined, search: debouncedSearch || undefined, page, page_size: PAGE_SIZE }),
+    [state, level, debouncedSearch, page],
   );
 
   // Fall back to mock data when the endpoint isn't implemented yet
@@ -560,8 +560,7 @@ export function PublicDashboard() {
 
   function handleSearchChange(val: string) {
     setInputVal(val);
-    if (searchTimeout.current) clearTimeout(searchTimeout.current);
-    searchTimeout.current = setTimeout(() => { setSearch(val); setPage(1); }, 350);
+    setPage(1);
   }
 
   function handleStateChange(val: string) { setState(val); setPage(1); }
@@ -577,13 +576,14 @@ export function PublicDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <Link to="/" className="text-[#c9d4e5] text-sm no-underline hover:underline inline-flex items-center gap-1 mb-3">
-                ← Back to home
+              <Link to="/" className="text-[#c9d4e5] text-xs font-semibold no-underline hover:underline inline-flex items-center gap-1 mb-3">
+                ← Return to National Depository
               </Link>
-              <h1 className="text-2xl sm:text-3xl font-bold">🏛️ Live Seats Dashboard</h1>
-              <p className="text-[#c9d4e5] mt-1.5 max-w-2xl">
-                Real-time enrolment data for AICTE-approved institutions across India. Academic year {data.academic_year}–{data.academic_year + 1}.
-                Updated on every submission. No personal data is shown.
+              <h1 className="text-2xl sm:text-3xl font-bold font-sans tracking-tight">
+                National Sanctioned Seat Intake Matrix
+              </h1>
+              <p className="text-[#c9d4e5] mt-1.5 max-w-3xl text-xs sm:text-sm leading-relaxed">
+                Real-time seat intake compliance, sanctioned quota utilization, and enrolment depository for AICTE-approved institutions nationwide. Academic Year {data.academic_year}–{data.academic_year + 1}. All transactions cryptographically verified against the national WORM ledger.
               </p>
             </div>
             <div className="flex items-center gap-3 shrink-0">
@@ -763,11 +763,11 @@ export function PublicDashboard() {
               <ChevronRight size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 rotate-90 text-faint pointer-events-none" aria-hidden="true" />
             </div>
 
-            {(state || level || search) && (
+            {(state || level || inputVal) && (
               <button
                 type="button"
                 className="btn btn-secondary btn-sm flex items-center gap-1.5"
-                onClick={() => { setState(''); setLevel(''); setSearch(''); setInputVal(''); setPage(1); }}
+                onClick={() => { setState(''); setLevel(''); setInputVal(''); setPage(1); }}
               >
                 <X size={14} aria-hidden="true" /> Clear filters
               </button>

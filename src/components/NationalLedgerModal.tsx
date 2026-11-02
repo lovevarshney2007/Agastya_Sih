@@ -36,11 +36,11 @@ export function NationalLedgerModal({ isOpen, onClose }: NationalLedgerModalProp
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-navy-dark/70 backdrop-blur-xs animate-fade-in no-print"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#0e2448]/60 no-print"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-xl shadow-2xl border border-line w-full max-w-lg overflow-hidden animate-scale-in text-ink"
+        className="bg-white rounded-lg shadow-md border border-line w-full max-w-lg overflow-hidden text-ink"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
