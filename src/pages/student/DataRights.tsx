@@ -105,47 +105,100 @@ export function DataRights() {
       {/* DPDP Statutory Cards */}
       <div className="grid gap-3 sm:grid-cols-4">
         <Panel>
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 font-bold text-ink">
-              <FileCheck size={18} className="text-brand" />
-              <span>Right to Access</span>
+          <div className="space-y-1 flex flex-col h-full justify-between">
+            <div>
+              <div className="flex items-center gap-2 font-bold text-ink">
+                <FileCheck size={18} className="text-brand" />
+                <span>Right to Access</span>
+              </div>
+              <p className="text-xs text-muted mt-1">
+                Section 11: Request a summary of personal data being processed and all third parties with whom it was shared.
+              </p>
             </div>
-            <p className="text-xs text-muted">
-              Section 11: Request a summary of personal data being processed and all third parties with whom it was shared.
-            </p>
+            <button
+              type="button"
+              onClick={handleExportData}
+              disabled={exporting}
+              className="btn btn-secondary btn-xs w-full mt-3 cursor-pointer"
+            >
+              <Download size={12} />
+              <span>{exporting ? 'Exporting...' : 'Download Dossier (JSON)'}</span>
+            </button>
           </div>
         </Panel>
+
         <Panel>
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 font-bold text-ink">
-              <Shield size={18} className="text-brand" />
-              <span>Right to Correction</span>
+          <div className="space-y-1 flex flex-col h-full justify-between">
+            <div>
+              <div className="flex items-center gap-2 font-bold text-ink">
+                <Shield size={18} className="text-brand" />
+                <span>Right to Correction</span>
+              </div>
+              <p className="text-xs text-muted mt-1">
+                Section 12: Request correction of inaccurate, misleading, or outdated academic and demographic information.
+              </p>
             </div>
-            <p className="text-xs text-muted">
-              Section 12: Request correction of inaccurate, misleading, or outdated academic and demographic information.
-            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setRequestType('CORRECTION');
+                setSubject('Request Correction of Course/Name in APAAR record');
+                setModalOpen(true);
+              }}
+              className="btn btn-secondary btn-xs w-full mt-3 cursor-pointer"
+            >
+              <span>Request Rectification</span>
+            </button>
           </div>
         </Panel>
+
         <Panel>
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 font-bold text-ink">
-              <AlertCircle size={18} className="text-brand" />
-              <span>Right to Erasure</span>
+          <div className="space-y-1 flex flex-col h-full justify-between">
+            <div>
+              <div className="flex items-center gap-2 font-bold text-ink">
+                <AlertCircle size={18} className="text-brand" />
+                <span>Right to Erasure</span>
+              </div>
+              <p className="text-xs text-muted mt-1">
+                Section 12(3): Request deletion of non-statutory records subject to AICTE academic record retention laws.
+              </p>
             </div>
-            <p className="text-xs text-muted">
-              Section 12(3): Request deletion of non-statutory records subject to AICTE academic record retention laws.
-            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setRequestType('ERASURE');
+                setSubject('Erasure Request of Non-Statutory Academic Telemetry');
+                setModalOpen(true);
+              }}
+              className="btn btn-secondary btn-xs w-full mt-3 cursor-pointer"
+            >
+              <span>Request Erasure</span>
+            </button>
           </div>
         </Panel>
+
         <Panel>
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 font-bold text-ink">
-              <HelpCircle size={18} className="text-brand" />
-              <span>Grievance Redressal</span>
+          <div className="space-y-1 flex flex-col h-full justify-between">
+            <div>
+              <div className="flex items-center gap-2 font-bold text-ink">
+                <HelpCircle size={18} className="text-brand" />
+                <span>Grievance Redressal</span>
+              </div>
+              <p className="text-xs text-muted mt-1">
+                Section 13: Raise grievances to AICTE Data Protection Officer (DPO) with SLA tracking.
+              </p>
             </div>
-            <p className="text-xs text-muted">
-              Section 13: Raise grievances to AICTE Data Protection Officer (DPO) with SLA tracking.
-            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setRequestType('GRIEVANCE');
+                setSubject('Statutory Appeal to AICTE Data Protection Officer');
+                setModalOpen(true);
+              }}
+              className="btn btn-secondary btn-xs w-full mt-3 cursor-pointer"
+            >
+              <span>File DPO Grievance</span>
+            </button>
           </div>
         </Panel>
       </div>

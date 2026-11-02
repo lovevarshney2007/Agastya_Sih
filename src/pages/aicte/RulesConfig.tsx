@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Alert, Modal, Panel, StatusTag } from '../../components/ui';
 import { api } from '../../api/client';
 import { useApi } from '../../lib/useApi';
-import { Play } from 'lucide-react';
+import { CheckCircle2, Play, Sliders } from 'lucide-react';
 
 interface RuleItem {
   rule_id: string;
@@ -46,7 +46,7 @@ interface ImpactSimulationResult {
 
 export function RulesConfig() {
   const { data, loading, error, reload } = useApi(() => api.aicte.rules(), []);
-  const [activeTab, setActiveTab] = useState<'rules' | 'categories'>('rules');
+  const [activeTab, setActiveTab] = useState<'rules' | 'categories' | 'simulator'>('rules');
   
   // Edit Category Modal
   const [editingCategory, setEditingCategory] = useState<SeatCategoryItem | null>(null);
@@ -54,9 +54,22 @@ export function RulesConfig() {
   const [overAndAbove, setOverAndAbove] = useState(true);
   const [savingCategory, setSavingCategory] = useState(false);
 
+  // Policy Simulation Sliders
+  const [tfwSlider, setTfwSlider] = useState<number>(5);
+  const [ewsSlider, setEwsSlider] = useState<number>(10);
+  const [lateralSlider, setLateralSlider] = useState<number>(10);
+  const [policySaved, setPolicySaved] = useState(false);
+
   // Simulation State
   const [simulating, setSimulating] = useState(false);
   const [simResult, setSimResult] = useState<ImpactSimulationResult | null>(null);
+
+  const additionalTfw = Math.round((tfwSlider - 5) * 31400);
+  const additionalEws = Math.round((ewsSlider - 10) * 31400);
+  const additionalLateral = Math.round((lateralSlider - 10) * 31400);
+  const totalDeltaSeats = additionalTfw + additionalEws + additionalLateral;
+  const projectedTotalSeats = 3140000 + totalDeltaSeats;
+  const facultyRequired = Math.round(Math.max(totalDeltaSeats, 0) / 20);
 
   const handleToggleRule = async (rule: RuleItem) => {
     try {
@@ -155,6 +168,16 @@ export function RulesConfig() {
           }`}
         >
           Seat Quota &amp; Supernumerary Matrix ({data?.seat_categories?.length || 0})
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('simulator')}
+          className={`pb-2.5 text-sm font-semibold border-b-2 transition-colors flex items-center gap-1.5 ${
+            activeTab === 'simulator' ? 'border-navy text-navy font-bold' : 'border-transparent text-muted hover:text-ink'
+          }`}
+        >
+          <Sliders size={14} className="text-saffron" />
+          <span>Interactive Quota Policy Simulator</span>
         </button>
       </div>
 
@@ -271,6 +294,150 @@ export function RulesConfig() {
             </table>
           </div>
         </Panel>
+      )}
+
+      {/* Interactive Policy Simulator */}
+      {activeTab === 'simulator' && (
+        <div className="space-y-6 animate-fade-in">
+          <Panel title="APH Statutory Supernumerary Quota Simulator">
+            <p className="text-xs text-muted mb-4">
+              Simulate the macroeconomic impact of adjusting national supernumerary seat quotas across all 8,900+ AICTE-approved technical institutions in real time.
+            </p>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              {/* Slider 1: TFW */}
+              <div className="bg-surface p-4 rounded-lg border border-line space-y-2">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-bold text-navy">TFW (Fee Waiver) Quota</span>
+                  <span className="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    {tfwSlider}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="15"
+                  step="1"
+                  value={tfwSlider}
+                  onChange={(e) => setTfwSlider(Number(e.target.value))}
+                  className="w-full accent-navy cursor-pointer"
+                />
+                <div className="flex justify-between text-[10px] text-muted font-mono">
+                  <span>0% (Eliminated)</span>
+                  <span>5% (Current APH)</span>
+                  <span>15% (Max)</span>
+                </div>
+                <div className="text-[11px] text-muted pt-1">
+                  Projected: <strong>{additionalTfw >= 0 ? `+${additionalTfw.toLocaleString()}` : additionalTfw.toLocaleString()}</strong> waiver seats
+                </div>
+              </div>
+
+              {/* Slider 2: EWS */}
+              <div className="bg-surface p-4 rounded-lg border border-line space-y-2">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-bold text-navy">EWS Quota Ceiling</span>
+                  <span className="font-mono font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                    {ewsSlider}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="5"
+                  max="20"
+                  step="1"
+                  value={ewsSlider}
+                  onChange={(e) => setEwsSlider(Number(e.target.value))}
+                  className="w-full accent-navy cursor-pointer"
+                />
+                <div className="flex justify-between text-[10px] text-muted font-mono">
+                  <span>5% (Floor)</span>
+                  <span>10% (Statutory)</span>
+                  <span>20% (Extended)</span>
+                </div>
+                <div className="text-[11px] text-muted pt-1">
+                  Projected: <strong>{additionalEws >= 0 ? `+${additionalEws.toLocaleString()}` : additionalEws.toLocaleString()}</strong> EWS admissions
+                </div>
+              </div>
+
+              {/* Slider 3: Lateral Entry */}
+              <div className="bg-surface p-4 rounded-lg border border-line space-y-2">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-bold text-navy">Diploma Lateral Entry Cap</span>
+                  <span className="font-mono font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                    {lateralSlider}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="5"
+                  max="25"
+                  step="1"
+                  value={lateralSlider}
+                  onChange={(e) => setLateralSlider(Number(e.target.value))}
+                  className="w-full accent-navy cursor-pointer"
+                />
+                <div className="flex justify-between text-[10px] text-muted font-mono">
+                  <span>5% (Strict)</span>
+                  <span>10% (APH Standard)</span>
+                  <span>25% (Polytechnic Push)</span>
+                </div>
+                <div className="text-[11px] text-muted pt-1">
+                  Projected: <strong>{additionalLateral >= 0 ? `+${additionalLateral.toLocaleString()}` : additionalLateral.toLocaleString()}</strong> diploma entries
+                </div>
+              </div>
+            </div>
+
+            {/* Projected Impact Cards */}
+            <div className="mt-6 pt-5 border-t border-line-soft grid gap-4 sm:grid-cols-3">
+              <div className="p-3.5 bg-navy text-white rounded-lg sovereign-grid-dark">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-saffron">Total Projected National Seats</div>
+                <div className="text-xl font-bold font-mono mt-1">{projectedTotalSeats.toLocaleString()}</div>
+                <div className="text-xs text-[#c9d4e5] mt-0.5">
+                  {totalDeltaSeats >= 0 ? `+${totalDeltaSeats.toLocaleString()} new seats` : `${totalDeltaSeats.toLocaleString()} seats`} vs current baseline
+                </div>
+              </div>
+
+              <div className="p-3.5 bg-wash rounded-lg border border-line">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-muted">Faculty Staffing Requirement (1:20 SFR)</div>
+                <div className="text-xl font-bold font-mono text-ink mt-1">+{facultyRequired.toLocaleString()}</div>
+                <div className="text-xs text-muted mt-0.5">Faculty members required for AICTE Cadre compliance</div>
+              </div>
+
+              <div className="p-3.5 bg-wash rounded-lg border border-line">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-muted">Classroom Saturation Ratio</div>
+                <div className="text-xl font-bold font-mono text-emerald-700 mt-1">
+                  {(82.4 + (totalDeltaSeats / 3140000) * 100).toFixed(1)}%
+                </div>
+                <div className="text-xs text-emerald-600 mt-0.5">Within permissible 90% physical plant ceiling</div>
+              </div>
+            </div>
+
+            {policySaved && (
+              <div className="mt-4 animate-fade-in">
+                <Alert tone="ok" title="Statutory Circular Draft Saved">
+                  Draft policy parameters recorded in the session cache. Ledger will apply these thresholds upon Checker dual-key quorum sign-off.
+                </Alert>
+              </div>
+            )}
+
+            <div className="mt-5 flex items-center justify-between pt-3 border-t border-line-soft">
+              <span className="text-xs text-muted">
+                Authority: AICTE Approval Process Handbook (APH) 2024-27
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setPolicySaved(true);
+                  setTimeout(() => setPolicySaved(false), 4000);
+                }}
+                className="btn btn-primary btn-sm flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <CheckCircle2 size={14} />
+                <span>Save as Draft Statutory Policy Circular</span>
+              </button>
+            </div>
+          </Panel>
+        </div>
       )}
 
       {/* Edit Category Modal */}

@@ -7,6 +7,7 @@ import { useI18n, LanguageToggle } from '../lib/i18n';
 import { CommandPalette } from './CommandPalette';
 import { JuryRubricModal } from './JuryRubricModal';
 import { JuryTourWidget } from './JuryTourWidget';
+import { NationalEventTicker } from './NationalEventTicker';
 import { NationalLedgerModal } from './NationalLedgerModal';
 import { NotificationBell } from './NotificationBell';
 import { RegulatoryCopilot } from './RegulatoryCopilot';
@@ -324,6 +325,7 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
       </footer>
       <RegulatoryCopilot onNavigate={(route) => navigate(route)} userRole={user?.role} />
       <JuryTourWidget />
+      <NationalEventTicker />
       <CommandPalette isOpen={commandOpen} onClose={() => setCommandOpen(false)} />
       <NationalLedgerModal isOpen={ledgerModalOpen} onClose={() => setLedgerModalOpen(false)} />
       <JuryRubricModal isOpen={rubricOpen} onClose={() => setRubricOpen(false)} />

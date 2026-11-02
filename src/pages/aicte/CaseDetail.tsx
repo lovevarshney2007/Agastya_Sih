@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, FileText, GitCompare, Lock, Volume2, VolumeX } from 'lucide-react';
+import { AlertTriangle, FileText, GitCompare, Lock, Sparkles, Volume2, VolumeX } from 'lucide-react';
 import { api } from '../../api/client';
 import { bhashiniVoice } from '../../utils/bhashiniVoice';
 import type { CaseDetail } from '../../api/types';
@@ -175,6 +175,49 @@ function ProposePanel({ caseId, onDone }: { caseId: string; onDone: (c: CaseDeta
             </label>
           ))}
         </fieldset>
+
+        {/* 1-Click Statutory Adjudication Presets */}
+        <div className="space-y-1.5 pt-1">
+          <span className="text-[11px] font-bold text-navy uppercase tracking-wider flex items-center gap-1">
+            <Sparkles size={12} className="text-saffron" /> 1-Click Statutory Adjudication Presets
+          </span>
+          <div className="flex flex-col gap-1.5">
+            <button
+              type="button"
+              onClick={() => {
+                setAction('CONFIRM_VIOLATION');
+                setNote('Under UGC Simultaneous Degree Guidelines 2022 §3.1, a student cannot hold concurrent full-time admissions. The earlier registered admission is preserved, and the subsequent enrolment must be revoked.');
+              }}
+              className="text-left text-xs p-2 rounded border border-line bg-surface hover:border-brand hover:bg-brand-wash/20 transition-all cursor-pointer"
+            >
+              <strong className="text-bad block font-mono text-[11px]">⚖️ UGC §3.1: Enforce First-Admission Priority</strong>
+              <span className="text-muted text-[11px]">Cancels duplicate admission while preserving earlier enrollment.</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAction('FALSE_POSITIVE');
+                setNote('Evidence review confirms previous enrolment was cancelled prior to commencement of current academic session. No concurrent seat retention detected. Release held records.');
+              }}
+              className="text-left text-xs p-2 rounded border border-line bg-surface hover:border-brand hover:bg-brand-wash/20 transition-all cursor-pointer"
+            >
+              <strong className="text-ok block font-mono text-[11px]">✅ Legitimate Transfer / No Overlap</strong>
+              <span className="text-muted text-[11px]">Releases held student records upon verified seat cancellation.</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAction('REQUEST_CLARIFICATION');
+                setNote('Both COEP and VJTI Registrars are instructed to furnish attested physical admission registers and biometric attendance logs within 7 business days under APH §3.1 enquiry.');
+              }}
+              className="text-left text-xs p-2 rounded border border-line bg-surface hover:border-brand hover:bg-brand-wash/20 transition-all cursor-pointer"
+            >
+              <strong className="text-navy block font-mono text-[11px]">📋 Formal Statutory Enquiry Order</strong>
+              <span className="text-muted text-[11px]">Directs both Registrars to furnish certified physical rosters.</span>
+            </button>
+          </div>
+        </div>
+
         <Field label="Reason" hint="At least 10 characters. Shown to the approving officer and kept in the audit log." htmlFor="case-note" error={submit.error}>
           <textarea id="case-note" className="textarea" rows={4} value={note} onChange={(e) => setNote(e.target.value)} />
         </Field>
