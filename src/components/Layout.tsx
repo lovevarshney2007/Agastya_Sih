@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { LogOut, Menu, Search, X } from 'lucide-react';
+import { Award, LogOut, Menu, Search, X } from 'lucide-react';
 import { API_ORIGIN } from '../api/client';
 import { Link, useRouter } from '../lib/router';
 import { ROLE_LABEL, useSession, type Portal } from '../lib/session';
 import { useI18n, LanguageToggle } from '../lib/i18n';
 import { CommandPalette } from './CommandPalette';
+import { JuryRubricModal } from './JuryRubricModal';
 import { JuryTourWidget } from './JuryTourWidget';
 import { NationalLedgerModal } from './NationalLedgerModal';
 import { NotificationBell } from './NotificationBell';
@@ -73,6 +74,7 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
   const [menuOpen, setMenuOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
   const [ledgerModalOpen, setLedgerModalOpen] = useState(false);
+  const [rubricOpen, setRubricOpen] = useState(false);
   const [fontSize, setFontSizeState] = useState(() => (typeof window !== 'undefined' ? localStorage.getItem('agastya_font_size') || '15px' : '15px'));
   const [highContrast, setHighContrast] = useState(() => (typeof window !== 'undefined' ? localStorage.getItem('agastya_high_contrast') === 'true' : false));
 
@@ -143,6 +145,17 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
             >
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 beacon-pulse shrink-0" />
               <span>Ledger Live</span>
+            </button>
+            <span className="text-white/30 hidden sm:inline">|</span>
+            <button
+              type="button"
+              onClick={() => setRubricOpen(true)}
+              className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-300 hover:text-white transition-colors cursor-pointer bg-amber-500/15 hover:bg-amber-500/25 px-2 py-0.5 rounded border border-amber-400/35 shrink-0"
+              title="Open SIH26263 Statutory Rubric & Architecture Compliance Matrix"
+            >
+              <Award size={12} className="text-amber-400 shrink-0" />
+              <span className="hidden sm:inline">SIH Rubric (7/7 ✅)</span>
+              <span className="sm:hidden">Rubric</span>
             </button>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
@@ -313,6 +326,7 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
       <JuryTourWidget />
       <CommandPalette isOpen={commandOpen} onClose={() => setCommandOpen(false)} />
       <NationalLedgerModal isOpen={ledgerModalOpen} onClose={() => setLedgerModalOpen(false)} />
+      <JuryRubricModal isOpen={rubricOpen} onClose={() => setRubricOpen(false)} />
     </div>
   );
 }

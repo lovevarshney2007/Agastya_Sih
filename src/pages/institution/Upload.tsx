@@ -7,6 +7,7 @@ import { Link } from '../../lib/router';
 import { useAction } from '../../lib/useApi';
 import { CountsRow, useInstitutionId } from './shared';
 import { IssueSummary, downloadIssuesCsv } from './BatchDetail';
+import { DEMO_BATCHES } from '../../utils/demoBatches';
 
 interface PreFlightRow {
   rowNum: number;
@@ -235,6 +236,13 @@ export function UploadWizard() {
     if (inputRef.current) inputRef.current.value = '';
   }
 
+  function loadDemoBatch(id: string) {
+    const b = DEMO_BATCHES[id];
+    if (!b) return;
+    const demoFile = new File([b.csv], b.filename, { type: 'text/csv' });
+    pick(demoFile);
+  }
+
   return (
     <>
       <PageHeader
@@ -342,9 +350,42 @@ export function UploadWizard() {
             <div className="grid gap-6 lg:grid-cols-[1fr_1.1fr]">
               <Panel title="1. Get the template">
                 <p className="text-sm mb-3">Template version <span className="mono">2026.1</span> for academic year 2026–27. Approved intake is taken from AICTE’s records, not from your file.</p>
-                <button type="button" className="btn btn-secondary" onClick={() => void api.templateDownload()}>
-                  <FileSpreadsheet size={16} aria-hidden="true" /> Download template (CSV)
-                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => void api.templateDownload()}>
+                    <FileSpreadsheet size={15} aria-hidden="true" /> Download template (CSV)
+                  </button>
+                </div>
+
+                {/* Instant Hackathon Demo Batches */}
+                <div className="mt-4 pt-3.5 border-t border-line-soft">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-navy uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-saffron" />
+                      Hackathon Demo Batches (1-Click Load)
+                    </span>
+                    <span className="text-[10px] text-muted font-mono">No typing required</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {Object.values(DEMO_BATCHES).map((batch) => (
+                      <button
+                        key={batch.id}
+                        type="button"
+                        onClick={() => loadDemoBatch(batch.id)}
+                        className="text-left p-2.5 rounded-lg border border-line bg-surface hover:border-brand hover:bg-brand-wash/30 transition-all cursor-pointer group"
+                        title={`Load ${batch.title} immediately into pre-flight validation`}
+                      >
+                        <div className="flex items-center justify-between gap-1 mb-1">
+                          <span className="text-xs font-bold text-ink group-hover:text-brand truncate">{batch.title}</span>
+                          <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded border font-mono shrink-0 ${batch.badgeColor}`}>
+                            {batch.badge}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-muted line-clamp-2 leading-tight">{batch.description}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <details className="mt-4 text-sm">
                   <summary className="cursor-pointer font-semibold">Column guide</summary>
                   <div className="table-wrap mt-2 border border-line-soft rounded">

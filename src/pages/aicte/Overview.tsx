@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Download, FileText, LayoutGrid, List, X } from 'lucide-react';
+import { Download, FileText, LayoutGrid, List, MapPin, X } from 'lucide-react';
 import { api } from '../../api/client';
 import { Alert, AsOf, ErrorState, Loading, PageHeader, Panel, Stat, StatusTag } from '../../components/ui';
 import { fmtNum, fmtRelative, pct } from '../../lib/format';
 import { Link } from '../../lib/router';
 import { useApi } from '../../lib/useApi';
 import { RegulatoryTelemetry } from '../../components/RegulatoryTelemetry';
+import { IndiaMapHeatmap } from '../../components/IndiaMapHeatmap';
 
 type Metric = 'enrolled' | 'reporting' | 'utilisation' | 'open_cases';
 const METRICS: Record<Metric, string> = {
@@ -18,7 +19,7 @@ const METRICS: Record<Metric, string> = {
 export function NationalOverview() {
   const { data, error, loading, reload } = useApi(() => api.aicte.dashboard(), []);
   const [metric, setMetric] = useState<Metric>('enrolled');
-  const [viewMode, setViewMode] = useState<'grid' | 'bars'>('grid');
+  const [viewMode, setViewMode] = useState<'map' | 'grid' | 'bars'>('map');
   const [selectedStateName, setSelectedStateName] = useState<string | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
 
@@ -129,15 +130,23 @@ export function NationalOverview() {
               <div className="inline-flex rounded border border-line p-0.5 bg-wash">
                 <button
                   type="button"
-                  className={`px-2 py-0.5 rounded text-xs flex items-center gap-1 ${viewMode === 'grid' ? 'bg-surface font-semibold shadow-xs text-ink' : 'text-muted'}`}
-                  onClick={() => setViewMode('grid')}
-                  title="Heatmap matrix view"
+                  className={`px-2 py-0.5 rounded text-xs flex items-center gap-1 cursor-pointer ${viewMode === 'map' ? 'bg-surface font-semibold shadow-xs text-ink' : 'text-muted'}`}
+                  onClick={() => setViewMode('map')}
+                  title="Interactive India geographic map"
                 >
-                  <LayoutGrid size={13} /> Heatmap
+                  <MapPin size={13} /> India Map
                 </button>
                 <button
                   type="button"
-                  className={`px-2 py-0.5 rounded text-xs flex items-center gap-1 ${viewMode === 'bars' ? 'bg-surface font-semibold shadow-xs text-ink' : 'text-muted'}`}
+                  className={`px-2 py-0.5 rounded text-xs flex items-center gap-1 cursor-pointer ${viewMode === 'grid' ? 'bg-surface font-semibold shadow-xs text-ink' : 'text-muted'}`}
+                  onClick={() => setViewMode('grid')}
+                  title="Heatmap matrix view"
+                >
+                  <LayoutGrid size={13} /> Grid
+                </button>
+                <button
+                  type="button"
+                  className={`px-2 py-0.5 rounded text-xs flex items-center gap-1 cursor-pointer ${viewMode === 'bars' ? 'bg-surface font-semibold shadow-xs text-ink' : 'text-muted'}`}
                   onClick={() => setViewMode('bars')}
                   title="Ranked bar comparison"
                 >
@@ -183,7 +192,14 @@ export function NationalOverview() {
             </div>
           )}
 
-          {viewMode === 'grid' ? (
+          {viewMode === 'map' ? (
+            <IndiaMapHeatmap
+              states={states}
+              metric={metric}
+              selectedState={selectedStateName}
+              onSelectState={(name) => setSelectedStateName(selectedStateName === name ? null : name)}
+            />
+          ) : viewMode === 'grid' ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
               {states.map((s) => {
                 const fillPct = pct(s.enrolled, s.approved_intake);
