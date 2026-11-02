@@ -165,20 +165,21 @@ export const RegulatoryCopilot: React.FC<RegulatoryCopilotProps> = ({ onNavigate
       {/* Institutional Floating Launcher */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-5 left-6 z-40 flex items-center gap-2.5 px-3.5 py-2.5 rounded-full bg-navy hover:bg-navy-dark text-white border-2 border-saffron shadow-xl transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 group no-print cursor-pointer"
+        className="fixed bottom-4 left-3 sm:bottom-5 sm:left-6 z-40 flex items-center gap-1.5 sm:gap-2.5 px-2.5 py-2 sm:px-3.5 sm:py-2.5 rounded-full bg-navy hover:bg-navy-dark text-white border-2 border-saffron shadow-xl transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 group no-print cursor-pointer"
         aria-label="Open AICTE Statutory Advisory Desk"
       >
-        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 beacon-pulse text-emerald-400" />
-        <Scale className="w-4 h-4 text-saffron shrink-0" />
-        <span className="text-xs font-bold tracking-tight">Statutory Guidance</span>
-        <span className="text-[10px] font-mono font-bold tracking-wider px-1.5 py-0.5 rounded bg-white/15 text-[#f6c48f]">
+        <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-400 beacon-pulse text-emerald-400 shrink-0" />
+        <Scale className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-saffron shrink-0" />
+        <span className="text-xs font-bold tracking-tight hidden sm:inline">Statutory Guidance</span>
+        <span className="text-xs font-bold tracking-tight sm:hidden">Advisory</span>
+        <span className="text-[10px] font-mono font-bold tracking-wider px-1.5 py-0.5 rounded bg-white/15 text-[#f6c48f] hidden sm:inline">
           APH 2026–27
         </span>
       </button>
 
       {/* Advisory Desk Drawer */}
       {isOpen && (
-        <div className="fixed bottom-16 left-6 z-50 w-[440px] max-w-[calc(100vw-2rem)] h-[620px] max-h-[calc(100vh-6rem)] bg-white border border-line rounded-xl shadow-2xl flex flex-col overflow-hidden text-ink animate-fade-up no-print">
+        <div className="fixed bottom-16 left-3 right-3 sm:left-6 sm:right-auto z-50 w-auto sm:w-[440px] max-w-[calc(100vw-1.5rem)] h-[580px] max-h-[calc(100vh-5rem)] bg-white border border-line rounded-xl shadow-2xl flex flex-col overflow-hidden text-ink animate-fade-up no-print">
           
           {/* Official Indian Sovereign Header */}
           <div className="bg-navy text-white px-4 py-3 border-b border-navy-dark">

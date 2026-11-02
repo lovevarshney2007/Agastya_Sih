@@ -131,39 +131,39 @@ export function Home() {
   return (
     <>
       <section className="bg-navy text-white sovereign-grid-dark relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14 lg:py-20 grid gap-10 lg:grid-cols-[1.25fr_1fr] items-center relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14 lg:py-20 grid gap-8 lg:gap-10 lg:grid-cols-[1.25fr_1fr] items-center relative z-10">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-semibold text-[#f6c48f] mb-3 font-mono">
               <span>AICTE Approval Bureau · Statutory Depository</span>
             </div>
-            <h1 className="text-3xl sm:text-[2.65rem] font-extrabold leading-[1.12] max-w-2xl tracking-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-[2.65rem] font-extrabold leading-[1.15] max-w-2xl tracking-tight">
               Report, check and verify student enrolment — keyed by APAAR ID
             </h1>
-            <p className="text-[#c9d4e5] text-[1.05rem] mt-4 max-w-xl leading-relaxed">
+            <p className="text-[#c9d4e5] text-sm sm:text-[1.05rem] mt-3 sm:mt-4 max-w-xl leading-relaxed">
               Institutions submit student-level admission data. The central ledger intercepts duplicate enrolments, enforces approved intake caps, and enables zero-trust credential verification.
             </p>
-            <div className="flex flex-wrap gap-3 mt-8">
-              <Link to={user ? portalHome(portal) : '/sign-in'} className="btn btn-saffron no-underline !px-5 !py-2.5 shadow-lg shadow-saffron/20 transition-transform duration-200 hover:-translate-y-0.5">
+            <div className="flex flex-col sm:flex-row gap-3 mt-6 sm:mt-8">
+              <Link to={user ? portalHome(portal) : '/sign-in'} className="btn btn-saffron no-underline !px-5 !py-2.5 shadow-lg shadow-saffron/20 transition-transform duration-200 hover:-translate-y-0.5 justify-center text-center">
                 {user ? 'Go to my portal' : 'Sign in to Portal'} <ArrowRight size={16} aria-hidden="true" />
               </Link>
-              <Link to="/activate" className="btn no-underline !px-5 !py-2.5 border-white/30 text-white hover:bg-white/10 transition-transform duration-200 hover:-translate-y-0.5">
+              <Link to="/activate" className="btn no-underline !px-5 !py-2.5 border-white/30 text-white hover:bg-white/10 transition-transform duration-200 hover:-translate-y-0.5 justify-center text-center">
                 Activate an institution account
               </Link>
             </div>
           </div>
 
-          <form className="bg-white text-ink rounded-xl p-6 sm:p-7 shadow-2xl border border-line-soft card-lift relative" onSubmit={(e) => { e.preventDefault(); check(token); }}>
+          <form className="bg-white text-ink rounded-xl p-5 sm:p-7 shadow-2xl border border-line-soft card-lift relative" onSubmit={(e) => { e.preventDefault(); check(token); }}>
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-lg font-bold text-navy">Verify Credential Certificate</h2>
+              <h2 className="text-base sm:text-lg font-bold text-navy">Verify Credential Certificate</h2>
               <span className="text-[10px] font-mono font-bold bg-brand-wash text-brand px-2 py-0.5 rounded">W3C / JWS</span>
             </div>
             <p className="text-xs text-muted">Scan the QR on an enrolment certificate or paste the verification link or token code. No sign-in required.</p>
-            <label htmlFor="home-token" className="label mt-4">Verification link or code</label>
-            <div className="flex gap-2">
-              <input id="home-token" className="input mono" value={token} onChange={(e) => setToken(e.target.value)} autoComplete="off" spellCheck={false} placeholder="e.g. demo-priya-tcs-2026" />
-              <button type="submit" className="btn btn-primary shrink-0" disabled={!token.trim()}>Check</button>
+            <label htmlFor="home-token" className="label mt-3 sm:mt-4">Verification link or code</label>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input id="home-token" className="input mono flex-1" value={token} onChange={(e) => setToken(e.target.value)} autoComplete="off" spellCheck={false} placeholder="e.g. demo-priya-tcs-2026" />
+              <button type="submit" className="btn btn-primary shrink-0 justify-center" disabled={!token.trim()}>Check</button>
             </div>
-            <p className="hint mt-3 text-xs">
+            <p className="hint mt-2 sm:mt-3 text-xs">
               Demo sample codes:{' '}
               <button type="button" className="mono underline text-brand bg-transparent border-0 p-0 cursor-pointer" onClick={() => check('demo-priya-tcs-2026')}>demo-priya-tcs-2026</button>{' '}
               (valid),{' '}

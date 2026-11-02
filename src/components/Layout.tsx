@@ -120,19 +120,19 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
 
       <div className="tricolour h-1 no-print" aria-hidden="true" />
       <div className="bg-navy-dark text-[#c9d4e5] text-xs no-print">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-1.5 flex justify-between items-center gap-4">
-          <div className="flex items-center gap-3">
-            <span>{t('gov_india')}</span>
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-1.5 flex justify-between items-center gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <span className="truncate max-w-[130px] sm:max-w-none">{t('gov_india')}</span>
             <span className="hidden md:inline text-white/30">|</span>
             <span className="hidden md:inline-flex items-center gap-1.5 text-[11px] text-emerald-300">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 beacon-pulse text-emerald-400 shrink-0" />
               APAAR National Depository · Ledger Live
             </span>
           </div>
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
             {/* GIGW Text Resizer */}
-            <div className="flex items-center gap-0.5 bg-white/10 px-1.5 py-0.5 rounded text-[11px]">
-              <span className="text-white/60 mr-1 hidden sm:inline">Text:</span>
+            <div className="flex items-center gap-0.5 bg-white/10 px-1 py-0.5 rounded text-[11px]">
+              <span className="text-white/60 mr-0.5 hidden sm:inline">Text:</span>
               <button
                 type="button"
                 onClick={() => setFontSize('13.5px')}
@@ -180,12 +180,12 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
       </div>
 
       <header className="bg-white border-b border-line no-print">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
-          <Link to={user && portal ? `/${portal}` : '/'} className="flex items-center gap-3 no-underline text-ink min-w-0">
-            <img src="/aicte-logo.png" alt="" className="h-11 w-11 object-contain shrink-0" />
+        <div className="relative max-w-7xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-3">
+          <Link to={user && portal ? `/${portal}` : '/'} className="flex items-center gap-2 sm:gap-3 no-underline text-ink min-w-0">
+            <img src="/aicte-logo.png" alt="" className="h-9 w-9 sm:h-11 sm:w-11 object-contain shrink-0" />
             <span className="leading-tight min-w-0">
-              <span className="block font-bold text-[17px] truncate text-navy">{t('app_title')}</span>
-              <span className="block text-xs text-muted truncate">{t('app_subtitle')}</span>
+              <span className="block font-bold text-sm sm:text-[17px] truncate text-navy">{t('app_title')}</span>
+              <span className="hidden sm:block text-xs text-muted truncate">{t('app_subtitle')}</span>
             </span>
           </Link>
 
@@ -266,7 +266,7 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
           </nav>
         )}
 
-      <main id="main" className={full ? 'flex-1 w-full' : `flex-1 w-full mx-auto px-4 sm:px-6 py-7 ${wide ? 'max-w-7xl' : 'max-w-5xl'}`}>
+      <main id="main" className={full ? 'flex-1 w-full pb-24 sm:pb-8' : `flex-1 w-full mx-auto px-3 sm:px-6 py-6 pb-24 sm:pb-8 ${wide ? 'max-w-7xl' : 'max-w-5xl'}`}>
         <div key={path} className="page-enter">{children}</div>
       </main>
 

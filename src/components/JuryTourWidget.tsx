@@ -152,22 +152,23 @@ export function JuryTourWidget() {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 font-sans no-print">
+    <div className="fixed bottom-4 right-3 sm:right-4 z-50 font-sans no-print">
       {!isOpen ? (
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="bg-navy hover:bg-navy-dark text-white px-3.5 py-2.5 rounded-full shadow-xl flex items-center gap-2 border-2 border-saffron text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+          className="bg-navy hover:bg-navy-dark text-white px-2.5 py-2 sm:px-3.5 sm:py-2.5 rounded-full shadow-xl flex items-center gap-1.5 sm:gap-2 border-2 border-saffron text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
           title="Open interactive multi-role platform walkthrough"
         >
-          <Compass size={15} className="text-saffron shrink-0" />
-          <span>Role Switcher & Tour</span>
-          <span className="bg-saffron text-navy text-[10px] font-extrabold px-1.5 py-0.5 rounded-full ml-0.5 font-mono">
+          <Compass size={14} className="text-saffron shrink-0" />
+          <span className="hidden sm:inline">Role Switcher & Tour</span>
+          <span className="sm:hidden">Role Tour</span>
+          <span className="bg-saffron text-navy text-[10px] font-extrabold px-1.5 py-0.5 rounded-full font-mono">
             {currentStepIdx + 1}/{TOUR_STEPS.length}
           </span>
         </button>
       ) : (
-        <div className="bg-white rounded-xl shadow-2xl border border-line w-96 max-w-[calc(100vw-2rem)] overflow-hidden transition-all animate-fade-up">
+        <div className="bg-white rounded-xl shadow-2xl border border-line w-[calc(100vw-1.5rem)] sm:w-96 max-w-[calc(100vw-1.5rem)] overflow-hidden transition-all animate-fade-up">
           {/* Header */}
           <div className="bg-navy text-white px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">

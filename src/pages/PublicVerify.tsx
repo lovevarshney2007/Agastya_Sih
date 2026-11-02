@@ -177,26 +177,26 @@ function OfficialCertificateModal({
   const claims = data.claims || {};
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-dark/70 backdrop-blur-xs overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-navy-dark/70 backdrop-blur-xs overflow-y-auto"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-3xl bg-white rounded-xl shadow-2xl border border-line overflow-hidden my-6 relative"
+        className="w-full max-w-3xl bg-white rounded-xl shadow-2xl border border-line overflow-hidden my-4 sm:my-6 relative"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Controls Bar */}
-        <div className="no-print bg-wash border-b border-line px-5 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Award size={18} className="text-saffron" />
-            <span className="font-bold text-sm text-navy">AICTE Official Verification Attestation</span>
+        <div className="no-print bg-wash border-b border-line px-3 sm:px-5 py-2.5 sm:py-3 flex items-center justify-between">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Award size={18} className="text-saffron shrink-0" />
+            <span className="font-bold text-xs sm:text-sm text-navy truncate">AICTE Verification Attestation</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               className="btn btn-primary btn-sm flex items-center gap-1.5"
               onClick={() => window.print()}
             >
-              <Printer size={14} /> Print / Save PDF
+              <Printer size={14} /> <span className="hidden sm:inline">Print / Save PDF</span><span className="sm:hidden">Print</span>
             </button>
             <button
               type="button"
@@ -210,16 +210,16 @@ function OfficialCertificateModal({
         </div>
 
         {/* Printable Official A4 Document Chassis */}
-        <div className="p-8 sm:p-12 bg-white relative text-ink chassis-housing">
+        <div className="p-4 sm:p-8 md:p-12 bg-white relative text-ink chassis-housing overflow-x-hidden">
           {/* Sovereign Security Border */}
-          <div className="border-4 border-double border-navy p-6 sm:p-8 rounded-sm relative">
-            <div className="tricolour h-1 mb-6" aria-hidden="true" />
+          <div className="border-2 sm:border-4 border-double border-navy p-3 sm:p-6 md:p-8 rounded-sm relative">
+            <div className="tricolour h-1 mb-4 sm:mb-6" aria-hidden="true" />
 
             {/* Header with Emblem */}
-            <div className="text-center pb-6 border-b border-line-soft">
-              <img src="/aicte-logo.png" alt="AICTE" className="h-16 w-16 mx-auto object-contain mb-2" />
-              <div className="text-xs font-bold tracking-widest uppercase text-muted">Government of India</div>
-              <h2 className="text-xl sm:text-2xl font-serif font-bold text-navy uppercase tracking-tight my-1">
+            <div className="text-center pb-4 sm:pb-6 border-b border-line-soft">
+              <img src="/aicte-logo.png" alt="AICTE" className="h-12 w-12 sm:h-16 sm:w-16 mx-auto object-contain mb-2" />
+              <div className="text-[10px] sm:text-xs font-bold tracking-widest uppercase text-muted">Government of India</div>
+              <h2 className="text-lg sm:text-2xl font-serif font-bold text-navy uppercase tracking-tight my-1">
                 All India Council for Technical Education
               </h2>
               <div className="text-xs font-semibold text-saffron tracking-wider uppercase">

@@ -281,18 +281,18 @@ export function CommandPalette({ isOpen, onClose }: { isOpen: boolean; onClose: 
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-navy-dark/60 backdrop-blur-xs animate-fade-up"
+      className="fixed inset-0 z-50 flex items-start justify-center pt-8 sm:pt-20 px-2 sm:px-4 bg-navy-dark/60 backdrop-blur-xs animate-fade-up"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl bg-white rounded-xl shadow-2xl border border-line overflow-hidden flex flex-col max-h-[80vh]"
+        className="w-full max-w-2xl bg-white rounded-xl shadow-2xl border border-line overflow-hidden flex flex-col max-h-[85vh]"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label="Universal Command Search"
       >
         {/* Search Input Bar */}
-        <div className="flex items-center gap-3 px-4 py-3.5 border-b border-line bg-wash/50">
+        <div className="flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-3 sm:py-3.5 border-b border-line bg-wash/50">
           <Search size={20} className="text-muted shrink-0" />
           <input
             ref={inputRef}
@@ -367,14 +367,14 @@ export function CommandPalette({ isOpen, onClose }: { isOpen: boolean; onClose: 
         </div>
 
         {/* Footer Shortcut Bar */}
-        <div className="bg-wash border-t border-line px-4 py-2 flex items-center justify-between text-xs text-muted">
-          <div className="flex items-center gap-3">
-            <span><strong className="font-mono text-ink">↑↓</strong> Navigate</span>
+        <div className="bg-wash border-t border-line px-3 sm:px-4 py-2 flex items-center justify-between text-xs text-muted">
+          <div className="flex items-center gap-2 sm:gap-3 text-[11px] sm:text-xs">
+            <span><strong className="font-mono text-ink">↑↓</strong> Move</span>
             <span><strong className="font-mono text-ink">↵</strong> Select</span>
-            <span><strong className="font-mono text-ink">ESC</strong> Close</span>
+            <span><strong className="font-mono text-ink">ESC</strong> Exit</span>
           </div>
-          <div className="flex items-center gap-1.5 text-navy font-medium text-[11px]">
-            <Compass size={13} className="text-saffron" /> AICTE Sovereign Command Palette
+          <div className="flex items-center gap-1.5 text-navy font-medium text-[11px] truncate">
+            <Compass size={13} className="text-saffron shrink-0" /> <span className="hidden sm:inline">AICTE Sovereign Command Palette</span><span className="sm:hidden">Command Palette</span>
           </div>
         </div>
       </div>
