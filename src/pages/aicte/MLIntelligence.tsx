@@ -5,6 +5,7 @@ import { Alert, ErrorState, Loading, PageHeader, Panel, StatusTag } from '../../
 import { fmtNum } from '../../lib/format';
 import { useApi } from '../../lib/useApi';
 import { Brain, Cpu, GitCompare, Scale, Search, TrendingUp, UserCheck } from 'lucide-react';
+import { SeatDemandForecaster } from '../../components/SeatDemandForecaster';
 
 export function MLIntelligencePage() {
   const [activeTab, setActiveTab] = useState<'forecast' | 'dedup' | 'cohort'>('forecast');
@@ -125,6 +126,8 @@ export function MLIntelligencePage() {
       {/* ── TAB 1: SEAT FORECASTING ── */}
       {activeTab === 'forecast' && (
         <div className="space-y-6">
+          <SeatDemandForecaster />
+
           <div className="flex flex-wrap items-center justify-between gap-4 bg-canvas-subtle p-4 rounded-lg border border-line-soft">
             <div>
               <h2 className="font-semibold text-ink text-base">Academic Cycle 2026–2027 Projections</h2>

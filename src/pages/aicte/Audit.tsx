@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState } from 'react';
-import { Download, FileCheck, Lock, Printer, Shield, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { Download, FileCheck, GitBranch, List, Lock, Printer, Shield, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { api } from '../../api/client';
 import type { ChainCheck } from '../../api/types';
 import { Alert, AsOf, Empty, ErrorState, KeyValue, Loading, Modal, PageHeader, Panel, Spinner } from '../../components/ui';
@@ -7,6 +7,7 @@ import { fmtDateTime, humanize, shortHash } from '../../lib/format';
 import { useAction, useApi } from '../../lib/useApi';
 import { FilterSelect } from '../institution/BatchDetail';
 import { downloadZip } from '../../utils/zip';
+import { MerkleTreeVisualizer } from '../../components/MerkleTreeVisualizer';
 
 export function AuditLedgerPage() {
   const [search, setSearch] = useState('');
@@ -16,6 +17,7 @@ export function AuditLedgerPage() {
   const [open, setOpen] = useState<number | null>(null);
   const [check, setCheck] = useState<ChainCheck | null>(null);
   const [notice, setNotice] = useState<{ tone: 'ok' | 'warn' | 'bad'; text: string } | null>(null);
+  const [viewMode, setViewMode] = useState<'table' | 'dag'>('table');
 
   // Certificate Modal State
   const [certModalSeq, setCertModalSeq] = useState<number | null>(null);
@@ -215,33 +217,76 @@ Authority: AICTE Act 1987 & Approval Process Handbook 2024-27
       </div>
 
       {error && !data ? <ErrorState message={error} onRetry={reload} /> : (
-        <Panel bodyClassName="" title={`Entries${data ? ` (${data.total_events} in total)` : ''}`}>
-          {/* Animated SHA-256 Hash Stream Pipeline */}
-          <div className="px-4 py-2.5 bg-navy text-white text-xs flex flex-wrap items-center justify-between gap-3 border-b border-navy-dark">
-            <div className="flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full ${broken ? 'bg-red-400' : 'bg-emerald-400 beacon-pulse text-emerald-400'}`} />
-              <span className="font-mono font-semibold tracking-wider text-[11px]">
-                {broken ? 'CHAIN CONTINUITY SEVERED' : 'CRYPTOGRAPHIC SHA-256 HASH CHAIN'}
-              </span>
+        <Panel
+          bodyClassName=""
+          title={`Entries${data ? ` (${data.total_events} in total)` : ''}`}
+          actions={
+            <div className="flex items-center gap-1 bg-wash border border-line rounded p-0.5 text-xs">
+              <button
+                type="button"
+                onClick={() => setViewMode('table')}
+                className={`px-2 py-1 rounded transition-colors text-xs font-semibold flex items-center gap-1 cursor-pointer ${
+                  viewMode === 'table' ? 'bg-white shadow-xs text-ink font-bold' : 'text-muted hover:text-ink'
+                }`}
+              >
+                <List size={13} />
+                <span>Table View</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('dag')}
+                className={`px-2 py-1 rounded transition-colors text-xs font-semibold flex items-center gap-1 cursor-pointer ${
+                  viewMode === 'dag' ? 'bg-white shadow-xs text-brand font-bold' : 'text-muted hover:text-ink'
+                }`}
+              >
+                <GitBranch size={13} />
+                <span>Interactive Merkle DAG</span>
+              </button>
             </div>
-            <div className="hidden sm:flex items-center gap-2.5 font-mono text-[10px]">
-              <span className="text-[#c9d4e5]">Block #0</span>
-              <div className={`w-28 h-1.5 rounded-full overflow-hidden ${broken ? 'bg-bad' : 'hash-stream-line'}`} />
-              <span className="text-[#c9d4e5]">Block #{check?.latest_sequence ?? data?.total_events ?? '10'}</span>
-              <span className="text-saffron font-bold ml-1">WORM ANCHORED</span>
+          }
+        >
+          {viewMode === 'dag' ? (
+            <div className="p-4 sm:p-5">
+              <MerkleTreeVisualizer
+                isTampered={broken}
+                onTamper={async () => {
+                  const r = await tamper.run();
+                  if (r) { setNotice({ tone: 'warn', text: r.message }); void reload(); }
+                }}
+                onRestore={async () => {
+                  const r = await restore.run();
+                  if (r) { setNotice({ tone: 'ok', text: r.message }); await runVerify(); void reload(); }
+                }}
+              />
             </div>
-          </div>
+          ) : (
+            <>
+              {/* Animated SHA-256 Hash Stream Pipeline */}
+              <div className="px-4 py-2.5 bg-navy text-white text-xs flex flex-wrap items-center justify-between gap-3 border-b border-navy-dark">
+                <div className="flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${broken ? 'bg-red-400' : 'bg-emerald-400 beacon-pulse text-emerald-400'}`} />
+                  <span className="font-mono font-semibold tracking-wider text-[11px]">
+                    {broken ? 'CHAIN CONTINUITY SEVERED' : 'CRYPTOGRAPHIC SHA-256 HASH CHAIN'}
+                  </span>
+                </div>
+                <div className="hidden sm:flex items-center gap-2.5 font-mono text-[10px]">
+                  <span className="text-[#c9d4e5]">Block #0</span>
+                  <div className={`w-28 h-1.5 rounded-full overflow-hidden ${broken ? 'bg-bad' : 'hash-stream-line'}`} />
+                  <span className="text-[#c9d4e5]">Block #{check?.latest_sequence ?? data?.total_events ?? '10'}</span>
+                  <span className="text-saffron font-bold ml-1">WORM ANCHORED</span>
+                </div>
+              </div>
 
-          <div className="flex flex-wrap gap-3 px-4 py-3 border-b border-line-soft bg-wash">
-            <input className="input !w-64 !py-1" placeholder="Actor or entity ID" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Search the ledger" />
-            <FilterSelect label="Action" value={action} onChange={setAction} options={data?.actions ?? []} />
-            <FilterSelect label="Actor type" value={actorType} onChange={setActorType} options={['USER', 'SERVICE', 'VERIFIER']} />
-          </div>
-          {!data ? <div className="p-4"><Loading rows={8} /></div> : data.events.length === 0 ? <Empty title="No entries match" /> : (
-            <div className="table-wrap">
-              <table className="data-table">
-                <thead><tr><th className="num">#</th><th>Time</th><th>Actor</th><th>Action</th><th>Entity</th><th>Purpose</th><th>Hash</th><th className="text-right">Custody Proof</th></tr></thead>
-                <tbody className="stagger-rows">
+              <div className="flex flex-wrap gap-3 px-4 py-3 border-b border-line-soft bg-wash">
+                <input className="input !w-64 !py-1" placeholder="Actor or entity ID" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Search the ledger" />
+                <FilterSelect label="Action" value={action} onChange={setAction} options={data?.actions ?? []} />
+                <FilterSelect label="Actor type" value={actorType} onChange={setActorType} options={['USER', 'SERVICE', 'VERIFIER']} />
+              </div>
+              {!data ? <div className="p-4"><Loading rows={8} /></div> : data.events.length === 0 ? <Empty title="No entries match" /> : (
+                <div className="table-wrap">
+                  <table className="data-table">
+                    <thead><tr><th className="num">#</th><th>Time</th><th>Actor</th><th>Action</th><th>Entity</th><th>Purpose</th><th>Hash</th><th className="text-right">Custody Proof</th></tr></thead>
+                    <tbody className="stagger-rows">
                   {data.events.map((ev) => {
                     const isBroken = broken && check?.broken_at_seq === ev.seq;
                     return (
@@ -300,8 +345,10 @@ Authority: AICTE Act 1987 & Approval Process Handbook 2024-27
               </table>
             </div>
           )}
-        </Panel>
+        </>
       )}
+    </Panel>
+  )}
 
       {certModalSeq !== null && (
         <Modal open={true} title={`Cryptographic Chain of Custody: Entry #${certModalSeq}`} onClose={() => { setCertModalSeq(null); setCertData(null); }}>

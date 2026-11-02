@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   X, Send, Volume2, VolumeX, Shield, Scale,
-  BookOpen, ExternalLink, RefreshCw
+  BookOpen, ExternalLink, RefreshCw, Mic, MicOff
 } from 'lucide-react';
 import { api } from '../api/client';
 import { bhashiniVoice, BHASHINI_LANGUAGES, SupportedLanguage } from '../utils/bhashiniVoice';
@@ -83,6 +83,46 @@ export const RegulatoryCopilot: React.FC<RegulatoryCopilotProps> = ({ onNavigate
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isOpen]);
+
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  const handleVoiceQueryToggle = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Speech Recognition is not supported by your browser. Please type your query.');
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = selectedLang === 'hi-IN' ? 'hi-IN' : 'en-IN';
+      recognition.continuous = false;
+      recognition.interimResults = true;
+
+      recognition.onstart = () => setIsListening(true);
+      recognition.onresult = (event: any) => {
+        const transcript = Array.from(event.results)
+          .map((result: any) => result[0])
+          .map((result: any) => result.transcript)
+          .join('');
+        setQuery(transcript);
+      };
+      recognition.onerror = () => setIsListening(false);
+      recognition.onend = () => setIsListening(false);
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch {
+      setIsListening(false);
+    }
+  };
 
   const handleSend = async (textToSend?: string) => {
     const text = (textToSend || query).trim();
@@ -379,6 +419,16 @@ export const RegulatoryCopilot: React.FC<RegulatoryCopilotProps> = ({ onNavigate
                 disabled={loading}
                 className="input flex-1 !text-xs !py-1.5 !min-h-[2.2rem]"
               />
+              <button
+                type="button"
+                onClick={handleVoiceQueryToggle}
+                className={`btn btn-secondary btn-sm !min-h-[2.2rem] !px-2.5 flex items-center justify-center transition-all cursor-pointer ${
+                  isListening ? 'bg-red-500 text-white animate-pulse border-red-600' : 'text-brand'
+                }`}
+                title={isListening ? 'Listening... click to stop' : 'Ask query verbally (Speech Recognition)'}
+              >
+                {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+              </button>
               <button
                 type="submit"
                 disabled={!query.trim() || loading}

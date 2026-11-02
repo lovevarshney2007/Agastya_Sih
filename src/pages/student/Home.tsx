@@ -4,9 +4,11 @@ import { Alert, ErrorState, KeyValue, Loading, Modal, PageHeader, Panel, StatusT
 import { humanize } from '../../lib/format';
 import { Link } from '../../lib/router';
 import { useApi } from '../../lib/useApi';
-import { ShieldCheck, ArrowUpRight, CheckCircle2, Code } from 'lucide-react';
+import { ShieldCheck, ArrowUpRight, CheckCircle2, Code, Printer, Sparkles } from 'lucide-react';
 import { ApaarSmartCard } from '../../components/ApaarSmartCard';
 import { downloadW3cCredentialJson } from '../../utils/w3cCredential';
+import { PvcCardModal } from '../../components/PvcCardModal';
+import { MeriPehchaanModal } from '../../components/MeriPehchaanModal';
 
 const IDENTITY_TEXT: Record<string, string> = {
   VERIFIED: 'Your APAAR ID matched the national registry. Nothing to do.',
@@ -26,6 +28,8 @@ export function StudentHome() {
   const [linking, setLinking] = useState(false);
   const [pushing, setPushing] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [pvcModalOpen, setPvcModalOpen] = useState(false);
+  const [meriPehchaanOpen, setMeriPehchaanOpen] = useState(false);
 
   const handleLinkDigiLocker = async () => {
     if (pin.length !== 6) {
@@ -101,6 +105,17 @@ export function StudentHome() {
           studentIdNo={data.enrolments[0]?.student_id_no || 'COEP-CSE-2026-101'}
           academicYear={`${data.enrolments[0]?.academic_year || 2026}–${String((data.enrolments[0]?.academic_year || 2026) + 1).slice(2)}`}
         />
+
+        <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
+          <button
+            type="button"
+            onClick={() => setPvcModalOpen(true)}
+            className="btn btn-secondary btn-sm bg-white/10 hover:bg-white/20 text-white border-white/20 flex items-center gap-1.5 font-bold cursor-pointer"
+          >
+            <Printer size={14} className="text-amber-400" />
+            <span>Print Sovereign PVC Smart Card (ISO/IEC 7810)</span>
+          </button>
+        </div>
       </div>
 
       {/* DigiLocker National Gateway Card */}
@@ -170,10 +185,11 @@ export function StudentHome() {
           ) : (
             <button
               type="button"
-              className="btn btn-primary btn-sm"
-              onClick={() => setModalOpen(true)}
+              className="btn btn-primary btn-sm flex items-center gap-1.5 font-bold"
+              onClick={() => setMeriPehchaanOpen(true)}
             >
-              Connect DigiLocker
+              <Sparkles size={14} className="text-amber-300" />
+              <span>Connect MeriPehchaan</span>
             </button>
           )}
         </div>
@@ -283,6 +299,30 @@ export function StudentHome() {
           </div>
         </Modal>
       )}
+
+      {/* Sovereign PVC Smart Card Print Studio Modal */}
+      <PvcCardModal
+        isOpen={pvcModalOpen}
+        onClose={() => setPvcModalOpen(false)}
+        studentName={data.student.name}
+        apaarId="663910284422"
+        institutionName={data.enrolments[0]?.institution || 'Malaviya Institute of Technology, Jaipur'}
+        programme={data.enrolments[0]?.course || 'B.Tech Computer Science & Engineering'}
+        academicYear="2026–27"
+        enrolmentStatus={data.enrolments[0]?.status || 'ACTIVE'}
+        verifyToken="demo-priya-tcs-2026"
+      />
+
+      {/* Official MeriPehchaan / DigiLocker National Consent Gateway Modal */}
+      <MeriPehchaanModal
+        isOpen={meriPehchaanOpen}
+        onClose={() => setMeriPehchaanOpen(false)}
+        onSuccess={() => {
+          setNotice('Successfully linked with MeriPehchaan & DigiLocker! Academic Bank of Credits (ABC) repository synchronized.');
+          void reloadDl();
+        }}
+        studentName={data.student.name}
+      />
     </>
   );
 }

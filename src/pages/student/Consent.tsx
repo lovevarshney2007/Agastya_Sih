@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { Sparkles } from 'lucide-react';
 import { api } from '../../api/client';
 import type { Consent } from '../../api/types';
 import { Alert, Empty, ErrorState, Loading, Modal, PageHeader, Panel, Spinner, StatusTag } from '../../components/ui';
 import { fmtDate, fmtDateTime } from '../../lib/format';
 import { useAction, useApi } from '../../lib/useApi';
+import { MeriPehchaanModal } from '../../components/MeriPehchaanModal';
 
 const SCOPE_TEXT: Record<string, string> = {
   institution: 'the institution you are enrolled at',
@@ -18,12 +20,14 @@ export function ConsentCentre() {
   const [durations, setDurations] = useState<Record<string, number>>({});
   const [revoking, setRevoking] = useState<Consent | null>(null);
   const [done, setDone] = useState<string | null>(null);
+  const [meriPehchaanOpen, setMeriPehchaanOpen] = useState(false);
   const act = useAction(async (id: string, action: 'APPROVE' | 'DENY' | 'REVOKE', days?: number) => {
     const res = await api.student.consent(id, action, days);
     setData(await api.student.me());
     return res;
   });
 
+  if (!data && !error) return <Loading rows={8} />;
   if (error && !data) return <ErrorState message={error} onRetry={reload} />;
   if (!data) return <Loading rows={8} />;
 
@@ -39,7 +43,21 @@ export function ConsentCentre() {
 
   return (
     <>
-      <PageHeader title="Consent" description="Decide who may verify your enrolment, and see who already has." />
+      <PageHeader
+        title="Consent"
+        description="Decide who may verify your enrolment, and see who already has."
+        actions={
+          <button
+            type="button"
+            onClick={() => setMeriPehchaanOpen(true)}
+            className="btn btn-secondary btn-sm flex items-center gap-1.5 font-semibold text-brand"
+            title="Open MeriPehchaan National Single Sign-On Gateway"
+          >
+            <Sparkles size={14} className="text-amber-500" />
+            <span>MeriPehchaan Gateway</span>
+          </button>
+        }
+      />
       {done && <div className="mb-5"><Alert tone="ok" onClose={() => setDone(null)}>{done}</Alert></div>}
       {act.error && <div className="mb-5"><Alert tone="bad" onClose={act.clearError}>{act.error}</Alert></div>}
 
@@ -132,6 +150,16 @@ export function ConsentCentre() {
              )}>
         {revoking && <p className="text-sm">{revoking.verifier_name} will no longer be able to rely on your record. Any credential they hold will show as <strong>revoked</strong> the next time it is checked.</p>}
       </Modal>
+
+      <MeriPehchaanModal
+        isOpen={meriPehchaanOpen}
+        onClose={() => setMeriPehchaanOpen(false)}
+        onSuccess={() => {
+          setDone('Successfully synchronized with MeriPehchaan NSSO & Academic Bank of Credits!');
+          void reload();
+        }}
+        studentName={data?.student?.name || 'Priya Sharma'}
+      />
     </>
   );
 }
