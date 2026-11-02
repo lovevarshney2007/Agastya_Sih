@@ -103,7 +103,7 @@ export function Registry() {
                       <th>Seat</th><th>Enrolment</th><th>Identity</th><th>Verification</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="stagger-rows">
                     {data.students.map((s) => (
                       <tr key={s.enrolment_id} className="clickable" onClick={() => setSelected(s)}>
                         <td className="mono whitespace-nowrap">

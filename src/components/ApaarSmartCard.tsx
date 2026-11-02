@@ -25,6 +25,28 @@ export function ApaarSmartCard({
   const [flipped, setFlipped] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [tilt, setTilt] = useState<{ rx: number; ry: number; gx: number; gy: number; active: boolean }>({
+    rx: 0,
+    ry: 0,
+    gx: 50,
+    gy: 50,
+    active: false,
+  });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const px = (x / rect.width) * 100;
+    const py = (y / rect.height) * 100;
+    const ry = (x / rect.width - 0.5) * 22;
+    const rx = -(y / rect.height - 0.5) * 18;
+    setTilt({ rx, ry, gx: px, gy: py, active: true });
+  };
+
+  const handleMouseLeave = () => {
+    setTilt({ rx: 0, ry: 0, gx: 50, gy: 50, active: false });
+  };
 
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -51,34 +73,38 @@ export function ApaarSmartCard({
 
   return (
     <div className="flex flex-col items-center">
-      {/* 3D Card Stage */}
+      {/* 3D Card Stage with Interactive Tilt & Glare */}
       <div
-        className="w-full max-w-md h-64 cursor-pointer select-none"
-        style={{ perspective: '1200px' }}
+        className="w-full max-w-md h-64 cursor-pointer select-none card-3d-wrap"
         onClick={() => setFlipped((f) => !f)}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
       >
         <div
-          className="relative w-full h-full duration-700 ease-out"
+          className="relative w-full h-full duration-500 ease-out card-3d-inner"
           style={{
-            transformStyle: 'preserve-3d',
-            transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+            transform: flipped
+              ? 'rotateY(180deg)'
+              : `rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg) scale3d(1.02, 1.02, 1.02)`,
           }}
         >
           {/* ================= FRONT SIDE ================= */}
           <div
-            className="absolute inset-0 w-full h-full rounded-2xl shadow-xl p-5 text-white flex flex-col justify-between overflow-hidden border border-white/20"
+            className="absolute inset-0 w-full h-full rounded-2xl shadow-2xl p-5 text-white flex flex-col justify-between overflow-hidden border border-white/25 sovereign-grid-dark"
             style={{
               backfaceVisibility: 'hidden',
-              background: 'linear-gradient(135deg, #0e2448 0%, #1e3a8a 50%, #172554 100%)',
+              background: 'linear-gradient(135deg, #0e2448 0%, #163464 45%, #1e3a8a 100%)',
             }}
           >
-            {/* Holographic Rainbow Foil Layer */}
-            <div
-              className="absolute -inset-full opacity-15 pointer-events-none rotate-45"
-              style={{
-                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.8), rgba(255,200,0,0.8), rgba(0,255,200,0.8), transparent)',
-              }}
-            />
+            {/* Holographic Dynamic Rainbow Sheen */}
+            {tilt.active && !flipped && (
+              <div
+                className="card-hologram-glare"
+                style={{
+                  background: `radial-gradient(circle at ${tilt.gx}% ${tilt.gy}%, rgba(255,255,255,0.4) 0%, rgba(255,215,0,0.2) 30%, rgba(0,255,200,0.15) 60%, transparent 80%)`,
+                }}
+              />
+            )}
 
             {/* Top Bar */}
             <div className="flex items-center justify-between relative z-10">

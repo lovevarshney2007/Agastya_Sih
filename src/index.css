@@ -226,6 +226,56 @@ svg .animate-pop, svg .animate-fade-up { transform-box: fill-box; transform-orig
   .fade-slide-up {
     animation: fadeSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
+
+  /* 3D Holographic Perspective & Glare Container */
+  .card-3d-wrap {
+    perspective: 1200px;
+    transform-style: preserve-3d;
+  }
+  .card-3d-inner {
+    transition: transform 0.15s ease-out;
+    transform-style: preserve-3d;
+  }
+  .card-hologram-glare {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    mix-blend-mode: overlay;
+    transition: opacity 0.25s ease-out;
+  }
+
+  /* Staggered row reveal */
+  .stagger-rows > * {
+    animation: rowFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .stagger-rows > *:nth-child(1) { animation-delay: 0.04s; }
+  .stagger-rows > *:nth-child(2) { animation-delay: 0.08s; }
+  .stagger-rows > *:nth-child(3) { animation-delay: 0.12s; }
+  .stagger-rows > *:nth-child(4) { animation-delay: 0.16s; }
+  .stagger-rows > *:nth-child(5) { animation-delay: 0.20s; }
+  .stagger-rows > *:nth-child(6) { animation-delay: 0.24s; }
+  .stagger-rows > *:nth-child(7) { animation-delay: 0.28s; }
+  .stagger-rows > *:nth-child(8) { animation-delay: 0.32s; }
+  .stagger-rows > *:nth-child(9) { animation-delay: 0.36s; }
+  .stagger-rows > *:nth-child(10) { animation-delay: 0.40s; }
+
+  /* Cryptographic Hash Flow stream line */
+  .hash-stream-line {
+    background: linear-gradient(90deg, #1f56b3, #16733f, #1f56b3);
+    background-size: 200% 100%;
+    animation: hashStream 3s linear infinite;
+  }
+
+  /* Digital Sovereign Seal Stamp */
+  .stamp-seal {
+    animation: stampDrop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  }
+
+  /* Scanner laser beam */
+  .laser-beam {
+    animation: laserScan 2s ease-in-out infinite alternate;
+  }
 }
 
 @keyframes beacon-breathe {
@@ -236,6 +286,28 @@ svg .animate-pop, svg .animate-fade-up { transform-box: fill-box; transform-orig
 @keyframes fadeSlideUp {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes rowFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes hashStream {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+@keyframes stampDrop {
+  0% { opacity: 0; transform: scale(1.6) rotate(-12deg); }
+  60% { transform: scale(0.95) rotate(-2deg); }
+  100% { opacity: 1; transform: scale(1) rotate(-4deg); }
+}
+
+@keyframes laserScan {
+  0% { top: 4%; opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { top: 94%; opacity: 0.3; }
 }
 
 @media (prefers-reduced-motion: reduce) {

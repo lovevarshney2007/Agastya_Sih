@@ -149,9 +149,16 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
                     to={l.to}
                     aria-current={active ? 'page' : undefined}
                     onClick={() => setMenuOpen(false)}
-                    className={`px-3.5 py-2.5 text-sm no-underline whitespace-nowrap border-b-[3px] transition-colors duration-200 ${active ? 'text-white border-saffron font-semibold' : 'text-[#c9d4e5] border-transparent hover:text-white hover:border-white/40'}`}
+                    className={`relative px-3.5 py-2.5 text-sm no-underline whitespace-nowrap transition-all duration-200 ${
+                      active
+                        ? 'text-white font-semibold'
+                        : 'text-[#c9d4e5] hover:text-white hover:bg-white/5'
+                    }`}
                   >
-                    {l.key ? t(l.key, l.label) : l.label}
+                    <span>{l.key ? t(l.key, l.label) : l.label}</span>
+                    {active && (
+                      <span className="absolute bottom-0 left-1.5 right-1.5 h-[3px] bg-saffron rounded-t-sm shadow-[0_-2px_6px_rgba(232,129,28,0.5)] animate-fade-up" />
+                    )}
                   </Link>
                 );
               })}

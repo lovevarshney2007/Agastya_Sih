@@ -127,6 +127,22 @@ export function AuditLedgerPage() {
 
       {error && !data ? <ErrorState message={error} onRetry={reload} /> : (
         <Panel bodyClassName="" title={`Entries${data ? ` (${data.total_events} in total)` : ''}`}>
+          {/* Animated SHA-256 Hash Stream Pipeline */}
+          <div className="px-4 py-2.5 bg-navy text-white text-xs flex flex-wrap items-center justify-between gap-3 border-b border-navy-dark">
+            <div className="flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${broken ? 'bg-red-400' : 'bg-emerald-400 beacon-pulse text-emerald-400'}`} />
+              <span className="font-mono font-semibold tracking-wider text-[11px]">
+                {broken ? 'CHAIN CONTINUITY SEVERED' : 'CRYPTOGRAPHIC SHA-256 HASH CHAIN'}
+              </span>
+            </div>
+            <div className="hidden sm:flex items-center gap-2.5 font-mono text-[10px]">
+              <span className="text-[#c9d4e5]">Block #0</span>
+              <div className={`w-28 h-1.5 rounded-full overflow-hidden ${broken ? 'bg-bad' : 'hash-stream-line'}`} />
+              <span className="text-[#c9d4e5]">Block #{check?.latest_sequence ?? data?.total_events ?? '10'}</span>
+              <span className="text-saffron font-bold ml-1">WORM ANCHORED</span>
+            </div>
+          </div>
+
           <div className="flex flex-wrap gap-3 px-4 py-3 border-b border-line-soft bg-wash">
             <input className="input !w-64 !py-1" placeholder="Actor or entity ID" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Search the ledger" />
             <FilterSelect label="Action" value={action} onChange={setAction} options={data?.actions ?? []} />
@@ -136,7 +152,7 @@ export function AuditLedgerPage() {
             <div className="table-wrap">
               <table className="data-table">
                 <thead><tr><th className="num">#</th><th>Time</th><th>Actor</th><th>Action</th><th>Entity</th><th>Purpose</th><th>Hash</th><th className="text-right">Custody Proof</th></tr></thead>
-                <tbody>
+                <tbody className="stagger-rows">
                   {data.events.map((ev) => {
                     const isBroken = broken && check?.broken_at_seq === ev.seq;
                     return (

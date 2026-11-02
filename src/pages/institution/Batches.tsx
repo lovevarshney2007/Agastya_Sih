@@ -43,7 +43,7 @@ export function BatchList() {
                     <th className="num">Rows</th><th className="num">Accepted</th><th className="num">Warning</th><th className="num">Held</th><th className="num">Rejected</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="stagger-rows">
                   {rows.map((b) => (
                     <tr key={b.batch_id} className="clickable" onClick={() => navigate(`/institution/batches/${b.batch_id}`)}>
                       <td className="whitespace-nowrap">{fmtDateTime(b.created_at)}</td>

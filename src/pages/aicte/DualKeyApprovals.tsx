@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CheckCircle2, FileCheck, FileSignature, KeyRound, Lock, Plus, Printer, Shield, ShieldAlert } from 'lucide-react';
+import { CheckCircle2, FileCheck, FileSignature, KeyRound, Lock, Plus, Printer, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { api } from '../../api/client';
 import { Alert, Modal, PageHeader, Panel, Spinner, StatusTag } from '../../components/ui';
 import { fmtDateTime, shortHash } from '../../lib/format';
@@ -195,7 +195,7 @@ export function DualKeyApprovalsPage() {
                   <th className="text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="stagger-rows">
                 {data.sanctions.map((s: SanctionItem) => (
                   <tr key={s.sanction_id}>
                       <td className="mono font-bold text-xs">{s.sanction_id}</td>
@@ -488,12 +488,22 @@ export function DualKeyApprovalsPage() {
 
             {/* Joint Seal */}
             {viewOrderModal.joint_crypto_seal && (
-              <div className="p-2.5 rounded bg-indigo-50 border border-indigo-200 text-xs text-indigo-900 flex items-center justify-between">
-                <div>
-                  <div className="font-bold">Joint Cryptographic 4-Eye Seal:</div>
-                  <div className="mono text-[11px] text-indigo-700 break-all">{viewOrderModal.joint_crypto_seal}</div>
+              <div className="p-3.5 rounded-xl bg-emerald-50 border-2 border-emerald-500 text-xs text-emerald-950 flex items-center justify-between stamp-seal shadow-lg relative overflow-hidden">
+                <div className="relative z-10 pr-2">
+                  <div className="font-bold flex items-center gap-1.5 text-emerald-800 uppercase tracking-wider text-[11px]">
+                    <CheckCircle2 size={15} className="text-emerald-600" />
+                    Joint Sovereign 4-Eyes Cryptographic Seal:
+                  </div>
+                  <div className="mono text-[11px] text-emerald-900 font-semibold break-all mt-1">
+                    {viewOrderModal.joint_crypto_seal}
+                  </div>
+                  <div className="text-[10px] text-emerald-700 mt-1">
+                    Anchored to AICTE WORM Storage · Section 65B Indian Evidence Act Admissible
+                  </div>
                 </div>
-                <Shield size={22} className="text-indigo-600 shrink-0 ml-2" />
+                <div className="p-2.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-700 shrink-0 shadow-xs">
+                  <ShieldCheck size={26} />
+                </div>
               </div>
             )}
 

@@ -283,16 +283,16 @@ export function QrCameraScanner({
         {/* Viewfinder HUD Overlays when Active */}
         {active && (
           <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center p-4">
-            {/* Viewfinder targeting box */}
-            <div className="w-56 h-56 border-2 border-brand/80 rounded-lg relative flex items-center justify-center shadow-[0_0_15px_rgba(37,99,235,0.3)]">
+            {/* High-Precision Viewfinder targeting box */}
+            <div className="w-56 h-56 border-2 border-emerald-500/80 rounded-xl relative flex items-center justify-center shadow-[0_0_25px_rgba(16,185,129,0.25)] overflow-hidden">
               {/* Corner accents */}
-              <div className="absolute -top-1 -left-1 w-4 h-4 border-t-4 border-l-4 border-brand" />
-              <div className="absolute -top-1 -right-1 w-4 h-4 border-t-4 border-r-4 border-brand" />
-              <div className="absolute -bottom-1 -left-1 w-4 h-4 border-b-4 border-l-4 border-brand" />
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-4 border-r-4 border-brand" />
+              <div className="absolute top-0 left-0 w-5 h-5 border-t-3 border-l-3 border-emerald-400 rounded-tl-sm" />
+              <div className="absolute top-0 right-0 w-5 h-5 border-t-3 border-r-3 border-emerald-400 rounded-tr-sm" />
+              <div className="absolute bottom-0 left-0 w-5 h-5 border-b-3 border-l-3 border-emerald-400 rounded-bl-sm" />
+              <div className="absolute bottom-0 right-0 w-5 h-5 border-b-3 border-r-3 border-emerald-400 rounded-br-sm" />
 
-              {/* Laser scanning beam */}
-              <div className="w-full h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent absolute top-0 animate-[scan_2s_ease-in-out_infinite]" />
+              {/* Laser scanning beam with high-intensity glow */}
+              <div className="w-full h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent absolute shadow-[0_0_14px_rgba(52,211,153,0.9)] laser-beam" />
             </div>
 
             <div className="mt-3 px-2.5 py-1 rounded bg-black/70 backdrop-blur-xs text-white text-xs font-mono">
