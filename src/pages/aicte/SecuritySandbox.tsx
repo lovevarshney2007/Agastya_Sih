@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { CheckCircle2, ChevronRight, Play, RefreshCw, ShieldCheck, Terminal, Zap } from 'lucide-react';
 import { api } from '../../api/client';
 import { Alert, ErrorState, KeyValue, Loading, PageHeader, Panel, Spinner } from '../../components/ui';
+import { VisualAttackFlow } from '../../components/VisualAttackFlow';
 import { useApi } from '../../lib/useApi';
 
 interface AttackScenario {
@@ -80,6 +81,17 @@ export function SecuritySandboxPage() {
       />
 
       {executionError && <div className="mb-4"><Alert tone="bad">{executionError}</Alert></div>}
+
+      <div className="mb-6">
+        <VisualAttackFlow
+          attackerRole={activeScenario?.attacker_role || 'Rogue Entity'}
+          defenseEngine={executionResult?.defense_engine || activeScenario?.blue_team_engine || 'AICTE Defense Shield'}
+          ruleTriggered={executionResult?.rule_triggered || activeScenario?.defense_rule}
+          isExecuting={executing}
+          isThwarted={!!executionResult}
+          latencyMs={executionResult?.latency_ms}
+        />
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_1.4fr]">
         {/* ── Left Column: Red Team Attack Vectors ── */}
