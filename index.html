@@ -11,6 +11,22 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+      // Automatic recovery from stale deployment chunks
+      window.addEventListener('error', function(e) {
+        var target = e.target;
+        if (target && (target.tagName === 'SCRIPT' || target.tagName === 'LINK')) {
+          var src = target.src || target.href || '';
+          if (src.indexOf('/assets/') !== -1 && !sessionStorage.getItem('chunk_recovery_active')) {
+            sessionStorage.setItem('chunk_recovery_active', '1');
+            window.location.reload();
+          }
+        }
+      }, true);
+      window.addEventListener('load', function() {
+        sessionStorage.removeItem('chunk_recovery_active');
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>
