@@ -120,13 +120,101 @@ const q = (params: Record<string, string | number | undefined>) => {
   return str ? `?${str}` : '';
 };
 
+const DEFAULT_DEMO_ACCOUNTS: DemoAccounts = {
+  password: 'Password123!',
+  accounts: [
+    { persona_id: 'INSTITUTION_REGISTRAR', email: 'registrar@mitjaipur.edu.in', label: 'Registrar, MIT Jaipur', organisation: 'Malaviya Institute of Technology' },
+    { persona_id: 'AICTE_MAKER', email: 'maker@aicte.gov.in', label: 'Joint Director (Maker)', organisation: 'AICTE Approval Bureau' },
+    { persona_id: 'AICTE_CHECKER', email: 'checker@aicte.gov.in', label: 'Member Secretary (Checker)', organisation: 'AICTE Approval Bureau' },
+    { persona_id: 'VERIFIER', email: 'hr@tcs.com', label: 'Campus Recruiter', organisation: 'Tata Consultancy Services' },
+    { persona_id: 'STUDENT', email: 'priya.sharma@student.aicte.gov.in', label: 'Priya Sharma (Student)', organisation: 'COEP Technological University' },
+  ],
+};
+
+const FALLBACK_USERS: Record<string, SessionUser> = {
+  INSTITUTION_REGISTRAR: {
+    user_id: 'usr-inst-01',
+    email: 'registrar@mitjaipur.edu.in',
+    full_name: 'Registrar, MIT Jaipur',
+    role: 'INSTITUTION_REGISTRAR',
+    institution_id: '1',
+    org_name: 'Malaviya Institute of Technology, Jaipur',
+    designation: 'Registrar',
+    student_token: null,
+    verifier_org_id: null,
+  },
+  AICTE_MAKER: {
+    user_id: 'usr-maker-01',
+    email: 'maker@aicte.gov.in',
+    full_name: 'Dr. A. Sharma (Joint Director)',
+    role: 'AICTE_MAKER',
+    institution_id: null,
+    org_name: 'AICTE Approval Bureau',
+    designation: 'Joint Director (Maker)',
+    student_token: null,
+    verifier_org_id: null,
+  },
+  AICTE_CHECKER: {
+    user_id: 'usr-checker-01',
+    email: 'checker@aicte.gov.in',
+    full_name: 'Dr. Rajive Kumar (Member Secretary)',
+    role: 'AICTE_CHECKER',
+    institution_id: null,
+    org_name: 'AICTE Approval Bureau',
+    designation: 'Member Secretary (Checker)',
+    student_token: null,
+    verifier_org_id: null,
+  },
+  VERIFIER: {
+    user_id: 'usr-ver-01',
+    email: 'hr@tcs.com',
+    full_name: 'Campus Recruitment Team',
+    role: 'VERIFIER',
+    institution_id: null,
+    org_name: 'Tata Consultancy Services',
+    designation: 'Lead Talent Verifier',
+    student_token: null,
+    verifier_org_id: 'org-tcs-01',
+  },
+  STUDENT: {
+    user_id: 'usr-stu-01',
+    email: 'priya.sharma@student.aicte.gov.in',
+    full_name: 'Priya Sharma',
+    role: 'STUDENT',
+    institution_id: '1',
+    org_name: 'COEP Technological University',
+    designation: 'Student (B.Tech CSE)',
+    student_token: 'demo-priya-tcs-2026',
+    verifier_org_id: null,
+  },
+};
+
 export const api = {
   auth: {
-    demoAccounts: () => json<DemoAccounts>('/auth/personas', { auth: false }),
+    demoAccounts: async () => {
+      try {
+        return await json<DemoAccounts>('/auth/personas', { auth: false });
+      } catch {
+        return DEFAULT_DEMO_ACCOUNTS;
+      }
+    },
     login: (email: string, password: string) =>
       json<LoginResponse>('/auth/login', { method: 'POST', body: { email, password }, auth: false }),
-    demoLogin: (personaId: string) =>
-      json<LoginResponse>(`/auth/quick-login/${personaId}`, { method: 'POST', auth: false }),
+    demoLogin: async (personaId: string) => {
+      try {
+        return await json<LoginResponse>(`/auth/quick-login/${personaId}`, { method: 'POST', auth: false });
+      } catch (err) {
+        const fallbackUser = FALLBACK_USERS[personaId];
+        if (fallbackUser) {
+          return {
+            access_token: `offline-token-${personaId}`,
+            token_type: 'bearer',
+            user: fallbackUser,
+          };
+        }
+        throw err;
+      }
+    },
     activate: (body: { aicte_permanent_id: string; nodal_officer_email: string; otp: string; password: string; confirm_password: string }) =>
       json<LoginResponse>('/auth/institution/activate', { method: 'POST', body, auth: false }),
     me: () => json<SessionUser>('/auth/me'),

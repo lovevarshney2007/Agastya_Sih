@@ -25,6 +25,17 @@ const DEMO_FOR_DOOR: Record<Portal, string[]> = {
   student: ['STUDENT'],
 };
 
+const DEFAULT_DEMO: DemoAccounts = {
+  password: 'Password123!',
+  accounts: [
+    { persona_id: 'INSTITUTION_REGISTRAR', email: 'registrar@mitjaipur.edu.in', label: 'Registrar, MIT Jaipur', organisation: 'Malaviya Institute of Technology' },
+    { persona_id: 'AICTE_MAKER', email: 'maker@aicte.gov.in', label: 'Joint Director (Maker)', organisation: 'AICTE Approval Bureau' },
+    { persona_id: 'AICTE_CHECKER', email: 'checker@aicte.gov.in', label: 'Member Secretary (Checker)', organisation: 'AICTE Approval Bureau' },
+    { persona_id: 'VERIFIER', email: 'hr@tcs.com', label: 'Campus Recruiter', organisation: 'Tata Consultancy Services' },
+    { persona_id: 'STUDENT', email: 'priya.sharma@student.aicte.gov.in', label: 'Priya Sharma (Student)', organisation: 'COEP Technological University' },
+  ],
+};
+
 export function SignIn() {
   const { search, navigate } = useRouter();
   const { user, portal, signIn, expired } = useSession();
@@ -36,11 +47,11 @@ export function SignIn() {
   const [step, setStep] = useState<'credentials' | 'otp'>('credentials');
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [demo, setDemo] = useState<DemoAccounts | null>(null);
+  const [demo, setDemo] = useState<DemoAccounts | null>(DEFAULT_DEMO);
   const [pendingLogin, setPendingLogin] = useState<LoginResponse | null>(null);
   const next = search.get('next');
 
-  useEffect(() => { api.auth.demoAccounts().then(setDemo).catch(() => setDemo(null)); }, []);
+  useEffect(() => { api.auth.demoAccounts().then(setDemo).catch(() => setDemo(DEFAULT_DEMO)); }, []);
 
   // Already signed in: go straight to the portal.
   useEffect(() => {
