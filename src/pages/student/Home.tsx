@@ -79,15 +79,16 @@ export function StudentHome() {
         </div>
       )}
 
-      {/* 3D APAAR Digital Identity Card Showcase */}
-      <div className="mb-6 p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-navy to-slate-900 border border-slate-700 shadow-xl text-white">
+      {/* Statutory APAAR Identity Card Showcase */}
+      <div className="mb-8 p-6 sm:p-8 rounded-xl bg-navy text-white shadow-xl sovereign-grid-dark border border-navy-dark relative overflow-hidden">
+        <div className="tricolour h-1 absolute top-0 left-0 right-0" aria-hidden="true" />
         <div className="max-w-xl mx-auto text-center mb-4">
-          <span className="text-[11px] font-bold tracking-widest uppercase text-amber-400 bg-amber-400/10 border border-amber-400/30 px-3 py-1 rounded-full">
+          <span className="text-[11px] font-bold tracking-wider uppercase text-[#f6c48f] bg-white/10 border border-white/20 px-3 py-1 rounded-full font-mono">
             Statutory Verifiable Credential
           </span>
-          <h2 className="text-xl font-bold mt-2 text-white">AICTE APAAR Holographic Digital ID Card</h2>
-          <p className="text-xs text-slate-300 mt-1">
-            Tamper-evident W3C digital identity credential stored in your National Academic Depository with offline QR signature verification.
+          <h2 className="text-xl font-bold mt-2.5 text-white">AICTE APAAR Digital Identity Smart Card</h2>
+          <p className="text-xs text-[#c9d4e5] mt-1">
+            W3C-compliant cryptographic credential registered in your National Academic Depository with offline Dual-QR signature verification.
           </p>
         </div>
 

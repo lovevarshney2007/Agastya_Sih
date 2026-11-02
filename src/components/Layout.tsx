@@ -84,7 +84,14 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
       <div className="tricolour h-1 no-print" aria-hidden="true" />
       <div className="bg-navy-dark text-[#c9d4e5] text-xs no-print">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-1.5 flex justify-between items-center gap-4">
-          <span>{t('gov_india')}</span>
+          <div className="flex items-center gap-3">
+            <span>{t('gov_india')}</span>
+            <span className="hidden md:inline text-white/30">|</span>
+            <span className="hidden md:inline-flex items-center gap-1.5 text-[11px] text-emerald-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 beacon-pulse text-emerald-400 shrink-0" />
+              APAAR National Depository · Ledger Live
+            </span>
+          </div>
           <div className="flex items-center gap-3">
             <span className="hidden sm:inline">{t('aicte_full')}</span>
             <LanguageToggle />

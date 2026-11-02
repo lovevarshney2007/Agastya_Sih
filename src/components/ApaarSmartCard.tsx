@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CheckCircle2, Copy, Printer, QrCode, RotateCw, Shield, ShieldCheck, Sparkles, Volume2, VolumeX } from 'lucide-react';
+import { CheckCircle2, Copy, Printer, QrCode, RotateCw, Shield, ShieldCheck, Volume2, VolumeX } from 'lucide-react';
 import { shortHash } from '../lib/format';
 import { bhashiniVoice } from '../utils/bhashiniVoice';
 
@@ -243,9 +243,9 @@ export function ApaarSmartCard({
         </button>
       </div>
 
-      <div className="text-xs text-muted mt-2 flex items-center gap-1">
-        <Sparkles size={12} className="text-amber-500" />
-        <span>Click or tap card to flip with 3D perspective</span>
+      <div className="text-xs text-muted mt-2 flex items-center gap-1.5">
+        <RotateCw size={12} className="text-muted" />
+        <span>Click or tap card to inspect reverse side</span>
       </div>
     </div>
   );

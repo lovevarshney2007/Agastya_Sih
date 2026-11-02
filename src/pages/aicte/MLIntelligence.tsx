@@ -4,7 +4,7 @@ import type { FuzzyDedupResponse } from '../../api/types';
 import { Alert, ErrorState, Loading, PageHeader, Panel, StatusTag } from '../../components/ui';
 import { fmtNum } from '../../lib/format';
 import { useApi } from '../../lib/useApi';
-import { Brain, Cpu, Search, Sparkles, TrendingUp, UserCheck } from 'lucide-react';
+import { Brain, Cpu, GitCompare, Scale, Search, TrendingUp, UserCheck } from 'lucide-react';
 
 export function MLIntelligencePage() {
   const [activeTab, setActiveTab] = useState<'forecast' | 'dedup' | 'cohort'>('forecast');
@@ -186,7 +186,7 @@ export function MLIntelligencePage() {
                   <div className="text-xs font-semibold text-muted uppercase">Rationalization Model</div>
                   <div className="text-base font-bold text-ink mt-1">Ridge + Trend ML</div>
                   <div className="text-xs text-ok mt-1 flex items-center gap-1">
-                    <Sparkles size={12} /> Statutory compliant
+                    <Scale size={12} /> Statutory compliant
                   </div>
                 </div>
               </div>
@@ -342,7 +342,7 @@ export function MLIntelligencePage() {
                     onClick={runPairwiseDedup}
                     className="btn btn-primary flex-1 flex items-center justify-center gap-1.5"
                   >
-                    <Sparkles size={14} /> Compare Pair (ML Linkage)
+                    <GitCompare size={14} /> Compare Identity Pair
                   </button>
                   <button
                     type="button"

@@ -70,7 +70,7 @@ export function PublicVerify({ token }: { token?: string }) {
       {error && <ErrorState message={error} onRetry={reload} />}
 
       {data && (
-        <div className="panel overflow-hidden">
+        <div className="panel overflow-hidden card-lift shadow-xl border border-line">
           {data.status === 'VALID' && (
             <div className="bg-ok text-white px-5 py-4 flex items-center gap-3">
               <CircleCheck size={30} className="animate-pop" aria-hidden="true" />

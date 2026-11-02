@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { api } from '../api/client';
 import { useRouter } from '../lib/router';
 import { useSession } from '../lib/session';
-import { Sparkles, ChevronRight, ChevronLeft, X, Play, RotateCcw } from 'lucide-react';
+import { Compass, ChevronRight, ChevronLeft, X, Play, RotateCcw } from 'lucide-react';
 
 interface TourStep {
   step: number;
@@ -157,30 +157,30 @@ export function JuryTourWidget() {
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="bg-navy hover:bg-navy-dark text-white px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border-2 border-saffron text-sm font-bold transition-all hover:scale-105 active:scale-95"
-          title="Open interactive 5-step walkthrough for Jury evaluation"
+          className="bg-navy hover:bg-navy-dark text-white px-3.5 py-2.5 rounded-full shadow-xl flex items-center gap-2 border-2 border-saffron text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+          title="Open interactive multi-role platform walkthrough"
         >
-          <Sparkles size={16} className="text-saffron animate-pulse" />
-          <span>Jury Demo Mode</span>
-          <span className="bg-saffron text-navy text-[11px] font-extrabold px-1.5 py-0.5 rounded-full ml-1">
-            {currentStepIdx + 1}/5
+          <Compass size={15} className="text-saffron shrink-0" />
+          <span>Role Switcher & Tour</span>
+          <span className="bg-saffron text-navy text-[10px] font-extrabold px-1.5 py-0.5 rounded-full ml-0.5 font-mono">
+            {currentStepIdx + 1}/{TOUR_STEPS.length}
           </span>
         </button>
       ) : (
-        <div className="bg-white rounded-xl shadow-2xl border-2 border-navy w-96 max-w-[calc(100vw-2rem)] overflow-hidden transition-all animate-in fade-in slide-in-from-bottom-4">
+        <div className="bg-white rounded-xl shadow-2xl border border-line w-96 max-w-[calc(100vw-2rem)] overflow-hidden transition-all animate-fade-up">
           {/* Header */}
           <div className="bg-navy text-white px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Sparkles size={16} className="text-saffron" />
+              <Compass size={16} className="text-saffron shrink-0" />
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-saffron">AICTE Grand Finale</h4>
-                <div className="text-sm font-bold leading-none">Jury Interactive Walkthrough</div>
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-saffron">Executive Demonstration</h4>
+                <div className="text-xs font-bold leading-none">Role Switcher & Workflow Tour</div>
               </div>
             </div>
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="text-gray-300 hover:text-white p-1 rounded-md transition-colors"
+              className="text-gray-300 hover:text-white p-1 rounded-md transition-colors cursor-pointer"
             >
               <X size={16} />
             </button>

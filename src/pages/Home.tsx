@@ -55,9 +55,15 @@ function LiveFigures() {
           </div>
         ))}
       </dl>
-      <p className="text-xs text-muted mt-4">
-        Updated {fmtTime(data.as_of)}. Student-level data for 2026–27 is due by <strong className="text-ink">{fmtDate(data.submission_deadline)}</strong>.
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted mt-5 pt-3 border-t border-line-soft">
+        <span className="flex items-center gap-1.5 font-medium text-ink">
+          <span className="w-2 h-2 rounded-full bg-emerald-600 beacon-pulse text-emerald-600 shrink-0" />
+          <span>Live Central Ledger Feed · Synchronized {fmtTime(data.as_of)}</span>
+        </span>
+        <span>
+          National submission deadline: <strong className="text-ink font-semibold">{fmtDate(data.submission_deadline)}</strong>
+        </span>
+      </div>
     </>
   );
 }
@@ -124,35 +130,41 @@ export function Home() {
 
   return (
     <>
-      <section className="bg-navy text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 lg:py-16 grid gap-10 lg:grid-cols-[1.25fr_1fr] items-center">
+      <section className="bg-navy text-white sovereign-grid-dark relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14 lg:py-20 grid gap-10 lg:grid-cols-[1.25fr_1fr] items-center relative z-10">
           <div>
-            <p className="text-sm font-semibold text-[#f6c48f]">All India Council for Technical Education</p>
-            <h1 className="text-3xl sm:text-[2.5rem] font-bold mt-3 leading-[1.15] max-w-2xl">
-              Report, check and verify student enrolment — one record per student, keyed by APAAR ID
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-semibold text-[#f6c48f] mb-3 font-mono">
+              <span>AICTE Approval Bureau · Statutory Depository</span>
+            </div>
+            <h1 className="text-3xl sm:text-[2.65rem] font-extrabold leading-[1.12] max-w-2xl tracking-tight">
+              Report, check and verify student enrolment — keyed by APAAR ID
             </h1>
-            <p className="text-[#c9d4e5] text-[1.05rem] mt-4 max-w-xl">
-              Institutions submit student-level admission data. The ledger checks every row, catches students enrolled twice
-              and seats beyond approved intake, and lets employers confirm a student’s enrolment once the student agrees.
+            <p className="text-[#c9d4e5] text-[1.05rem] mt-4 max-w-xl leading-relaxed">
+              Institutions submit student-level admission data. The central ledger intercepts duplicate enrolments, enforces approved intake caps, and enables zero-trust credential verification.
             </p>
-            <div className="flex flex-wrap gap-3 mt-7">
-              <Link to={user ? portalHome(portal) : '/sign-in'} className="btn btn-saffron no-underline !px-5 !py-2.5">
-                {user ? 'Go to my portal' : 'Sign in'} <ArrowRight size={16} aria-hidden="true" />
+            <div className="flex flex-wrap gap-3 mt-8">
+              <Link to={user ? portalHome(portal) : '/sign-in'} className="btn btn-saffron no-underline !px-5 !py-2.5 shadow-lg shadow-saffron/20 transition-transform duration-200 hover:-translate-y-0.5">
+                {user ? 'Go to my portal' : 'Sign in to Portal'} <ArrowRight size={16} aria-hidden="true" />
               </Link>
-              <Link to="/activate" className="btn no-underline !px-5 !py-2.5 border-white/40 text-white hover:bg-white/10">Activate an institution account</Link>
+              <Link to="/activate" className="btn no-underline !px-5 !py-2.5 border-white/30 text-white hover:bg-white/10 transition-transform duration-200 hover:-translate-y-0.5">
+                Activate an institution account
+              </Link>
             </div>
           </div>
 
-          <form className="bg-white text-ink rounded-lg p-6 shadow-[0_10px_30px_-12px_rgb(0_0_0/.45)]" onSubmit={(e) => { e.preventDefault(); check(token); }}>
-            <h2 className="text-lg font-bold">Verify a certificate</h2>
-            <p className="text-sm text-muted mt-1">Scanned the QR code on an enrolment certificate? Paste the link or the code printed under it. No sign-in needed.</p>
+          <form className="bg-white text-ink rounded-xl p-6 sm:p-7 shadow-2xl border border-line-soft card-lift relative" onSubmit={(e) => { e.preventDefault(); check(token); }}>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-lg font-bold text-navy">Verify Credential Certificate</h2>
+              <span className="text-[10px] font-mono font-bold bg-brand-wash text-brand px-2 py-0.5 rounded">W3C / JWS</span>
+            </div>
+            <p className="text-xs text-muted">Scan the QR on an enrolment certificate or paste the verification link or token code. No sign-in required.</p>
             <label htmlFor="home-token" className="label mt-4">Verification link or code</label>
             <div className="flex gap-2">
-              <input id="home-token" className="input mono" value={token} onChange={(e) => setToken(e.target.value)} autoComplete="off" spellCheck={false} />
+              <input id="home-token" className="input mono" value={token} onChange={(e) => setToken(e.target.value)} autoComplete="off" spellCheck={false} placeholder="e.g. demo-priya-tcs-2026" />
               <button type="submit" className="btn btn-primary shrink-0" disabled={!token.trim()}>Check</button>
             </div>
-            <p className="hint mt-3">
-              Example codes:{' '}
+            <p className="hint mt-3 text-xs">
+              Demo sample codes:{' '}
               <button type="button" className="mono underline text-brand bg-transparent border-0 p-0 cursor-pointer" onClick={() => check('demo-priya-tcs-2026')}>demo-priya-tcs-2026</button>{' '}
               (valid),{' '}
               <button type="button" className="mono underline text-brand bg-transparent border-0 p-0 cursor-pointer" onClick={() => check('demo-priya-hdfc-2025')}>demo-priya-hdfc-2025</button>{' '}
@@ -160,7 +172,7 @@ export function Home() {
             </p>
           </form>
         </div>
-        <div className="tricolour h-1" aria-hidden="true" />
+        <div className="tricolour h-1 absolute bottom-0 left-0 right-0" aria-hidden="true" />
       </section>
 
       <section className="bg-white border-b border-line">
@@ -175,7 +187,7 @@ export function Home() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 space-y-14">
-        <section aria-labelledby="live-h" className="panel border-t-4 !border-t-india-green overflow-hidden">
+        <section aria-labelledby="live-h" className="panel border-t-4 !border-t-india-green overflow-hidden card-lift bg-white">
           <div className="p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-6">
             <span className="w-14 h-14 shrink-0 rounded-xl bg-ok-wash text-ok flex items-center justify-center">
               <BarChart3 size={28} aria-hidden="true" />
@@ -203,13 +215,13 @@ export function Home() {
           <ul className="grid gap-3 md:grid-cols-2 mt-5">
             {PORTALS.map((p) => (
               <li key={p.as}>
-                <Link to={user && portal === p.as ? `/${p.as}` : `/sign-in?as=${p.as}`} className="panel lift flex items-center gap-4 p-4 no-underline text-ink group h-full">
+                <Link to={user && portal === p.as ? `/${p.as}` : `/sign-in?as=${p.as}`} className="panel card-lift flex items-center gap-4 p-4 no-underline text-ink group h-full">
                   <span className="w-11 h-11 shrink-0 rounded-md bg-brand-wash text-brand flex items-center justify-center"><p.icon size={22} aria-hidden="true" /></span>
                   <span className="flex-1 min-w-0">
                     <span className="block font-bold">{p.title}</span>
                     <span className="block text-sm text-muted">{p.text}</span>
                   </span>
-                  <ChevronRight size={20} className="text-faint shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:text-brand" aria-hidden="true" />
+                  <ChevronRight size={20} className="text-faint shrink-0 transition-transform group-hover:translate-x-1 group-hover:text-brand" aria-hidden="true" />
                 </Link>
               </li>
             ))}

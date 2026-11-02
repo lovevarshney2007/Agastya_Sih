@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { CircleCheck, Download, Eye, EyeOff, FileSpreadsheet, Sparkles, Upload } from 'lucide-react';
+import { CheckCheck, CircleCheck, Download, Eye, EyeOff, FileSpreadsheet, ShieldCheck, Upload } from 'lucide-react';
 import { api, API_BASE } from '../../api/client';
 import type { BatchReport, CommitResult } from '../../api/types';
 import { Alert, ErrorState, PageHeader, Panel, Spinner, StatusTag } from '../../components/ui';
@@ -385,9 +385,9 @@ export function UploadWizard() {
                   <div className="mt-4 p-4 rounded-lg border border-line bg-wash space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="font-bold text-xs uppercase text-navy tracking-wider flex items-center gap-1.5">
-                        <Sparkles size={14} className="text-brand" /> Instant In-Browser Pre-Flight Scan
+                        <ShieldCheck size={14} className="text-brand" /> Pre-Upload Compliance Inspection
                       </div>
-                      <span className="text-xs text-muted">0-latency client inspection</span>
+                      <span className="text-xs text-muted">Client-side statutory validation</span>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
@@ -436,7 +436,7 @@ export function UploadWizard() {
                         className="btn btn-secondary btn-sm flex items-center gap-1.5 text-brand"
                         onClick={() => file && downloadCleanCsv(preFlight, file.name)}
                       >
-                        <Sparkles size={14} /> Sanitize & Download Clean CSV
+                        <CheckCheck size={14} /> Sanitize & Download Clean CSV
                       </button>
                     </div>
 
