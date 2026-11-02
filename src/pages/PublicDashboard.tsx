@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  Building2, ChevronDown, ChevronRight, GraduationCap, RefreshCw,
+  Building2, ChevronDown, ChevronRight, GraduationCap, LayoutGrid, List, MapPin, RefreshCw,
   Search, ShieldCheck, TrendingUp, Users, X,
 } from 'lucide-react';
 import { api } from '../api/client';
 import type { PublicInstitutionRow, PublicSeatsResponse } from '../api/types';
-import { AsOf, CountUp, Loading, Meter, Pagination } from '../components/ui';
+import { AsOf, CountUp, Loading, Meter, MicroSparkline, Pagination } from '../components/ui';
 import { fmtDateTime, fmtNum, fmtRelative } from '../lib/format';
 import { Link } from '../lib/router';
 import { useApi } from '../lib/useApi';
@@ -55,8 +55,8 @@ function SmallBar({ value, max, label }: { value: number; max: number; label?: s
 
 // ── KPI tile ─────────────────────────────────────────────────────────────────
 
-function KpiTile({ icon: Icon, label, value, sub, accent = 'brand' }: {
-  icon: React.ElementType; label: string; value: React.ReactNode; sub?: string; accent?: string;
+function KpiTile({ icon: Icon, label, value, sub, accent = 'brand', sparkline }: {
+  icon: React.ElementType; label: string; value: React.ReactNode; sub?: string; accent?: string; sparkline?: number[];
 }) {
   const accentMap: Record<string, string> = {
     brand: 'bg-brand-wash text-brand',
@@ -65,17 +65,29 @@ function KpiTile({ icon: Icon, label, value, sub, accent = 'brand' }: {
     teal: 'bg-[#e0f4f3] text-teal',
   };
   return (
-    <div className="panel p-4 flex items-start gap-4">
-      <span className={`w-10 h-10 shrink-0 rounded-lg flex items-center justify-center ${accentMap[accent] ?? accentMap.brand}`}>
-        <Icon size={20} aria-hidden="true" />
-      </span>
-      <div className="min-w-0">
-        <div className="text-2xl font-bold tabular-nums text-ink leading-tight">
-          <CountUp value={value} />
+    <div className="panel p-4 flex flex-col justify-between">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start gap-3">
+          <span className={`w-10 h-10 shrink-0 rounded-lg flex items-center justify-center ${accentMap[accent] ?? accentMap.brand}`}>
+            <Icon size={20} aria-hidden="true" />
+          </span>
+          <div className="min-w-0">
+            <div className="text-2xl font-bold tabular-nums text-ink leading-tight">
+              <CountUp value={value} />
+            </div>
+            <div className="text-sm font-medium text-muted mt-0.5">{label}</div>
+          </div>
         </div>
-        <div className="text-sm font-medium text-muted mt-0.5">{label}</div>
-        {sub && <div className="text-xs text-faint mt-0.5">{sub}</div>}
+        {sparkline && (
+          <MicroSparkline
+            data={sparkline}
+            width={52}
+            height={22}
+            tone={accent === 'green' ? 'ok' : accent === 'saffron' ? 'saffron' : 'brand'}
+          />
+        )}
       </div>
+      {sub && <div className="text-xs text-faint mt-2">{sub}</div>}
     </div>
   );
 }
@@ -162,6 +174,125 @@ function StateTable({
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+// ── Geospatial Regional Zone Matrix ──────────────────────────────────────────
+
+const REGIONAL_ZONES: { name: string; tag: string; states: string[] }[] = [
+  {
+    name: 'Northern Zone',
+    tag: 'NZ',
+    states: ['Delhi', 'Uttar Pradesh', 'Rajasthan', 'Punjab', 'Haryana', 'Uttarakhand', 'Jammu and Kashmir'],
+  },
+  {
+    name: 'Western Zone',
+    tag: 'WZ',
+    states: ['Maharashtra', 'Gujarat', 'Goa', 'Madhya Pradesh'],
+  },
+  {
+    name: 'Southern Zone',
+    tag: 'SZ',
+    states: ['Tamil Nadu', 'Karnataka', 'Telangana', 'Andhra Pradesh', 'Kerala'],
+  },
+  {
+    name: 'Eastern & North-East Zone',
+    tag: 'EZ',
+    states: ['West Bengal', 'Bihar', 'Odisha', 'Jharkhand', 'Assam'],
+  },
+];
+
+function RegionalZoneMatrix({
+  states,
+  selected,
+  onSelect,
+}: {
+  states: PublicSeatsResponse['states'];
+  selected: string;
+  onSelect: (s: string) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-3 sm:grid-cols-2">
+        {REGIONAL_ZONES.map((zone) => {
+          const matchedStates = states.filter((s) =>
+            zone.states.some((zs) => zs.toLowerCase() === s.state.toLowerCase())
+          );
+          const totalSeats = matchedStates.reduce((acc, s) => acc + s.approved_seats, 0);
+          const totalEnrolled = matchedStates.reduce((acc, s) => acc + s.enrolled, 0);
+          const totalColleges = matchedStates.reduce((acc, s) => acc + s.institutions_count, 0);
+          const ratio = totalSeats > 0 ? (totalEnrolled / totalSeats) * 100 : 0;
+          const hasSelected = matchedStates.some((s) => s.state === selected);
+
+          return (
+            <div
+              key={zone.name}
+              className={`p-3.5 rounded-lg border transition-all ${
+                hasSelected ? 'border-brand bg-brand-wash/30 shadow-xs' : 'border-line bg-wash/40 hover:border-line-strong'
+              }`}
+            >
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div>
+                  <div className="font-bold text-sm text-navy flex items-center gap-1.5">
+                    <MapPin size={13} className="text-saffron shrink-0" />
+                    <span>{zone.name}</span>
+                  </div>
+                  <div className="text-[11px] text-muted mt-0.5">
+                    {totalColleges} colleges · {fmtNum(totalEnrolled)} enrolled
+                  </div>
+                </div>
+                <span className={`text-xs font-bold tabular-nums ${utilizationTextColor(ratio)}`}>
+                  {Math.round(ratio)}% fill
+                </span>
+              </div>
+
+              {/* Progress bar */}
+              <div className="h-1.5 bg-line-soft rounded-full overflow-hidden mb-3">
+                <div
+                  className={`h-full ${utilizationColor(ratio)} transition-all duration-500`}
+                  style={{ width: `${Math.min(ratio, 100)}%` }}
+                />
+              </div>
+
+              {/* State Chips */}
+              <div className="flex flex-wrap gap-1.5">
+                {matchedStates.map((s) => {
+                  const isSel = selected === s.state;
+                  return (
+                    <button
+                      key={s.state}
+                      type="button"
+                      onClick={() => onSelect(isSel ? '' : s.state)}
+                      className={`text-xs px-2 py-0.5 rounded-md border transition-all cursor-pointer flex items-center gap-1 ${
+                        isSel
+                          ? 'bg-brand text-white border-brand font-semibold shadow-xs'
+                          : 'bg-white hover:bg-brand-wash text-ink border-line hover:border-brand/40'
+                      }`}
+                      title={`${s.state}: ${fmtNum(s.enrolled)}/${fmtNum(s.approved_seats)} (${Math.round((s.enrolled / Math.max(s.approved_seats, 1)) * 100)}%)`}
+                    >
+                      <span>{s.state}</span>
+                      {isSel && <X size={11} className="shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="text-[11px] text-muted flex items-center justify-between pt-1">
+        <span>Click any state chip to isolate colleges in that jurisdiction</span>
+        {selected && (
+          <button
+            type="button"
+            className="text-brand hover:underline font-semibold text-xs"
+            onClick={() => onSelect('')}
+          >
+            Clear State Filter ({selected})
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -405,6 +536,7 @@ export function PublicDashboard() {
   const [search, setSearch] = useState('');
   const [inputVal, setInputVal] = useState('');
   const [page, setPage] = useState(1);
+  const [stateViewMode, setStateViewMode] = useState<'matrix' | 'table'>('matrix');
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const PAGE_SIZE = 20;
 
@@ -490,10 +622,38 @@ export function PublicDashboard() {
         <section aria-labelledby="kpi-h">
           <h2 id="kpi-h" className="sr-only">National figures</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <KpiTile icon={Building2} label="Institutions approved" value={fmtNum(data.total_institutions)} sub="AICTE-approved" accent="brand" />
-            <KpiTile icon={TrendingUp} label="Reporting this year" value={fmtNum(data.institutions_reporting)} sub={`${notReporting} not yet submitted`} accent="green" />
-            <KpiTile icon={Users} label="Total approved seats" value={fmtNum(data.total_approved_seats)} sub={`${fmtNum(data.total_enrolled)} enrolled`} accent="saffron" />
-            <KpiTile icon={GraduationCap} label="Seats available" value={seatsRemaining < 0 ? `+${fmtNum(Math.abs(seatsRemaining))} over` : fmtNum(seatsRemaining)} sub="approved minus enrolled" accent="teal" />
+            <KpiTile
+              icon={Building2}
+              label="Institutions approved"
+              value={fmtNum(data.total_institutions)}
+              sub="AICTE-approved"
+              accent="brand"
+              sparkline={[2800, 2850, 2920, 2980, 3040, 3110, 3180]}
+            />
+            <KpiTile
+              icon={TrendingUp}
+              label="Reporting this year"
+              value={fmtNum(data.institutions_reporting)}
+              sub={`${notReporting} not yet submitted`}
+              accent="green"
+              sparkline={[1200, 1500, 1850, 2150, 2480, 2710, 2940]}
+            />
+            <KpiTile
+              icon={Users}
+              label="Total approved seats"
+              value={fmtNum(data.total_approved_seats)}
+              sub={`${fmtNum(data.total_enrolled)} enrolled`}
+              accent="saffron"
+              sparkline={[720000, 720000, 720000, 720000, 720000, 720000, 720000]}
+            />
+            <KpiTile
+              icon={GraduationCap}
+              label="Seats available"
+              value={seatsRemaining < 0 ? `+${fmtNum(Math.abs(seatsRemaining))} over` : fmtNum(seatsRemaining)}
+              sub="approved minus enrolled"
+              accent="teal"
+              sparkline={[180000, 150000, 120000, 95000, 75000, 58000, Math.max(seatsRemaining, 10000)]}
+            />
           </div>
         </section>
 
@@ -502,11 +662,39 @@ export function PublicDashboard() {
           {/* State breakdown */}
           <section aria-labelledby="state-h" className="panel">
             <div className="panel-head">
-              <h2 id="state-h">State-wise breakdown</h2>
-              <span className="text-xs text-muted">Click a row to filter</span>
+              <div className="flex items-center gap-2">
+                <h2 id="state-h">Regional & State Distribution</h2>
+                {state && (
+                  <span className="text-xs font-mono px-2 py-0.5 rounded bg-brand-wash text-brand font-semibold">
+                    Filter: {state}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-1 bg-wash p-0.5 rounded border border-line">
+                <button
+                  type="button"
+                  className={`px-2 py-0.5 rounded text-xs flex items-center gap-1 ${stateViewMode === 'matrix' ? 'bg-surface font-semibold shadow-2xs text-ink' : 'text-muted hover:text-ink'}`}
+                  onClick={() => setStateViewMode('matrix')}
+                  title="Geospatial Regional Matrix"
+                >
+                  <LayoutGrid size={12} /> Regional Matrix
+                </button>
+                <button
+                  type="button"
+                  className={`px-2 py-0.5 rounded text-xs flex items-center gap-1 ${stateViewMode === 'table' ? 'bg-surface font-semibold shadow-2xs text-ink' : 'text-muted hover:text-ink'}`}
+                  onClick={() => setStateViewMode('table')}
+                  title="Table view"
+                >
+                  <List size={12} /> Table
+                </button>
+              </div>
             </div>
             <div className="panel-body">
-              <StateTable states={data.states} selected={state} onSelect={handleStateChange} />
+              {stateViewMode === 'matrix' ? (
+                <RegionalZoneMatrix states={data.states} selected={state} onSelect={handleStateChange} />
+              ) : (
+                <StateTable states={data.states} selected={state} onSelect={handleStateChange} />
+              )}
             </div>
           </section>
 

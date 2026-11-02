@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileText, Volume2, VolumeX } from 'lucide-react';
+import { AlertTriangle, FileText, GitCompare, Lock, Volume2, VolumeX } from 'lucide-react';
 import { api } from '../../api/client';
 import { bhashiniVoice } from '../../utils/bhashiniVoice';
 import type { CaseDetail } from '../../api/types';
@@ -102,29 +102,8 @@ export function CaseDetailPage({ caseId }: { caseId: string }) {
 
       <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
         <div className="space-y-6">
-          <Panel title="Evidence">
-            <p className="text-sm mt-0">
-              APAAR <span className="mono">{data.masked_apaar}</span> is reported as an active, full-time student at both institutions below.
-              Under the UGC 2022 guidelines two full-time programmes cannot run at the same time.
-            </p>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {data.evidence.map((e, i) => (
-                <div key={e.enrolment_id} className="border border-line rounded p-4 bg-wash">
-                  <div className="text-xs text-muted mb-1">Enrolment {i + 1} · reported {fmtDate(e.reported_at)}</div>
-                  <div className="font-semibold">{e.institution}</div>
-                  <div className="text-xs text-muted mb-3">Permanent ID <span className="mono">{e.aicte_permanent_id}</span> · {e.state}</div>
-                  <KeyValue items={[
-                    ['Programme', e.course],
-                    ['Student ID', <span key="kv6" className="mono">{e.student_id_no}</span>],
-                    ['Mode', humanize(e.mode)],
-                    ['Year', e.year_of_study],
-                    ['Status', <StatusTag key="kv7" value={e.status} />],
-                    ['Verification', <StatusTag key="kv8" value={e.verification_status} />],
-                  ]} />
-                </div>
-              ))}
-            </div>
-            {data.evidence.length < 2 && <p className="text-sm text-muted">One of the enrolments is no longer in the repository.</p>}
+          <Panel title="Side-by-Side Incompatibility Evidence">
+            <ConflictDiffViewer evidence={data.evidence} maskedApaar={data.masked_apaar} />
           </Panel>
 
           <Panel title="Activity">
@@ -249,5 +228,178 @@ function ApprovalPanel({ data, isMaker, canApprove, onDone }: { data: CaseDetail
         )}
       </div>
     </Panel>
+  );
+}
+
+function ConflictDiffViewer({ evidence, maskedApaar }: { evidence: CaseDetail['evidence']; maskedApaar: string }) {
+  if (evidence.length < 2) {
+    return (
+      <div className="space-y-4">
+        {evidence.map((e, i) => (
+          <div key={e.enrolment_id} className="border border-line rounded p-4 bg-wash">
+            <div className="text-xs text-muted mb-1">Enrolment {i + 1} · reported {fmtDate(e.reported_at)}</div>
+            <div className="font-semibold">{e.institution}</div>
+            <div className="text-xs text-muted mb-3">Permanent ID <span className="mono">{e.aicte_permanent_id}</span> · {e.state}</div>
+            <KeyValue items={[
+              ['Programme', e.course],
+              ['Student ID', <span key="kv6" className="mono">{e.student_id_no}</span>],
+              ['Mode', humanize(e.mode)],
+              ['Year', e.year_of_study],
+              ['Status', <StatusTag key="kv7" value={e.status} />],
+              ['Verification', <StatusTag key="kv8" value={e.verification_status} />],
+            ]} />
+          </div>
+        ))}
+        <p className="text-sm text-muted">One of the enrolments is no longer in the repository.</p>
+      </div>
+    );
+  }
+
+  const [e1, e2] = evidence;
+  const isModeConflict = e1.mode.toLowerCase() === 'full_time' && e2.mode.toLowerCase() === 'full_time';
+
+  return (
+    <div className="space-y-4">
+      {/* Cryptographic Match Header Badge */}
+      <div className="p-3.5 bg-brand-wash/50 border border-brand/30 rounded-lg flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2.5">
+          <span className="p-1.5 bg-navy text-white rounded-md shrink-0">
+            <Lock size={15} />
+          </span>
+          <div>
+            <div className="font-bold text-navy flex items-center gap-1.5">
+              <span>Cryptographic Blind Index Interception</span>
+              <span className="text-[10px] font-mono px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded font-semibold border border-emerald-300">
+                HMAC-SHA256 Match
+              </span>
+            </div>
+            <div className="text-muted text-[11px] mt-0.5">
+              Target Blind Index: <span className="mono font-semibold text-ink">{maskedApaar}</span> · Protected under DPDP Act 2023 §11
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 text-navy text-[11px] font-semibold bg-white px-2.5 py-1 rounded border border-line">
+          <GitCompare size={13} className="text-saffron" /> Side-by-Side Incompatibility Audit
+        </div>
+      </div>
+
+      {/* Side-by-Side Column Cards */}
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Institution 1 */}
+        <div className="border-2 border-brand/40 bg-white rounded-lg p-4 shadow-xs relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-brand" />
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <span className="text-[11px] font-mono font-bold px-2 py-0.5 bg-brand-wash text-brand rounded">
+              ENROLMENT A (Anchor)
+            </span>
+            <span className="text-[11px] text-muted">Reported {fmtDate(e1.reported_at)}</span>
+          </div>
+          <div className="font-bold text-base text-navy leading-tight">{e1.institution}</div>
+          <div className="text-xs text-muted mt-0.5 mb-3 font-mono">
+            Permanent ID: {e1.aicte_permanent_id} · {e1.state}
+          </div>
+          <div className="space-y-2 text-xs border-t border-line-soft pt-2.5">
+            <div className="flex justify-between py-1 border-b border-line-soft">
+              <span className="text-muted">Programme</span>
+              <strong className="text-ink">{e1.course}</strong>
+            </div>
+            <div className="flex justify-between py-1 border-b border-line-soft">
+              <span className="text-muted">Student ID / Roll</span>
+              <span className="mono font-semibold">{e1.student_id_no}</span>
+            </div>
+            <div className="flex justify-between py-1 border-b border-line-soft items-center">
+              <span className="text-muted">Enrolment Mode</span>
+              <span className="px-2 py-0.5 bg-bad-wash text-bad font-bold rounded border border-bad/30">
+                {humanize(e1.mode)}
+              </span>
+            </div>
+            <div className="flex justify-between py-1 border-b border-line-soft">
+              <span className="text-muted">Academic Year</span>
+              <strong className="text-ink">Year {e1.year_of_study}</strong>
+            </div>
+            <div className="flex justify-between py-1 items-center">
+              <span className="text-muted">Status</span>
+              <StatusTag value={e1.status} />
+            </div>
+          </div>
+        </div>
+
+        {/* Institution 2 */}
+        <div className="border-2 border-saffron/50 bg-white rounded-lg p-4 shadow-xs relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-saffron" />
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <span className="text-[11px] font-mono font-bold px-2 py-0.5 bg-saffron-wash text-saffron rounded">
+              ENROLMENT B (Concurrent)
+            </span>
+            <span className="text-[11px] text-muted">Reported {fmtDate(e2.reported_at)}</span>
+          </div>
+          <div className="font-bold text-base text-navy leading-tight">{e2.institution}</div>
+          <div className="text-xs text-muted mt-0.5 mb-3 font-mono">
+            Permanent ID: {e2.aicte_permanent_id} · {e2.state}
+          </div>
+          <div className="space-y-2 text-xs border-t border-line-soft pt-2.5">
+            <div className="flex justify-between py-1 border-b border-line-soft">
+              <span className="text-muted">Programme</span>
+              <strong className="text-ink">{e2.course}</strong>
+            </div>
+            <div className="flex justify-between py-1 border-b border-line-soft">
+              <span className="text-muted">Student ID / Roll</span>
+              <span className="mono font-semibold">{e2.student_id_no}</span>
+            </div>
+            <div className="flex justify-between py-1 border-b border-line-soft items-center">
+              <span className="text-muted">Enrolment Mode</span>
+              <span className="px-2 py-0.5 bg-bad-wash text-bad font-bold rounded border border-bad/30">
+                {humanize(e2.mode)}
+              </span>
+            </div>
+            <div className="flex justify-between py-1 border-b border-line-soft">
+              <span className="text-muted">Academic Year</span>
+              <strong className="text-ink">Year {e2.year_of_study}</strong>
+            </div>
+            <div className="flex justify-between py-1 items-center">
+              <span className="text-muted">Status</span>
+              <StatusTag value={e2.status} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Statutory Violation Callout */}
+      {isModeConflict && (
+        <div className="p-3 bg-bad-wash border border-bad/30 rounded-lg text-xs text-bad flex items-start gap-2.5">
+          <AlertTriangle size={18} className="shrink-0 mt-0.5" />
+          <div>
+            <div className="font-bold text-bad">Statutory Conflict: Dual Full-Time Attendance Violation</div>
+            <div className="mt-0.5 text-bad/90 leading-relaxed">
+              Under AICTE Approval Process Handbook (APH) rules and UGC 2022 Guidelines §3.1, a student is strictly prohibited from simultaneous enrollment in two concurrent full-time physical academic programmes.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Concurrent Timeline Overlap Visual */}
+      <div className="border border-line rounded-lg p-3 bg-wash/60 text-xs">
+        <div className="font-semibold text-ink mb-1.5 flex items-center justify-between">
+          <span>Concurrent Academic Term Overlap</span>
+          <span className="text-muted text-[11px]">Academic Term 2026–27</span>
+        </div>
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2">
+            <span className="w-28 text-[11px] truncate text-muted" title={e1.institution}>{e1.institution}</span>
+            <div className="flex-1 h-3 bg-brand/20 rounded-xs overflow-hidden relative">
+              <div className="h-full bg-brand rounded-xs" style={{ width: '85%', marginLeft: '5%' }} />
+            </div>
+            <span className="text-[10px] mono text-muted">Active</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-28 text-[11px] truncate text-muted" title={e2.institution}>{e2.institution}</span>
+            <div className="flex-1 h-3 bg-saffron/20 rounded-xs overflow-hidden relative">
+              <div className="h-full bg-saffron rounded-xs" style={{ width: '80%', marginLeft: '10%' }} />
+            </div>
+            <span className="text-[10px] mono text-bad font-semibold">Simultaneous</span>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

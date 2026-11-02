@@ -112,12 +112,93 @@ export function CountUp({ value }: { value: ReactNode }) {
   return <>{formatted}{match[2]}</>;
 }
 
-export function Stat({ label, value, note, tone }: { label: string; value: ReactNode; note?: ReactNode; tone?: 'bad' | 'warn' | 'ok' }) {
+export function MicroSparkline({
+  data,
+  width = 56,
+  height = 20,
+  tone = 'brand',
+}: {
+  data: number[];
+  width?: number;
+  height?: number;
+  tone?: 'brand' | 'ok' | 'warn' | 'bad' | 'saffron';
+}) {
+  if (!data || data.length < 2) return null;
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const pad = 2;
+  const innerH = height - pad * 2;
+  const innerW = width - pad * 2;
+
+  const points = data.map((v, i) => {
+    const x = pad + (i / (data.length - 1)) * innerW;
+    const y = pad + innerH - ((v - min) / range) * innerH;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+
+  const pathD = `M ${points.join(' L ')}`;
+  const areaD = `M ${pad},${height} L ${points.join(' L ')} L ${width - pad},${height} Z`;
+
+  const strokeColors: Record<string, string> = {
+    brand: '#1f56b3',
+    ok: '#13804a',
+    warn: '#8a5b00',
+    bad: '#b42318',
+    saffron: '#e8811c',
+  };
+  const stroke = strokeColors[tone] || strokeColors.brand;
+  const gradId = `spark-${tone}-${Math.round(min * 100 + max)}`;
+
+  const lastPoint = points[points.length - 1].split(',');
+  const lastX = Number(lastPoint[0]);
+  const lastY = Number(lastPoint[1]);
+
+  return (
+    <svg width={width} height={height} className="shrink-0 overflow-visible" aria-hidden="true">
+      <defs>
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={stroke} stopOpacity="0.3" />
+          <stop offset="100%" stopColor={stroke} stopOpacity="0.0" />
+        </linearGradient>
+      </defs>
+      <path d={areaD} fill={`url(#${gradId})`} />
+      <path d={pathD} fill="none" stroke={stroke} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={lastX} cy={lastY} r="2" fill={stroke} />
+    </svg>
+  );
+}
+
+export function Stat({
+  label,
+  value,
+  note,
+  tone,
+  sparkline,
+}: {
+  label: string;
+  value: ReactNode;
+  note?: ReactNode;
+  tone?: 'bad' | 'warn' | 'ok';
+  sparkline?: number[];
+}) {
   const color = tone === 'bad' ? 'text-bad' : tone === 'warn' ? 'text-warn' : tone === 'ok' ? 'text-ok' : 'text-ink';
   return (
-    <div className="panel px-4 py-3">
-      <div className="text-[13px] text-muted">{label}</div>
-      <div className={`text-2xl font-bold tabular-nums mt-0.5 ${color}`}><CountUp value={value} /></div>
+    <div className="panel px-4 py-3 flex flex-col justify-between">
+      <div>
+        <div className="text-[13px] text-muted">{label}</div>
+        <div className="flex items-baseline justify-between gap-2 mt-0.5">
+          <div className={`text-2xl font-bold tabular-nums ${color}`}><CountUp value={value} /></div>
+          {sparkline && (
+            <MicroSparkline
+              data={sparkline}
+              tone={tone === 'bad' ? 'bad' : tone === 'ok' ? 'ok' : 'brand'}
+              width={54}
+              height={20}
+            />
+          )}
+        </div>
+      </div>
       {note && <div className="text-xs text-muted mt-1">{note}</div>}
     </div>
   );

@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { LogOut, Menu, X } from 'lucide-react';
+import { LogOut, Menu, Search, X } from 'lucide-react';
 import { API_ORIGIN } from '../api/client';
 import { Link, useRouter } from '../lib/router';
 import { ROLE_LABEL, useSession, type Portal } from '../lib/session';
 import { useI18n, LanguageToggle } from '../lib/i18n';
+import { CommandPalette } from './CommandPalette';
 import { JuryTourWidget } from './JuryTourWidget';
 import { NotificationBell } from './NotificationBell';
 import { RegulatoryCopilot } from './RegulatoryCopilot';
@@ -69,8 +70,44 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
   const { path, navigate } = useRouter();
   const { t } = useI18n();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [commandOpen, setCommandOpen] = useState(false);
+  const [fontSize, setFontSizeState] = useState(() => (typeof window !== 'undefined' ? localStorage.getItem('agastya_font_size') || '15px' : '15px'));
+  const [highContrast, setHighContrast] = useState(() => (typeof window !== 'undefined' ? localStorage.getItem('agastya_high_contrast') === 'true' : false));
+
   const nav = portal && path.startsWith(`/${portal}`) ? PORTAL_NAV[portal] : null;
   const navRef = useRef<HTMLDivElement>(null);
+
+  const setFontSize = (size: string) => {
+    setFontSizeState(size);
+    document.documentElement.style.fontSize = size;
+    try { localStorage.setItem('agastya_font_size', size); } catch {}
+  };
+
+  const toggleContrast = () => {
+    const next = !highContrast;
+    setHighContrast(next);
+    if (next) {
+      document.documentElement.classList.add('high-contrast');
+    } else {
+      document.documentElement.classList.remove('high-contrast');
+    }
+    try { localStorage.setItem('agastya_high_contrast', String(next)); } catch {}
+  };
+
+  useEffect(() => {
+    if (fontSize) {
+      document.documentElement.style.fontSize = fontSize;
+    }
+    if (highContrast) {
+      document.documentElement.classList.add('high-contrast');
+    }
+  }, [fontSize, highContrast]);
+
+  useEffect(() => {
+    const handler = () => setCommandOpen(true);
+    window.addEventListener('open-command-palette', handler);
+    return () => window.removeEventListener('open-command-palette', handler);
+  }, []);
 
   // On narrow screens the tab bar scrolls; keep the current tab visible.
   useEffect(() => {
@@ -92,7 +129,50 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
               APAAR National Depository · Ledger Live
             </span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 sm:gap-4">
+            {/* GIGW Text Resizer */}
+            <div className="flex items-center gap-0.5 bg-white/10 px-1.5 py-0.5 rounded text-[11px]">
+              <span className="text-white/60 mr-1 hidden sm:inline">Text:</span>
+              <button
+                type="button"
+                onClick={() => setFontSize('13.5px')}
+                className={`px-1 rounded hover:text-white transition-colors ${fontSize === '13.5px' ? 'bg-white/20 text-white font-bold' : 'text-white/70'}`}
+                title="Decrease font size (A-)"
+              >
+                A-
+              </button>
+              <button
+                type="button"
+                onClick={() => setFontSize('15px')}
+                className={`px-1 rounded hover:text-white transition-colors ${fontSize === '15px' ? 'bg-white/20 text-white font-bold' : 'text-white/70'}`}
+                title="Normal font size (A)"
+              >
+                A
+              </button>
+              <button
+                type="button"
+                onClick={() => setFontSize('17px')}
+                className={`px-1 rounded hover:text-white transition-colors ${fontSize === '17px' ? 'bg-white/20 text-white font-bold' : 'text-white/70'}`}
+                title="Increase font size (A+)"
+              >
+                A+
+              </button>
+            </div>
+
+            {/* High Contrast Mode Toggle */}
+            <button
+              type="button"
+              onClick={toggleContrast}
+              className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] transition-colors ${
+                highContrast ? 'bg-saffron text-navy font-bold' : 'bg-white/10 text-white/80 hover:text-white'
+              }`}
+              title="Toggle High Contrast Mode (GIGW Compliant)"
+            >
+              <span className="font-mono text-xs">◐</span>
+              <span className="hidden sm:inline">{highContrast ? 'Standard' : 'High Contrast'}</span>
+            </button>
+
+            <span className="hidden sm:inline text-white/30">|</span>
             <span className="hidden sm:inline">{t('aicte_full')}</span>
             <LanguageToggle />
           </div>
@@ -109,11 +189,31 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
             </span>
           </Link>
 
+          {/* Universal Command Palette Trigger */}
+          <button
+            type="button"
+            onClick={() => setCommandOpen(true)}
+            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-md border border-line bg-wash text-muted text-xs hover:border-brand/40 hover:bg-brand-wash/40 hover:text-ink transition-all shadow-2xs"
+            title="Press Ctrl+K to search all portals & commands"
+          >
+            <Search size={14} className="text-muted" />
+            <span className="hidden lg:inline">Search portal, records, rules...</span>
+            <span className="lg:hidden">Search...</span>
+            <kbd className="font-mono text-[10px] bg-white border border-line px-1.5 py-0.5 rounded text-faint ml-2 shadow-2xs">Ctrl K</kbd>
+          </button>
+
           <button type="button" className="sm:hidden btn btn-ghost" onClick={() => setMenuOpen((o) => !o)} aria-expanded={menuOpen} aria-label="Menu">
             {menuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
 
           <div className={`${menuOpen ? 'flex' : 'hidden'} sm:flex absolute sm:static top-full left-0 right-0 z-40 bg-white sm:bg-transparent border-b sm:border-0 border-line px-4 sm:px-0 py-3 sm:py-0 flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 text-sm`}>
+            <button
+              type="button"
+              className="sm:hidden flex items-center gap-2 py-1 text-left text-ink hover:text-brand"
+              onClick={() => { setMenuOpen(false); setCommandOpen(true); }}
+            >
+              <Search size={16} /> Search commands & portals...
+            </button>
             <Link to="/verify" className="no-underline hover:underline text-ink" onClick={() => setMenuOpen(false)}>{t('verify_record', 'Verify a record')}</Link>
             <Link to="/public-dashboard" className="no-underline hover:underline text-ink" onClick={() => setMenuOpen(false)}>{t('live_seats', 'Live seats')}</Link>
             {user ? (
@@ -195,6 +295,7 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
       </footer>
       <RegulatoryCopilot onNavigate={(route) => navigate(route)} userRole={user?.role} />
       <JuryTourWidget />
+      <CommandPalette isOpen={commandOpen} onClose={() => setCommandOpen(false)} />
     </div>
   );
 }

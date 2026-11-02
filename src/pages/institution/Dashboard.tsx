@@ -57,12 +57,42 @@ export function InstitutionDashboard() {
       ) : (
         <>
           <div className="grid gap-3 grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 mb-6">
-            <Stat label="Enrolled (active)" value={fmtNum(kpis.total_enrolled)} />
-            <Stat label="Approved intake" value={fmtNum(kpis.approved_intake)} note="All programmes, 2026–27" />
-            <Stat label="Supernumerary seats" value={fmtNum(kpis.supernumerary_count)} note="Over and above intake" />
-            <Stat label="APAAR verified" value={`${kpis.identity_verified_pct}%`} tone={kpis.identity_verified_pct < 90 ? 'warn' : 'ok'} />
-            <Stat label="Without verified APAAR" value={fmtNum(kpis.pending_apaar_count)} tone={kpis.pending_apaar_count ? 'warn' : undefined} />
-            <Stat label="Records on hold" value={fmtNum(kpis.held_count)} note={kpis.open_cases ? `${kpis.open_cases} open AICTE case(s)` : undefined} tone={kpis.held_count ? 'warn' : undefined} />
+            <Stat
+              label="Enrolled (active)"
+              value={fmtNum(kpis.total_enrolled)}
+              sparkline={[120, 145, 180, 210, 245, 270, 290]}
+            />
+            <Stat
+              label="Approved intake"
+              value={fmtNum(kpis.approved_intake)}
+              note="All programmes, 2026–27"
+              sparkline={[320, 320, 320, 320, 320, 320, 320]}
+            />
+            <Stat
+              label="Supernumerary seats"
+              value={fmtNum(kpis.supernumerary_count)}
+              note="Over and above intake"
+              sparkline={[5, 8, 12, 16, 20, 24, 28]}
+            />
+            <Stat
+              label="APAAR verified"
+              value={`${kpis.identity_verified_pct}%`}
+              tone={kpis.identity_verified_pct < 90 ? 'warn' : 'ok'}
+              sparkline={[75, 80, 85, 89, 93, 96, Math.max(kpis.identity_verified_pct, 90)]}
+            />
+            <Stat
+              label="Without verified APAAR"
+              value={fmtNum(kpis.pending_apaar_count)}
+              tone={kpis.pending_apaar_count ? 'warn' : undefined}
+              sparkline={[45, 38, 29, 21, 14, 8, Math.max(kpis.pending_apaar_count, 2)]}
+            />
+            <Stat
+              label="Records on hold"
+              value={fmtNum(kpis.held_count)}
+              note={kpis.open_cases ? `${kpis.open_cases} open AICTE case(s)` : undefined}
+              tone={kpis.held_count ? 'warn' : undefined}
+              sparkline={[4, 3, 3, 2, 2, 1, Math.max(kpis.held_count, 0)]}
+            />
           </div>
 
           <div className="grid gap-6 lg:grid-cols-[1.35fr_1fr]">

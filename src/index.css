@@ -314,6 +314,65 @@ svg .animate-pop, svg .animate-fade-up { transform-box: fill-box; transform-orig
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
 
+/* ── GIGW High-Contrast Mode ────────────────────────── */
+html.high-contrast {
+  --color-page: #000000;
+  --color-panel: #0a0e1a;
+  --color-wash: #141b2d;
+  --color-ink: #ffffff;
+  --color-muted: #e2e8f0;
+  --color-faint: #94a3b8;
+  --color-line: #ffd700;
+  --color-line-soft: #475569;
+  --color-navy: #000000;
+  --color-navy-dark: #000000;
+  --color-brand: #ffd700;
+  --color-brand-wash: #1e1b00;
+}
+
+html.high-contrast body {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+html.high-contrast .panel,
+html.high-contrast header,
+html.high-contrast .bg-white {
+  background-color: #0c1220 !important;
+  color: #ffffff !important;
+  border-color: #ffd700 !important;
+}
+
+html.high-contrast nav {
+  background-color: #000000 !important;
+  border-bottom: 2px solid #ffd700 !important;
+}
+
+html.high-contrast a {
+  color: #00e5ff !important;
+}
+
+html.high-contrast .btn-primary {
+  background-color: #ffd700 !important;
+  color: #000000 !important;
+  font-weight: 700 !important;
+  border: 1px solid #ffd700 !important;
+}
+
+html.high-contrast .btn-secondary {
+  background-color: #1a202c !important;
+  color: #ffffff !important;
+  border: 1px solid #ffffff !important;
+}
+
+html.high-contrast .text-ink {
+  color: #ffffff !important;
+}
+
+html.high-contrast .text-muted {
+  color: #cbd5e1 !important;
+}
+
 /* BUG-05: Fixed print / PDF layout — proper A4 page sizing and interactive element hiding */
 @media print {
   .no-print { display: none !important; }

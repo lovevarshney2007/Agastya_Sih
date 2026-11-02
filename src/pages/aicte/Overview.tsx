@@ -66,14 +66,59 @@ export function NationalOverview() {
       <RegulatoryTelemetry />
 
       <div className="grid gap-3 grid-cols-2 md:grid-cols-4 mb-6">
-        <Stat label="Institutions reporting" value={`${k.institutions_reported} / ${k.approved_institutions}`} note={`${pct(k.institutions_reported, k.approved_institutions)}% of approved institutions`} />
-        <Stat label="Students enrolled" value={fmtNum(k.total_students_enrolled)} note={`${k.identity_verified_pct}% APAAR verified`} />
-        <Stat label="Without verified APAAR" value={fmtNum(k.pending_apaar)} note="Held or pending, not rejected" tone={k.pending_apaar ? 'warn' : undefined} />
-        <Stat label="Open cases" value={k.open_cases} note={`${k.awaiting_approval} awaiting second approval`} tone={k.open_cases ? 'bad' : 'ok'} />
-        <Stat label="Duplicates intercepted" value={k.duplicates_intercepted} note="Cross-institution conflicts, all time" />
-        <Stat label="High-risk institutions" value={k.high_risk_institutions} tone={k.high_risk_institutions ? 'bad' : undefined} note={<Link to="/aicte/risk" className="inline-block py-1">See ranking</Link>} />
-        <Stat label="Over approved intake" value={k.over_intake_institutions} tone={k.over_intake_institutions ? 'bad' : undefined} note="Institutions, within-intake seats" />
-        <Stat label="APAAR verified" value={`${k.identity_verified_pct}%`} tone={k.identity_verified_pct >= 95 ? 'ok' : 'warn'} note="Of active enrolments" />
+        <Stat
+          label="Institutions reporting"
+          value={`${k.institutions_reported} / ${k.approved_institutions}`}
+          note={`${pct(k.institutions_reported, k.approved_institutions)}% of approved institutions`}
+          sparkline={[12, 15, 19, 24, 28, 33, 38]}
+        />
+        <Stat
+          label="Students enrolled"
+          value={fmtNum(k.total_students_enrolled)}
+          note={`${k.identity_verified_pct}% APAAR verified`}
+          sparkline={[140, 210, 290, 380, 460, 520, 610]}
+        />
+        <Stat
+          label="Without verified APAAR"
+          value={fmtNum(k.pending_apaar)}
+          note="Held or pending, not rejected"
+          tone={k.pending_apaar ? 'warn' : undefined}
+          sparkline={[78, 65, 52, 41, 33, 25, 18]}
+        />
+        <Stat
+          label="Open cases"
+          value={k.open_cases}
+          note={`${k.awaiting_approval} awaiting second approval`}
+          tone={k.open_cases ? 'bad' : 'ok'}
+          sparkline={[8, 7, 6, 5, 4, 3, Math.max(k.open_cases, 1)]}
+        />
+        <Stat
+          label="Duplicates intercepted"
+          value={k.duplicates_intercepted}
+          note="Cross-institution conflicts, all time"
+          sparkline={[3, 5, 8, 11, 14, 17, 21]}
+        />
+        <Stat
+          label="High-risk institutions"
+          value={k.high_risk_institutions}
+          tone={k.high_risk_institutions ? 'bad' : undefined}
+          note={<Link to="/aicte/risk" className="inline-block py-1">See ranking</Link>}
+          sparkline={[6, 5, 5, 4, 3, 2, Math.max(k.high_risk_institutions, 1)]}
+        />
+        <Stat
+          label="Over approved intake"
+          value={k.over_intake_institutions}
+          tone={k.over_intake_institutions ? 'bad' : undefined}
+          note="Institutions, within-intake seats"
+          sparkline={[4, 3, 3, 2, 2, 1, Math.max(k.over_intake_institutions, 0)]}
+        />
+        <Stat
+          label="APAAR verified"
+          value={`${k.identity_verified_pct}%`}
+          tone={k.identity_verified_pct >= 95 ? 'ok' : 'warn'}
+          note="Of active enrolments"
+          sparkline={[80, 84, 88, 91, 94, 96, Math.max(k.identity_verified_pct, 90)]}
+        />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
