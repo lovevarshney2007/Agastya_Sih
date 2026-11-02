@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Download, Plus, X } from 'lucide-react';
 import { api } from '../../api/client';
 import type { AddStudentInput, AddStudentResult, StudentRow } from '../../api/types';
-import { Alert, AsOf, Empty, ErrorState, Field, KeyValue, Loading, Modal, PageHeader, Pagination, Panel, Spinner, StatusTag } from '../../components/ui';
+import { Alert, AsOf, DataCard, Empty, ErrorState, Field, KeyValue, Loading, Modal, PageHeader, Pagination, Panel, Spinner, StatusTag } from '../../components/ui';
 import { fmtDateTime, humanize } from '../../lib/format';
 import { useRouter } from '../../lib/router';
 import { useAction, useApi } from '../../lib/useApi';
@@ -71,7 +71,7 @@ export function Registry() {
 
       <Panel bodyClassName="">
         <div className="flex flex-wrap items-center gap-3 px-4 py-3 border-b border-line-soft bg-wash">
-          <input className="input !w-64 !py-1" placeholder="Name, student ID or last 4 of APAAR" value={search}
+          <input className="input w-full sm:w-64 !py-1" placeholder="Name, student ID or last 4 of APAAR" value={search}
                  onChange={(e) => setSearch(e.target.value)} aria-label="Search students" />
           <FilterSelect label="Programme" value={course} onChange={(v) => { setCourse(v); setPage(1); }} options={courses} />
           <FilterSelect label="Enrolment" value={status} onChange={(v) => { setStatus(v); setPage(1); }}
@@ -95,7 +95,36 @@ export function Registry() {
             </Empty>
           ) : (
             <>
-              <div className={`table-wrap ${loading ? 'opacity-60' : ''}`}>
+              {/* Mobile Data Cards View (screens < 768px) */}
+              <div className={`p-3 space-y-3 md:hidden ${loading ? 'opacity-60' : ''}`}>
+                {data.students.map((s) => (
+                  <DataCard
+                    key={s.enrolment_id}
+                    title={s.name}
+                    subtitle={<span className="font-mono text-xs">{s.student_id_no} · APAAR {s.masked_apaar}</span>}
+                    badge={<StatusTag value={s.status} />}
+                    onClick={() => setSelected(s)}
+                    fields={[
+                      { label: 'Programme', value: s.course },
+                      { label: 'Year', value: `Year ${s.year_of_study}` },
+                      { label: 'Identity', value: <StatusTag value={s.identity_status} /> },
+                      { label: 'Verification', value: <StatusTag value={s.verification_status} /> },
+                    ]}
+                    actions={
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm w-full"
+                        onClick={() => setSelected(s)}
+                      >
+                        View Record Details &amp; History
+                      </button>
+                    }
+                  />
+                ))}
+              </div>
+
+              {/* Desktop Full Data Table (screens >= 768px) */}
+              <div className={`table-wrap hidden md:block ${loading ? 'opacity-60' : ''}`}>
                 <table className="data-table">
                   <thead>
                     <tr>
@@ -162,15 +191,15 @@ function RecordDrawer({ instId, record, onClose, onChanged }: { instId: string; 
   const verified = record.verification_status === 'ACCEPTED' && record.identity_status === 'VERIFIED';
 
   return (
-    <div className="fixed inset-0 z-40 flex justify-end bg-[#0f172a]/30" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <aside className="bg-white w-full max-w-md h-full overflow-y-auto shadow-xl border-l border-line" role="dialog" aria-modal="true" aria-label={`Record ${record.student_id_no}`}>
-        <div className="flex items-start justify-between gap-3 px-5 py-4 border-b border-line-soft sticky top-0 bg-white">
-          <div>
+    <div className="fixed inset-0 z-40 flex justify-end bg-[#0f172a]/40 backdrop-blur-xs" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <aside className="bg-white w-full max-w-full sm:max-w-md h-full overflow-y-auto shadow-xl border-l border-line pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]" role="dialog" aria-modal="true" aria-label={`Record ${record.student_id_no}`}>
+        <div className="flex items-start justify-between gap-3 px-4 sm:px-5 py-3 sm:py-4 border-b border-line-soft sticky top-0 bg-white z-10">
+          <div className="min-w-0 flex-1">
             <div className="text-xs text-muted">Student record · version {record.version}</div>
-            <h2 className="text-lg font-bold">{record.name}</h2>
-            <div className="mono text-sm">{record.student_id_no}</div>
+            <h2 className="text-base sm:text-lg font-bold text-navy truncate">{record.name}</h2>
+            <div className="mono text-xs sm:text-sm text-slate-700">{record.student_id_no}</div>
           </div>
-          <button type="button" className="text-muted hover:text-ink bg-transparent border-0 cursor-pointer" onClick={onClose} aria-label="Close"><X size={20} /></button>
+          <button type="button" className="text-muted hover:text-ink bg-transparent border-0 cursor-pointer p-2 min-h-[44px] min-w-[44px] flex items-center justify-center shrink-0 rounded-md" onClick={onClose} aria-label="Close"><X size={20} /></button>
         </div>
 
         <div className="p-5 space-y-6">

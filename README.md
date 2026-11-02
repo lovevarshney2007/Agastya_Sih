@@ -1,6 +1,6 @@
 # 🏛️ AGASTYA (अगस्त्य) — AICTE Sovereign Academic Credential & Regulatory Ledger
 
-[![Live Frontend](https://img.shields.io/badge/Live_Portal-agastya--chi.vercel.app-0052cc.svg?style=flat-square&logo=vercel)](https://agastya-chi.vercel.app)
+[![Live Frontend](https://img.shields.io/badge/Live_Portal-team--agastya.vercel.app-0052cc.svg?style=flat-square&logo=vercel)](https://team-agastya.vercel.app)
 [![Live API](https://img.shields.io/badge/Live_API-sih.monu14.me-009688.svg?style=flat-square&logo=fastapi)](https://sih.monu14.me/api/v1)
 [![SIH 2026](https://img.shields.io/badge/Smart_India_Hackathon-2026_Championship_Edition-ff9933.svg?style=flat-square)](https://sih.gov.in)
 [![Problem Statement](https://img.shields.io/badge/Problem_Statement-SIH26263-navy.svg?style=flat-square)](https://sih.gov.in)
@@ -16,7 +16,7 @@
 > **Title:** Sovereign Cross-Institution Student Enrollment Reconciliation, Capacity Adherence, and Privacy-Preserving Verifiable Academic Identity Platform.  
 > **Statutory Owner:** All India Council for Technical Education (AICTE), Ministry of Education, Government of India.  
 > 🌐 **Live Evaluator URLs:**
-> - **Production Web Application:** [https://agastya-chi.vercel.app](https://agastya-chi.vercel.app)
+> - **Production Web Application:** [https://team-agastya.vercel.app](https://team-agastya.vercel.app)
 > - **Production API Gateway:** [https://sih.monu14.me/api/v1](https://sih.monu14.me/api/v1)
 > - **Swagger API Interactive Docs:** [https://sih.monu14.me/api/v1/docs](https://sih.monu14.me/api/v1/docs)
 

@@ -21,3 +21,4 @@ export * from './KeyValue';
 export * from './Pagination';
 export * from './CountUp';
 export * from './MicroSparkline';
+export * from './DataCard';

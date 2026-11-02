@@ -56,6 +56,7 @@
     scroll-behavior: smooth;
     overflow-x: hidden;
     max-width: 100vw;
+    width: 100%;
   }
 
   body {
@@ -70,6 +71,8 @@
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
     max-width: 100vw;
+    width: 100%;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   h1 { line-height: 1.2; letter-spacing: -0.025em; font-weight: 700; }
@@ -84,7 +87,14 @@
   a { color: var(--color-brand); text-underline-offset: 2px; }
   ::selection { background: #dbeafe; }
 
-  .grid > *, .flex-1 { min-width: 0; }
+  .grid > *, .flex-1, .flex-auto { min-width: 0; }
+
+  /* iOS Auto-Zoom Prevention: Inputs must be at least 16px on mobile viewports */
+  @media (max-width: 640px) {
+    input, select, textarea, .input, .select, .textarea {
+      font-size: 16px !important;
+    }
+  }
 }
 
 @layer components {
@@ -95,6 +105,17 @@
     font-size: .8125rem; font-weight: 600; line-height: 1.25; cursor: pointer;
     transition: background-color .15s, border-color .15s, color .15s, box-shadow .15s;
     max-width: 100%;
+    touch-action: manipulation;
+  }
+  @media (max-width: 640px) {
+    .btn {
+      min-height: 44px; /* Ergonomic 44px mobile touch target */
+      padding: .5rem 1rem;
+    }
+    .btn-sm {
+      min-height: 38px;
+      padding: .4rem .75rem;
+    }
   }
   @media (min-width: 640px) {
     .btn { white-space: nowrap; }
@@ -114,7 +135,7 @@
   .btn-sm { min-height: 2rem; padding: .3rem .65rem; font-size: .75rem; }
 
   .input, .select, .textarea {
-    width: 100%; min-height: 2.35rem; padding: .45rem .65rem; border: 1px solid var(--color-line); border-radius: 6px;
+    width: 100%; min-height: 2.5rem; padding: .5rem .75rem; border: 1px solid var(--color-line); border-radius: 6px;
     background: #fff; color: var(--color-ink); font: inherit; font-size: .875rem;
     transition: border-color .15s, box-shadow .15s;
   }
@@ -125,13 +146,18 @@
   .hint { font-size: .75rem; color: var(--color-muted); margin-top: .25rem; }
 
   /* ── Surfaces ──────────────────────────────────────────── */
-  .panel { background: var(--color-panel); border: 1px solid var(--color-line-soft); border-radius: 8px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03); }
+  .panel { background: var(--color-panel); border: 1px solid var(--color-line-soft); border-radius: 8px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03); max-width: 100%; min-width: 0; }
   .panel-head { padding: .75rem 1rem; border-bottom: 1px solid var(--color-line-soft); display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
   .panel-head h2 { font-size: .9375rem; font-weight: 700; margin: 0; color: #0f172a; }
   .panel-body { padding: 1rem; }
 
-  /* ── High-Density Data Tables ───────────────────────────── */
-  .table-wrap { overflow-x: auto; }
+  /* ── High-Density Data Tables & Mobile Scroll ─────────────── */
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+    max-width: 100%;
+  }
   .data-table { width: 100%; border-collapse: collapse; font-size: .8125rem; }
   .data-table th {
     text-align: left; font-weight: 700; font-size: .75rem; color: #475569; text-transform: uppercase; letter-spacing: 0.04em;
@@ -142,6 +168,43 @@
   .data-table tr.clickable { cursor: pointer; }
   .data-table tr.clickable:hover td { background: #f1f5f9; }
   .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* Sticky first column utility for compact data tables */
+  .table-sticky-col th:first-child,
+  .table-sticky-col td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    background-color: #fff;
+    box-shadow: 2px 0 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  .table-sticky-col thead th:first-child {
+    background-color: #f8fafc;
+    z-index: 6;
+  }
+
+  /* ── Dual Responsive Mobile Data Cards ───────────────────── */
+  .data-card {
+    background: #ffffff;
+    border: 1px solid var(--color-line-soft);
+    border-radius: 8px;
+    padding: 0.875rem 1rem;
+    transition: all .15s ease;
+  }
+  .data-card:active {
+    background: #f8fafc;
+  }
+  .data-card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+  @media (max-width: 480px) {
+    .data-card-grid {
+      grid-template-columns: 1fr;
+    }
+  }
 
   /* ── Status tags (Always text + icon + color, WCAG AA) ─── */
   .tag {
@@ -206,6 +269,19 @@
     background: currentColor;
     opacity: 0.35;
     animation: beacon-breathe 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* ── Mobile Ergonomics & Safe Areas ─────────────────────── */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  .scroll-fade {
+    mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent 100%);
+  }
+
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
   }
 }
 

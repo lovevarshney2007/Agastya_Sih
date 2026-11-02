@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import { Download, FileCheck, GitBranch, List, Lock, Printer, Shield, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { api } from '../../api/client';
 import type { ChainCheck } from '../../api/types';
-import { Alert, AsOf, Empty, ErrorState, KeyValue, Loading, Modal, PageHeader, Panel, Spinner } from '../../components/ui';
+import { Alert, AsOf, DataCard, Empty, ErrorState, KeyValue, Loading, Modal, PageHeader, Panel, Spinner } from '../../components/ui';
 import { fmtDateTime, humanize, shortHash } from '../../lib/format';
 import { useAction, useApi } from '../../lib/useApi';
 import { FilterSelect } from '../institution/BatchDetail';
@@ -278,72 +278,134 @@ Authority: AICTE Act 1987 & Approval Process Handbook 2024-27
               </div>
 
               <div className="flex flex-wrap gap-3 px-4 py-3 border-b border-line-soft bg-wash">
-                <input className="input !w-64 !py-1" placeholder="Actor or entity ID" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Search the ledger" />
+                <input className="input w-full sm:w-64 !py-1" placeholder="Actor or entity ID" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Search the ledger" />
                 <FilterSelect label="Action" value={action} onChange={setAction} options={data?.actions ?? []} />
                 <FilterSelect label="Actor type" value={actorType} onChange={setActorType} options={['USER', 'SERVICE', 'VERIFIER']} />
               </div>
               {!data ? <div className="p-4"><Loading rows={8} /></div> : data.events.length === 0 ? <Empty title="No entries match" /> : (
-                <div className="table-wrap">
-                  <table className="data-table">
-                    <thead><tr><th className="num">#</th><th>Time</th><th>Actor</th><th>Action</th><th>Entity</th><th>Purpose</th><th>Hash</th><th className="text-right">Custody Proof</th></tr></thead>
-                    <tbody className="stagger-rows">
-                  {data.events.map((ev) => {
-                    const isBroken = broken && check?.broken_at_seq === ev.seq;
-                    return (
-                      <Fragment key={ev.seq}>
-                        <tr className={`clickable ${isBroken ? 'bg-bad-wash' : ''}`} onClick={() => setOpen(open === ev.seq ? null : ev.seq)} aria-expanded={open === ev.seq}>
-                          <td className={`num mono ${isBroken ? 'text-bad font-bold' : ''}`}>{ev.seq}</td>
-                          <td className="whitespace-nowrap">{fmtDateTime(ev.occurred_at)}</td>
-                          <td className="min-w-[160px] break-all"><span className="text-xs text-muted block">{humanize(ev.actor_type)}</span>{ev.actor_id}</td>
-                          <td className="whitespace-nowrap font-medium">{humanize(ev.action)}</td>
-                          <td className="whitespace-nowrap">{humanize(ev.entity)} <span className="mono text-xs text-muted">{ev.entity_id?.slice(0, 14)}</span></td>
-                          <td className="text-muted min-w-[140px]">{ev.purpose}</td>
-                          <td className="mono text-xs whitespace-nowrap">{shortHash(ev.hash, 12)}</td>
-                          <td className="text-right whitespace-nowrap">
-                            <button
-                              type="button"
-                              className="btn btn-secondary btn-sm flex items-center gap-1 ml-auto"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                void openCertificate(ev.seq);
-                              }}
-                            >
-                              <FileCheck size={13} className="text-brand" /> Certificate
-                            </button>
-                          </td>
-                        </tr>
-                        {open === ev.seq && (
-                          <tr>
-                            <td colSpan={8} className="bg-wash">
-                              <div className="grid gap-4 md:grid-cols-2 text-xs">
+                <>
+                  {/* Mobile Dual Pattern: Compact Data Cards */}
+                  <div className="p-3 space-y-3 md:hidden">
+                    {data.events.map((ev) => {
+                      const isBroken = broken && check?.broken_at_seq === ev.seq;
+                      return (
+                        <DataCard
+                          key={ev.seq}
+                          title={`#${ev.seq} · ${humanize(ev.action)}`}
+                          subtitle={fmtDateTime(ev.occurred_at)}
+                          badge={{
+                            label: isBroken ? 'CHAIN SEVERED' : humanize(ev.actor_type),
+                            tone: isBroken ? 'bad' : 'neutral',
+                          }}
+                          className={isBroken ? 'border-bad bg-bad-wash' : ''}
+                          fields={[
+                            { label: 'Actor', value: ev.actor_id, isMono: true },
+                            { label: 'Entity', value: `${humanize(ev.entity)}: ${ev.entity_id?.slice(0, 14) ?? 'Global'}` },
+                            { label: 'Purpose', value: ev.purpose },
+                            { label: 'Hash Digest', value: shortHash(ev.hash, 12), isMono: true },
+                          ]}
+                          expandableContent={
+                            <div className="space-y-3 pt-1 text-xs">
+                              <div>
+                                <div className="font-semibold text-ink mb-1">Recorded detail</div>
+                                <pre className="mono text-[11px] bg-white border border-line-soft rounded p-2.5 whitespace-pre-wrap break-all">{JSON.stringify(ev.detail, null, 2)}</pre>
+                              </div>
+                              <div className="space-y-2">
                                 <div>
-                                  <div className="font-semibold mb-1 text-sm">Recorded detail</div>
-                                  <pre className="mono bg-white border border-line-soft rounded p-3 whitespace-pre-wrap break-all">{JSON.stringify(ev.detail, null, 2)}</pre>
+                                  <div className="font-semibold text-ink">Previous hash</div>
+                                  <div className="mono text-[11px] bg-slate-100 dark:bg-slate-800 p-2 rounded break-all">{ev.prev_hash}</div>
                                 </div>
-                                <div className="space-y-3">
-                                  <div><div className="font-semibold text-sm">Previous hash</div><div className="mono break-all">{ev.prev_hash}</div></div>
-                                  <div><div className="font-semibold text-sm">This entry’s hash</div><div className="mono break-all">{ev.hash}</div></div>
-                                  <p className="text-muted m-0">hash = SHA-256(previous hash | canonical JSON of this entry)</p>
-                                  <div className="pt-2">
-                                    <button
-                                      type="button"
-                                      className="btn btn-primary btn-sm flex items-center gap-1.5"
-                                      onClick={() => void openCertificate(ev.seq)}
-                                    >
-                                      <ShieldCheck size={14} /> Verify SHA-256 Continuity & Issue Certificate
-                                    </button>
-                                  </div>
+                                <div>
+                                  <div className="font-semibold text-ink">This entry’s hash</div>
+                                  <div className="mono text-[11px] bg-slate-100 dark:bg-slate-800 p-2 rounded break-all">{ev.hash}</div>
                                 </div>
                               </div>
+                              <button
+                                type="button"
+                                className="btn btn-primary btn-sm w-full flex items-center justify-center gap-1.5"
+                                onClick={() => void openCertificate(ev.seq)}
+                              >
+                                <ShieldCheck size={14} /> Verify Continuity & Issue Certificate
+                              </button>
+                            </div>
+                          }
+                          actions={
+                            <button
+                              type="button"
+                              className="btn btn-secondary btn-sm w-full flex items-center justify-center gap-1.5"
+                              onClick={() => void openCertificate(ev.seq)}
+                            >
+                              <FileCheck size={13} className="text-brand" /> View Custody Proof
+                            </button>
+                          }
+                        />
+                      );
+                    })}
+                  </div>
+
+                  {/* Desktop Full Data Table */}
+                  <div className="hidden md:block table-wrap">
+                    <table className="data-table">
+                      <thead><tr><th className="num">#</th><th>Time</th><th>Actor</th><th>Action</th><th>Entity</th><th>Purpose</th><th>Hash</th><th className="text-right">Custody Proof</th></tr></thead>
+                      <tbody className="stagger-rows">
+                    {data.events.map((ev) => {
+                      const isBroken = broken && check?.broken_at_seq === ev.seq;
+                      return (
+                        <Fragment key={ev.seq}>
+                          <tr className={`clickable ${isBroken ? 'bg-bad-wash' : ''}`} onClick={() => setOpen(open === ev.seq ? null : ev.seq)} aria-expanded={open === ev.seq}>
+                            <td className={`num mono ${isBroken ? 'text-bad font-bold' : ''}`}>{ev.seq}</td>
+                            <td className="whitespace-nowrap">{fmtDateTime(ev.occurred_at)}</td>
+                            <td className="min-w-[160px] break-all"><span className="text-xs text-muted block">{humanize(ev.actor_type)}</span>{ev.actor_id}</td>
+                            <td className="whitespace-nowrap font-medium">{humanize(ev.action)}</td>
+                            <td className="whitespace-nowrap">{humanize(ev.entity)} <span className="mono text-xs text-muted">{ev.entity_id?.slice(0, 14)}</span></td>
+                            <td className="text-muted min-w-[140px]">{ev.purpose}</td>
+                            <td className="mono text-xs whitespace-nowrap">{shortHash(ev.hash, 12)}</td>
+                            <td className="text-right whitespace-nowrap">
+                              <button
+                                type="button"
+                                className="btn btn-secondary btn-sm flex items-center gap-1 ml-auto"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  void openCertificate(ev.seq);
+                                }}
+                              >
+                                <FileCheck size={13} className="text-brand" /> Certificate
+                              </button>
                             </td>
                           </tr>
-                        )}
-                      </Fragment>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                          {open === ev.seq && (
+                            <tr>
+                              <td colSpan={8} className="bg-wash">
+                                <div className="grid gap-4 md:grid-cols-2 text-xs">
+                                  <div>
+                                    <div className="font-semibold mb-1 text-sm">Recorded detail</div>
+                                    <pre className="mono bg-white border border-line-soft rounded p-3 whitespace-pre-wrap break-all">{JSON.stringify(ev.detail, null, 2)}</pre>
+                                  </div>
+                                  <div className="space-y-3">
+                                    <div><div className="font-semibold text-sm">Previous hash</div><div className="mono break-all">{ev.prev_hash}</div></div>
+                                    <div><div className="font-semibold text-sm">This entry’s hash</div><div className="mono break-all">{ev.hash}</div></div>
+                                    <p className="text-muted m-0">hash = SHA-256(previous hash | canonical JSON of this entry)</p>
+                                    <div className="pt-2">
+                                      <button
+                                        type="button"
+                                        className="btn btn-primary btn-sm flex items-center gap-1.5"
+                                        onClick={() => void openCertificate(ev.seq)}
+                                      >
+                                        <ShieldCheck size={14} /> Verify SHA-256 Continuity & Issue Certificate
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </Fragment>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </>
       )}
@@ -431,17 +493,17 @@ Authority: AICTE Act 1987 & Approval Process Handbook 2024-27
               </div>
 
               {/* Footer Actions */}
-              <div className="flex items-center justify-between pt-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 pt-2">
                 <button
                   type="button"
-                  className="btn btn-secondary btn-sm flex items-center gap-1.5"
+                  className="btn btn-secondary btn-sm flex items-center justify-center gap-1.5 w-full sm:w-auto"
                   onClick={() => window.print()}
                 >
                   <Printer size={14} /> Print Certificate (PDF)
                 </button>
                 <button
                   type="button"
-                  className="btn btn-primary btn-sm"
+                  className="btn btn-primary btn-sm w-full sm:w-auto"
                   onClick={() => { setCertModalSeq(null); setCertData(null); }}
                 >
                   Close

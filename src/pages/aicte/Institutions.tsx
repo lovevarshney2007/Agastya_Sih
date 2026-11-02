@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { api } from '../../api/client';
 import type { OnboardInput } from '../../api/types';
-import { Alert, Empty, ErrorState, Field, Loading, Modal, PageHeader, Panel, Spinner, StatusTag } from '../../components/ui';
+import { Alert, DataCard, Empty, ErrorState, Field, Loading, Modal, PageHeader, Panel, Spinner, StatusTag } from '../../components/ui';
 import { fmtDate, fmtNum } from '../../lib/format';
 import { Link, useRouter } from '../../lib/router';
 import { useAction, useApi } from '../../lib/useApi';
@@ -28,41 +28,76 @@ export function Institutions() {
       <PageHeader
         title="Institutions"
         description="Approved institutions, keyed by AICTE Permanent ID, with this year’s reporting and compliance status."
-        actions={<button type="button" className="btn btn-primary" onClick={() => setAdding(true)}><Plus size={16} aria-hidden="true" /> Register an institution</button>}
+        actions={<button type="button" className="btn btn-primary w-full sm:w-auto" onClick={() => setAdding(true)}><Plus size={16} aria-hidden="true" /> Register an institution</button>}
       />
       {added && <div className="mb-4"><Alert tone="ok" onClose={() => setAdded(null)}>{added}</Alert></div>}
 
       {error && !data ? <ErrorState message={error} onRetry={reload} /> : (
         <Panel bodyClassName="">
           <div className="flex flex-wrap gap-3 px-4 py-3 border-b border-line-soft bg-wash">
-            <input className="input !w-72 !py-1" placeholder="Name or Permanent ID" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Search institutions" />
+            <input className="input w-full sm:w-72 !py-1" placeholder="Name or Permanent ID" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Search institutions" />
             <FilterSelect label="State" value={state} onChange={setState} options={states} />
           </div>
           {!data ? <div className="p-4"><Loading /></div> : rows.length === 0 ? <Empty title="No institutions match" /> : (
-            <div className="table-wrap">
-              <table className="data-table">
-                <thead>
-                  <tr><th>Institution</th><th>State</th><th>Account</th><th className="num">Intake</th><th className="num">Enrolled</th><th className="num">Open cases</th><th>Risk</th><th>Last submission</th></tr>
-                </thead>
-                <tbody>
-                  {rows.map((i) => (
-                    <tr key={i.institution_id} className="clickable" onClick={() => navigate(`/aicte/institutions/${i.institution_id}`)}>
-                      <td className="min-w-[240px]">
-                        <Link to={`/aicte/institutions/${i.institution_id}`} className="font-semibold" onClick={(e) => e.stopPropagation()}>{i.name}</Link>
-                        <div className="text-xs text-muted"><span className="mono">{i.aicte_permanent_id}</span> · {i.type}</div>
-                      </td>
-                      <td className="whitespace-nowrap">{i.state}</td>
-                      <td>{i.is_activated ? <StatusTag value="ACTIVE" /> : <StatusTag value="AWAITING_CONSENT" label="Not activated" />}</td>
-                      <td className="num">{fmtNum(i.approved_intake)}</td>
-                      <td className={`num ${i.within_intake > i.approved_intake ? 'text-bad font-semibold' : ''}`}>{fmtNum(i.enrolled)}</td>
-                      <td className="num">{i.open_cases || '—'}</td>
-                      <td><StatusTag value={i.risk_level} /></td>
-                      <td className="whitespace-nowrap">{i.last_submission ? fmtDate(i.last_submission) : <span className="text-muted">Synced only</span>}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <>
+              {/* Mobile Dual Pattern: Compact Data Cards */}
+              <div className="p-3 space-y-3 md:hidden">
+                {rows.map((i) => (
+                  <DataCard
+                    key={i.institution_id}
+                    title={i.name}
+                    subtitle={`${i.aicte_permanent_id} · ${i.type}`}
+                    badge={{
+                      label: i.risk_level,
+                      tone: i.risk_level === 'HIGH' ? 'bad' : i.risk_level === 'MEDIUM' ? 'warn' : 'ok',
+                    }}
+                    onClick={() => navigate(`/aicte/institutions/${i.institution_id}`)}
+                    fields={[
+                      { label: 'State', value: i.state },
+                      { label: 'Account Status', value: i.is_activated ? 'Active' : 'Awaiting Consent' },
+                      { label: 'Intake vs Enrolled', value: `${fmtNum(i.enrolled)} / ${fmtNum(i.approved_intake)}` },
+                      { label: 'Open Discrepancies', value: i.open_cases ? `${i.open_cases} cases` : '0 cases' },
+                      { label: 'Last Submission', value: i.last_submission ? fmtDate(i.last_submission) : 'Synced only' },
+                    ]}
+                    actions={
+                      <Link
+                        to={`/aicte/institutions/${i.institution_id}`}
+                        className="btn btn-secondary btn-sm w-full text-center flex items-center justify-center"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        View Full Details & Audits
+                      </Link>
+                    }
+                  />
+                ))}
+              </div>
+
+              {/* Desktop Full Table */}
+              <div className="hidden md:block table-wrap">
+                <table className="data-table">
+                  <thead>
+                    <tr><th>Institution</th><th>State</th><th>Account</th><th className="num">Intake</th><th className="num">Enrolled</th><th className="num">Open cases</th><th>Risk</th><th>Last submission</th></tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((i) => (
+                      <tr key={i.institution_id} className="clickable" onClick={() => navigate(`/aicte/institutions/${i.institution_id}`)}>
+                        <td className="min-w-[240px]">
+                          <Link to={`/aicte/institutions/${i.institution_id}`} className="font-semibold" onClick={(e) => e.stopPropagation()}>{i.name}</Link>
+                          <div className="text-xs text-muted"><span className="mono">{i.aicte_permanent_id}</span> · {i.type}</div>
+                        </td>
+                        <td className="whitespace-nowrap">{i.state}</td>
+                        <td>{i.is_activated ? <StatusTag value="ACTIVE" /> : <StatusTag value="AWAITING_CONSENT" label="Not activated" />}</td>
+                        <td className="num">{fmtNum(i.approved_intake)}</td>
+                        <td className={`num ${i.within_intake > i.approved_intake ? 'text-bad font-semibold' : ''}`}>{fmtNum(i.enrolled)}</td>
+                        <td className="num">{i.open_cases || '—'}</td>
+                        <td><StatusTag value={i.risk_level} /></td>
+                        <td className="whitespace-nowrap">{i.last_submission ? fmtDate(i.last_submission) : <span className="text-muted">Synced only</span>}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </Panel>
       )}
@@ -115,22 +150,24 @@ function OnboardModal({ open, onClose, onDone }: { open: boolean; onClose: () =>
 
         <fieldset className="border border-line-soft rounded p-3">
           <legend className="text-sm font-semibold px-1">Approved programmes, 2026–27</legend>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {form.programs.map((p, i) => (
-              <div key={i} className="grid grid-cols-[1fr_90px_80px_auto] gap-2 items-end">
-                <Field label={i === 0 ? 'Programme' : <span className="sr-only">Programme</span>} htmlFor={`ob-c${i}`}>
+              <div key={i} className="p-2.5 sm:p-0 bg-wash sm:bg-transparent rounded-lg border sm:border-0 border-line-soft grid grid-cols-1 sm:grid-cols-[1fr_90px_80px_auto] gap-2 items-end">
+                <Field label={i === 0 ? 'Programme' : <span className="sm:sr-only">Programme</span>} htmlFor={`ob-c${i}`}>
                   <input id={`ob-c${i}`} className="input" required value={p.course} onChange={(e) => setProg(i, { course: e.target.value })} />
                 </Field>
-                <Field label={i === 0 ? 'Intake' : <span className="sr-only">Intake</span>} htmlFor={`ob-i${i}`}>
-                  <input id={`ob-i${i}`} className="input" type="number" min={1} required value={p.approved_intake} onChange={(e) => setProg(i, { approved_intake: Number(e.target.value) })} />
-                </Field>
-                <Field label={i === 0 ? 'Level' : <span className="sr-only">Level</span>} htmlFor={`ob-l${i}`}>
-                  <select id={`ob-l${i}`} className="select" value={p.level} onChange={(e) => setProg(i, { level: e.target.value })}>
-                    <option>UG</option><option>PG</option><option>Diploma</option>
-                  </select>
-                </Field>
-                <button type="button" className="btn btn-ghost !px-2 mb-0.5" disabled={form.programs.length === 1} aria-label="Remove programme"
-                        onClick={() => setForm((f) => ({ ...f, programs: f.programs.filter((_, n) => n !== i) }))}><Trash2 size={16} /></button>
+                <div className="grid grid-cols-[1fr_1fr_auto] sm:contents gap-2 items-end">
+                  <Field label={i === 0 ? 'Intake' : <span className="sm:sr-only">Intake</span>} htmlFor={`ob-i${i}`}>
+                    <input id={`ob-i${i}`} className="input" type="number" min={1} required value={p.approved_intake} onChange={(e) => setProg(i, { approved_intake: Number(e.target.value) })} />
+                  </Field>
+                  <Field label={i === 0 ? 'Level' : <span className="sm:sr-only">Level</span>} htmlFor={`ob-l${i}`}>
+                    <select id={`ob-l${i}`} className="select" value={p.level} onChange={(e) => setProg(i, { level: e.target.value })}>
+                      <option>UG</option><option>PG</option><option>Diploma</option>
+                    </select>
+                  </Field>
+                  <button type="button" className="btn btn-ghost !px-2 mb-0.5" disabled={form.programs.length === 1} aria-label="Remove programme"
+                          onClick={() => setForm((f) => ({ ...f, programs: f.programs.filter((_, n) => n !== i) }))}><Trash2 size={16} /></button>
+                </div>
               </div>
             ))}
           </div>

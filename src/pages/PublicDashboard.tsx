@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import {
   Building2, ChevronDown, ChevronRight, GraduationCap, LayoutGrid, List, MapPin, RefreshCw,
   Search, ShieldCheck, TrendingUp, Users, X,
 } from 'lucide-react';
 import { api } from '../api/client';
 import type { PublicInstitutionRow, PublicSeatsResponse } from '../api/types';
-import { AsOf, CountUp, Loading, Meter, MicroSparkline, Pagination } from '../components/ui';
+import { AsOf, CountUp, DataCard, Loading, Meter, MicroSparkline, Pagination } from '../components/ui';
 import { useDebounce } from '../hooks';
 import { fmtDateTime, fmtNum, fmtRelative } from '../lib/format';
 import { Link } from '../lib/router';
@@ -350,84 +350,125 @@ function CollegeTable({
   const [expanded, setExpanded] = useState<string | null>(null);
 
   return (
-    <div className="overflow-x-auto rounded-md border border-line">
-      <table className="w-full text-sm border-collapse min-w-[900px]">
-        <thead className="bg-wash border-b border-line">
-          <tr>
-            <th className="text-left py-3 px-4 text-muted font-medium">College</th>
-            <th className="text-left py-3 px-3 text-muted font-medium">State</th>
-            <th className="text-right py-3 px-3 text-muted font-medium whitespace-nowrap">Approved</th>
-            <th className="text-right py-3 px-3 text-muted font-medium whitespace-nowrap">Enrolled</th>
-            <th className="text-right py-3 px-3 text-muted font-medium whitespace-nowrap">Remaining</th>
-            <th className="py-3 px-3 text-muted font-medium min-w-[150px]">Utilization</th>
-            <th className="text-right py-3 px-3 text-muted font-medium whitespace-nowrap">APAAR verified</th>
-            <th className="py-3 px-3 text-muted font-medium whitespace-nowrap">Last updated</th>
-            <th className="py-3 px-3 w-8" />
-          </tr>
-        </thead>
-        <tbody>
-          {institutions.length === 0 && (
-            <tr>
-              <td colSpan={9} className="py-12 text-center text-muted">
-                No institutions found. Try adjusting the filters.
-              </td>
-            </tr>
-          )}
-          {institutions.map((inst) => {
-            const isOpen = expanded === inst.id;
+    <div className="rounded-md border border-line overflow-hidden bg-surface">
+      {/* Mobile Dual Pattern: Compact College Cards */}
+      <div className="p-3 space-y-3 md:hidden">
+        {institutions.length === 0 ? (
+          <div className="py-8 text-center text-muted text-sm">
+            No institutions found. Try adjusting the filters.
+          </div>
+        ) : (
+          institutions.map((inst) => {
             const remaining = inst.seats_remaining;
             return (
-              <>
-                <tr
-                  key={inst.id}
-                  className={`border-b border-line-soft cursor-pointer hover:bg-wash transition-colors ${isOpen ? 'bg-wash' : ''}`}
-                  onClick={() => setExpanded(isOpen ? null : inst.id)}
-                >
-                  <td className="py-3 px-4">
-                    <div className="font-medium text-ink">{inst.name}</div>
-                    <div className="text-xs text-faint mt-0.5 font-mono">{inst.code} · {inst.type}</div>
-                  </td>
-                  <td className="py-3 px-3 text-muted whitespace-nowrap">
-                    {inst.state}{inst.district ? `, ${inst.district}` : ''}
-                  </td>
-                  <td className="py-3 px-3 text-right tabular-nums">{fmtNum(inst.total_approved)}</td>
-                  <td className="py-3 px-3 text-right tabular-nums">{fmtNum(inst.total_enrolled)}</td>
-                  <td className="py-3 px-3 text-right tabular-nums">
-                    <span className={remaining < 0 ? 'text-bad font-semibold' : remaining === 0 ? 'text-muted' : 'text-india-green font-semibold'}>
-                      {remaining < 0 ? `+${fmtNum(Math.abs(remaining))} over` : fmtNum(remaining)}
-                    </span>
-                  </td>
-                  <td className="py-3 px-3">
-                    <Meter value={inst.total_enrolled} max={inst.total_approved} label={`${inst.name} utilization`} />
-                  </td>
-                  <td className="py-3 px-3 text-right">
-                    <span className={`tabular-nums text-sm ${inst.identity_verified_pct >= 90 ? 'text-ok font-semibold' : inst.identity_verified_pct >= 70 ? 'text-muted' : 'text-bad'}`}>
-                      {inst.identity_verified_pct.toFixed(1)}%
-                    </span>
-                  </td>
-                  <td className="py-3 px-3 text-xs text-muted whitespace-nowrap">
-                    {inst.last_submission ? fmtRelative(inst.last_submission) : <span className="text-faint">Not submitted</span>}
-                  </td>
-                  <td className="py-3 px-3 text-center">
-                    <ChevronDown
-                      size={16}
-                      className={`text-faint transition-transform ${isOpen ? 'rotate-180' : ''}`}
-                      aria-hidden="true"
-                    />
-                  </td>
-                </tr>
-                {isOpen && (
-                  <tr key={`${inst.id}-detail`} className="border-b border-line-soft">
-                    <td colSpan={9} className="p-0">
-                      <InstitutionProgrammes inst={inst} />
+              <DataCard
+                key={inst.id}
+                title={inst.name}
+                subtitle={`${inst.state}${inst.district ? `, ${inst.district}` : ''} · ${inst.code}`}
+                badge={{
+                  label: remaining < 0 ? `+${fmtNum(Math.abs(remaining))} OVER` : remaining === 0 ? 'FULL' : `${fmtNum(remaining)} OPEN`,
+                  tone: remaining < 0 ? 'bad' : remaining === 0 ? 'warn' : 'ok',
+                }}
+                fields={[
+                  { label: 'Approved Intake', value: fmtNum(inst.total_approved) },
+                  { label: 'Enrolled', value: fmtNum(inst.total_enrolled) },
+                  { label: 'APAAR Verified', value: `${inst.identity_verified_pct.toFixed(1)}%` },
+                  { label: 'Last Updated', value: inst.last_submission ? fmtRelative(inst.last_submission) : 'Not submitted' },
+                ]}
+                expandableContent={
+                  <div className="pt-2">
+                    <div className="mb-3">
+                      <div className="text-xs text-muted mb-1">Overall Utilization</div>
+                      <Meter value={inst.total_enrolled} max={inst.total_approved} label={`${inst.name} utilization`} />
+                    </div>
+                    <InstitutionProgrammes inst={inst} />
+                  </div>
+                }
+              />
+            );
+          })
+        )}
+      </div>
+
+      {/* Desktop Full Data Table */}
+      <div className="hidden md:block overflow-x-auto">
+        <table className="w-full text-sm border-collapse min-w-[900px]">
+          <thead className="bg-wash border-b border-line">
+            <tr>
+              <th className="text-left py-3 px-4 text-muted font-medium">College</th>
+              <th className="text-left py-3 px-3 text-muted font-medium">State</th>
+              <th className="text-right py-3 px-3 text-muted font-medium whitespace-nowrap">Approved</th>
+              <th className="text-right py-3 px-3 text-muted font-medium whitespace-nowrap">Enrolled</th>
+              <th className="text-right py-3 px-3 text-muted font-medium whitespace-nowrap">Remaining</th>
+              <th className="py-3 px-3 text-muted font-medium min-w-[150px]">Utilization</th>
+              <th className="text-right py-3 px-3 text-muted font-medium whitespace-nowrap">APAAR verified</th>
+              <th className="py-3 px-3 text-muted font-medium whitespace-nowrap">Last updated</th>
+              <th className="py-3 px-3 w-8" />
+            </tr>
+          </thead>
+          <tbody>
+            {institutions.length === 0 && (
+              <tr>
+                <td colSpan={9} className="py-12 text-center text-muted">
+                  No institutions found. Try adjusting the filters.
+                </td>
+              </tr>
+            )}
+            {institutions.map((inst) => {
+              const isOpen = expanded === inst.id;
+              const remaining = inst.seats_remaining;
+              return (
+                <Fragment key={inst.id}>
+                  <tr
+                    className={`border-b border-line-soft cursor-pointer hover:bg-wash transition-colors ${isOpen ? 'bg-wash' : ''}`}
+                    onClick={() => setExpanded(isOpen ? null : inst.id)}
+                  >
+                    <td className="py-3 px-4">
+                      <div className="font-medium text-ink">{inst.name}</div>
+                      <div className="text-xs text-faint mt-0.5 font-mono">{inst.code} · {inst.type}</div>
+                    </td>
+                    <td className="py-3 px-3 text-muted whitespace-nowrap">
+                      {inst.state}{inst.district ? `, ${inst.district}` : ''}
+                    </td>
+                    <td className="py-3 px-3 text-right tabular-nums">{fmtNum(inst.total_approved)}</td>
+                    <td className="py-3 px-3 text-right tabular-nums">{fmtNum(inst.total_enrolled)}</td>
+                    <td className="py-3 px-3 text-right tabular-nums">
+                      <span className={remaining < 0 ? 'text-bad font-semibold' : remaining === 0 ? 'text-muted' : 'text-india-green font-semibold'}>
+                        {remaining < 0 ? `+${fmtNum(Math.abs(remaining))} over` : fmtNum(remaining)}
+                      </span>
+                    </td>
+                    <td className="py-3 px-3">
+                      <Meter value={inst.total_enrolled} max={inst.total_approved} label={`${inst.name} utilization`} />
+                    </td>
+                    <td className="py-3 px-3 text-right">
+                      <span className={`tabular-nums text-sm ${inst.identity_verified_pct >= 90 ? 'text-ok font-semibold' : inst.identity_verified_pct >= 70 ? 'text-muted' : 'text-bad'}`}>
+                        {inst.identity_verified_pct.toFixed(1)}%
+                      </span>
+                    </td>
+                    <td className="py-3 px-3 text-xs text-muted whitespace-nowrap">
+                      {inst.last_submission ? fmtRelative(inst.last_submission) : <span className="text-faint">Not submitted</span>}
+                    </td>
+                    <td className="py-3 px-3 text-center">
+                      <ChevronDown
+                        size={16}
+                        className={`text-faint transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                        aria-hidden="true"
+                      />
                     </td>
                   </tr>
-                )}
-              </>
-            );
-          })}
-        </tbody>
-      </table>
+                  {isOpen && (
+                    <tr className="border-b border-line-soft">
+                      <td colSpan={9} className="p-0">
+                        <InstitutionProgrammes inst={inst} />
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
       <Pagination page={page} pageSize={pageSize} total={total} onPage={onPage} />
     </div>
   );

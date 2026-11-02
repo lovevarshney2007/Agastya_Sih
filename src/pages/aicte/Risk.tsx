@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { api } from '../../api/client';
 import type { RiskRow } from '../../api/types';
-import { Alert, AsOf, ErrorState, Loading, Modal, PageHeader, Panel, StatusTag } from '../../components/ui';
+import { Alert, AsOf, DataCard, ErrorState, Loading, Modal, PageHeader, Panel, StatusTag } from '../../components/ui';
 import { fmtNum } from '../../lib/format';
 import { Link } from '../../lib/router';
 import { useApi } from '../../lib/useApi';
@@ -34,7 +34,47 @@ export function RiskRankingPage() {
       {error && !data ? <ErrorState message={error} onRetry={reload} /> : !data ? <Loading rows={8} /> : (
         <Panel bodyClassName="" title={<h2>Ranking <span className="text-xs text-muted font-normal mono ml-2">model {data.model_version}</span></h2>}
                actions={<FilterSelect label="State" value={state} onChange={setState} options={states} />}>
-          <div className="table-wrap">
+          {/* Mobile Dual Pattern: Compact Data Cards */}
+          <div className="p-3 space-y-3 md:hidden">
+            {rows.map((r, i) => (
+              <DataCard
+                key={r.institution_id}
+                title={`#${i + 1} · ${r.name}`}
+                subtitle={`${r.state} · ${r.aicte_permanent_id}`}
+                badge={{
+                  label: r.scored ? `${r.risk_level} (${r.risk_score.toFixed(2)})` : 'Not scored',
+                  tone: r.risk_level === 'HIGH' ? 'bad' : r.risk_level === 'MEDIUM' ? 'warn' : 'ok',
+                }}
+                fields={[
+                  { label: 'Enrolled / Intake', value: `${fmtNum(r.total_enrolled)} / ${fmtNum(r.total_intake)}` },
+                  { label: 'Risk Score', value: r.scored ? r.risk_score.toFixed(2) : '—' },
+                ]}
+                expandableContent={
+                  <div className="space-y-2 pt-1 text-xs">
+                    <div className="font-semibold text-ink">Main Risk Drivers:</div>
+                    <ul className="list-disc pl-4 space-y-1 text-muted">
+                      {r.top_reasons.map((reason) => (
+                        <li key={reason}>{reason}</li>
+                      ))}
+                    </ul>
+                  </div>
+                }
+                actions={
+                  <div className="grid grid-cols-2 gap-2 w-full">
+                    <button type="button" className="btn btn-secondary btn-sm w-full" onClick={() => setWhy(r)}>
+                      Why? (Factors)
+                    </button>
+                    <Link to={`/aicte/institutions/${r.institution_id}`} className="btn btn-primary btn-sm w-full text-center flex items-center justify-center">
+                      Open Details
+                    </Link>
+                  </div>
+                }
+              />
+            ))}
+          </div>
+
+          {/* Desktop Full Table */}
+          <div className="hidden md:block table-wrap">
             <table className="data-table">
               <thead>
                 <tr><th className="num">#</th><th>Institution</th><th>Score</th><th>Level</th><th>Main reasons</th><th className="num">Enrolled / intake</th><th></th></tr>
@@ -81,18 +121,20 @@ export function RiskRankingPage() {
         {why && (
           <>
             <p className="text-sm mt-0">The model compares four measures with every other institution. Measures marked “unusual” pushed the score up.</p>
-            <table className="data-table border border-line-soft">
-              <thead><tr><th>Measure</th><th className="num">Value</th><th></th></tr></thead>
-              <tbody>
-                {why.factors.map((f) => (
-                  <tr key={f.name}>
-                    <td>{f.name}</td>
-                    <td className="num font-semibold">{f.display}</td>
-                    <td>{f.flagged ? <StatusTag value="REVIEW" label="Unusual" /> : <span className="text-muted text-xs">Typical</span>}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="table-wrap my-2">
+              <table className="data-table border border-line-soft">
+                <thead><tr><th>Measure</th><th className="num">Value</th><th></th></tr></thead>
+                <tbody>
+                  {why.factors.map((f) => (
+                    <tr key={f.name}>
+                      <td>{f.name}</td>
+                      <td className="num font-semibold">{f.display}</td>
+                      <td>{f.flagged ? <StatusTag value="REVIEW" label="Unusual" /> : <span className="text-muted text-xs">Typical</span>}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             <p className="text-xs text-muted mt-3">Isolation Forest over these measures, scaled 0–1 across institutions. High ≥ 0.65, medium ≥ 0.40.</p>
           </>
         )}

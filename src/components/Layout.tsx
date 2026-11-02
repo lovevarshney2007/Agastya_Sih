@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Award, LogOut, Menu, Search, X } from 'lucide-react';
+import { Award, LogOut, Menu, Search } from 'lucide-react';
 import { API_ORIGIN } from '../api/client';
 import { Link, useRouter } from '../lib/router';
 import { ROLE_LABEL, useSession, type Portal } from '../lib/session';
@@ -11,6 +11,7 @@ import { NationalEventTicker } from './NationalEventTicker';
 import { NationalLedgerModal } from './NationalLedgerModal';
 import { NotificationBell } from './NotificationBell';
 import { RegulatoryCopilot } from './RegulatoryCopilot';
+import { MobileNavDrawer } from './MobileNavDrawer';
 
 interface NavLinkItem {
   to: string;
@@ -209,17 +210,22 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
         </div>
       </div>
 
-      <header className="bg-white border-b border-line no-print">
-        <div className="relative max-w-7xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-3">
+      <header className="bg-white border-b border-line no-print sticky top-0 sm:static z-30">
+        <div className="relative max-w-7xl mx-auto px-3 sm:px-6 py-2 sm:py-3 flex items-center justify-between gap-2 sm:gap-3">
           <Link to={user && portal ? `/${portal}` : '/'} className="flex items-center gap-2 sm:gap-3 no-underline text-ink min-w-0">
-            <img src="/aicte-logo.png" alt="" className="h-9 w-9 sm:h-11 sm:w-11 object-contain shrink-0" />
+            <img src="/aicte-logo.png" alt="AICTE Emblem" className="h-8 w-8 sm:h-11 sm:w-11 object-contain shrink-0" />
             <span className="leading-tight min-w-0">
               <span className="block font-bold text-sm sm:text-base truncate text-navy">{t('app_title')}</span>
               <span className="hidden sm:block text-xs text-muted truncate">{t('app_subtitle')}</span>
+              {user && (
+                <span className="sm:hidden text-[10px] text-muted truncate block">
+                  {ROLE_LABEL[user.role]}
+                </span>
+              )}
             </span>
           </Link>
 
-          {/* Universal Command Palette Trigger */}
+          {/* Desktop Universal Command Palette Trigger */}
           <button
             type="button"
             onClick={() => setCommandOpen(true)}
@@ -232,72 +238,91 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
             <kbd className="font-mono text-xs bg-white border border-line px-1.5 py-0.5 rounded text-faint ml-2 shadow-2xs">Ctrl K</kbd>
           </button>
 
-          <button type="button" className="sm:hidden btn btn-ghost" onClick={() => setMenuOpen((o) => !o)} aria-expanded={menuOpen} aria-label="Menu">
-            {menuOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
-
-          <div className={`${menuOpen ? 'flex' : 'hidden'} sm:flex absolute sm:static top-full left-0 right-0 z-40 bg-white sm:bg-transparent border-b sm:border-0 border-line px-4 sm:px-0 py-3 sm:py-0 flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 text-sm`}>
+          {/* Mobile Right Controls: Notification Bell + Hamburger */}
+          <div className="flex md:hidden items-center gap-1 shrink-0">
+            {user && <NotificationBell />}
             <button
               type="button"
-              className="sm:hidden flex items-center gap-2 py-1 text-left text-ink hover:text-brand"
-              onClick={() => { setMenuOpen(false); setCommandOpen(true); }}
+              className="btn btn-ghost p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-navy hover:bg-brand-wash"
+              onClick={() => setMenuOpen(true)}
+              aria-expanded={menuOpen}
+              aria-label="Open mobile navigation drawer"
             >
-              <Search size={16} /> Search commands & portals...
+              <Menu size={22} />
             </button>
-            <Link to="/verify" className="no-underline hover:underline text-ink" onClick={() => setMenuOpen(false)}>{t('verify_record', 'Verify a record')}</Link>
-            <Link to="/public-dashboard" className="no-underline hover:underline text-ink" onClick={() => setMenuOpen(false)}>{t('live_seats', 'Live seats')}</Link>
+          </div>
+
+          {/* Desktop Right Links & Profile */}
+          <div className="hidden md:flex items-center gap-4 text-sm">
+            <Link to="/verify" className="no-underline hover:underline text-ink font-medium">{t('verify_record', 'Verify a record')}</Link>
+            <Link to="/public-dashboard" className="no-underline hover:underline text-ink font-medium">{t('live_seats', 'Live seats')}</Link>
             {user ? (
               <>
                 <NotificationBell />
-                <div className="sm:text-right leading-tight sm:border-l sm:border-line sm:pl-5">
-                  <div className="font-semibold">{user.full_name}</div>
-                  <div className="text-xs text-muted">{ROLE_LABEL[user.role]}{user.org_name ? ` · ${user.org_name}` : ''}</div>
+                <div className="text-right leading-tight border-l border-line pl-4">
+                  <div className="font-semibold text-xs text-ink">{user.full_name}</div>
+                  <div className="text-[11px] text-muted truncate max-w-[180px]">{ROLE_LABEL[user.role]}{user.org_name ? ` · ${user.org_name}` : ''}</div>
                 </div>
                 <button
                   type="button"
-                  className="btn btn-secondary btn-sm self-start sm:self-auto"
-                  onClick={async () => { setMenuOpen(false); await signOut(); navigate('/sign-in?signedout=1'); }}
+                  className="btn btn-secondary btn-sm"
+                  onClick={async () => { await signOut(); navigate('/sign-in?signedout=1'); }}
                 >
                   <LogOut size={14} aria-hidden="true" /> {t('sign_out')}
                 </button>
               </>
             ) : (
-              <Link to="/sign-in" className="btn btn-primary btn-sm no-underline self-start sm:self-auto" onClick={() => setMenuOpen(false)}>{t('sign_in')}</Link>
+              <Link to="/sign-in" className="btn btn-primary btn-sm no-underline">{t('sign_in')}</Link>
             )}
           </div>
         </div>
       </header>
 
-        {nav && (
-          <nav className="bg-navy sticky top-0 z-30 shadow-[0_2px_6px_rgb(14_36_72/.18)] no-print" aria-label={t(nav.titleKey, nav.defaultTitle)}>
-            <div ref={navRef} className="max-w-7xl mx-auto px-4 sm:px-6 flex gap-1 overflow-x-auto scroll-fade">
-              {nav.links.map((l) => {
-                const active = isActive(path, l.to, `/${portal}`);
-                return (
-                  <Link
-                    key={l.to}
-                    to={l.to}
-                    aria-current={active ? 'page' : undefined}
-                    onClick={() => setMenuOpen(false)}
-                    className={`relative px-3.5 py-2.5 text-sm no-underline whitespace-nowrap transition-all duration-200 ${
-                      active
-                        ? 'text-white font-semibold'
-                        : 'text-[#c9d4e5] hover:text-white hover:bg-white/5'
-                    }`}
-                  >
-                    <span>{l.key ? t(l.key, l.label) : l.label}</span>
-                    {active && (
-                      <span className="absolute bottom-0 left-1.5 right-1.5 h-[3px] bg-saffron rounded-t-sm shadow-[0_-2px_6px_rgba(232,129,28,0.5)] animate-fade-up" />
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
-          </nav>
-        )}
+      {/* Accessible Slide-out Mobile Navigation Drawer */}
+      <MobileNavDrawer
+        isOpen={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        portalNav={nav}
+        currentPath={path}
+        onOpenCommand={() => setCommandOpen(true)}
+        onOpenLedger={() => setLedgerModalOpen(true)}
+        onOpenRubric={() => setRubricOpen(true)}
+        fontSize={fontSize}
+        setFontSize={setFontSize}
+        highContrast={highContrast}
+        toggleContrast={toggleContrast}
+      />
 
-      <main id="main" className={full ? 'flex-1 w-full pb-24 sm:pb-8' : `flex-1 w-full mx-auto px-3 sm:px-6 py-6 pb-24 sm:pb-8 ${wide ? 'max-w-7xl' : 'max-w-5xl'}`}>
-        <div key={path} className="page-enter">{children}</div>
+      {/* Sticky Role & Portal Switcher with smooth scroll-fade and touch-scrolling */}
+      {nav && (
+        <nav className="bg-navy sticky top-[49px] sm:top-0 z-20 shadow-[0_2px_6px_rgb(14_36_72/.18)] no-print" aria-label={t(nav.titleKey, nav.defaultTitle)}>
+          <div ref={navRef} className="max-w-7xl mx-auto px-2 sm:px-6 flex gap-1 overflow-x-auto no-scrollbar scroll-fade py-0.5">
+            {nav.links.map((l) => {
+              const active = isActive(path, l.to, `/${portal}`);
+              return (
+                <Link
+                  key={l.to}
+                  to={l.to}
+                  aria-current={active ? 'page' : undefined}
+                  className={`relative px-3 sm:px-3.5 py-2 sm:py-2.5 text-xs sm:text-sm no-underline whitespace-nowrap transition-all duration-200 min-h-[38px] flex items-center shrink-0 ${
+                    active
+                      ? 'text-white font-semibold'
+                      : 'text-[#c9d4e5] hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <span>{l.key ? t(l.key, l.label) : l.label}</span>
+                  {active && (
+                    <span className="absolute bottom-0 left-1.5 right-1.5 h-[3px] bg-saffron rounded-t-sm shadow-[0_-2px_6px_rgba(232,129,28,0.5)] animate-fade-up" />
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+      )}
+
+      <main id="main" className={full ? 'flex-1 w-full pb-28 sm:pb-12 min-w-0' : `flex-1 w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 pb-28 sm:pb-12 min-w-0 ${wide ? 'max-w-7xl' : 'max-w-5xl'}`}>
+        <div key={path} className="page-enter min-w-0">{children}</div>
       </main>
 
       <footer className="bg-navy-dark text-sm text-[#c3cee0] no-print">

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Award, CheckCircle2, FileCheck, ShieldCheck } from 'lucide-react';
 import { api } from '../../api/client';
-import { Alert, AsOf, ErrorState, Loading, Meter, PageHeader, Panel, StatusTag } from '../../components/ui';
+import { Alert, AsOf, DataCard, ErrorState, Loading, Meter, PageHeader, Panel, StatusTag } from '../../components/ui';
 import { Link } from '../../lib/router';
 import { useApi } from '../../lib/useApi';
 import { useInstitutionId } from './shared';
@@ -122,7 +122,34 @@ export function Compliance() {
       <ComplianceRadar institutionName={data.institution.name} institutionId={data.institution.id} />
 
       <Panel bodyClassName="" title="By programme, 2026–27" actions={<span className="text-xs text-muted">Caps are illustrative · rules version 2026.1</span>}>
-        <div className="table-wrap">
+        {/* Mobile Data Cards (< 768px) */}
+        <div className="p-3 space-y-3 md:hidden">
+          {data.program_breakdown.map((p) => {
+            const bad = p.enrolled > p.approved_intake || p.supernumerary > p.supernumerary_cap || p.lateral > p.lateral_cap;
+            return (
+              <DataCard
+                key={p.program_offering_id}
+                title={p.course}
+                subtitle={`Level: ${p.level} · Approved Intake: ${p.approved_intake}`}
+                badge={bad ? <StatusTag value="VIOLATION" label="Over limit" /> : <StatusTag value="OK" label="Within limits" />}
+                fields={[
+                  { label: 'Within intake', value: `${p.enrolled} / ${p.approved_intake}` },
+                  { label: 'Supernumerary', value: `${p.supernumerary} / ${p.supernumerary_cap}` },
+                  { label: 'Lateral entry', value: `${p.lateral} / ${p.lateral_cap}` },
+                  { label: 'On hold', value: p.held },
+                ]}
+              >
+                <div className="space-y-1 pt-1 border-t border-slate-100">
+                  <div className="text-[11px] text-muted font-medium">Intake Meter</div>
+                  <Meter value={p.enrolled} max={p.approved_intake} label={`${p.course} intake`} />
+                </div>
+              </DataCard>
+            );
+          })}
+        </div>
+
+        {/* Desktop Full Table (>= 768px) */}
+        <div className="table-wrap hidden md:block">
           <table className="data-table">
             <thead>
               <tr>

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Download } from 'lucide-react';
 import { api } from '../../api/client';
 import type { BatchReport, ValidationIssue } from '../../api/types';
-import { Alert, Empty, ErrorState, Loading, PageHeader, Pagination, Panel, Spinner, StatusTag } from '../../components/ui';
+import { Alert, DataCard, Empty, ErrorState, Loading, PageHeader, Pagination, Panel, Spinner, StatusTag } from '../../components/ui';
 import { fmtDateTime } from '../../lib/format';
 import { Link } from '../../lib/router';
 import { useAction, useApi } from '../../lib/useApi';
@@ -151,7 +151,38 @@ export function BatchDetail({ batchId }: { batchId: string }) {
             </div>
             {filtered.length === 0 ? <Empty title="No issues match these filters" /> : (
               <>
-                <div className="table-wrap">
+                {/* Mobile Data Cards (< 768px) */}
+                <div className="p-3 space-y-3 md:hidden">
+                  {pageRows.map((i) => (
+                    <DataCard
+                      key={i.issue_id}
+                      title={`Row #${i.row_number} · ${i.student_id_no || 'No Student ID'}`}
+                      subtitle={`APAAR: ${i.masked_apaar}`}
+                      badge={<StatusTag value={i.severity} />}
+                      fields={[
+                        { label: 'Rule ID', value: <span className="mono font-semibold">{i.rule_id}</span> },
+                        { label: 'Decision', value: <StatusTag value={i.row_decision} /> },
+                      ]}
+                      expandedContent={
+                        <div className="space-y-2">
+                          <div>
+                            <span className="text-muted block text-[11px] font-medium">What we found:</span>
+                            <p className="mt-0.5 text-ink leading-snug">{i.message}</p>
+                          </div>
+                          {i.suggested_fix && (
+                            <div>
+                              <span className="text-muted block text-[11px] font-medium">How to fix:</span>
+                              <p className="mt-0.5 text-muted leading-snug">{i.suggested_fix}</p>
+                            </div>
+                          )}
+                        </div>
+                      }
+                    />
+                  ))}
+                </div>
+
+                {/* Desktop Full Table (>= 768px) */}
+                <div className="table-wrap hidden md:block">
                   <table className="data-table">
                     <thead>
                       <tr><th className="num">Row</th><th>Student ID</th><th>APAAR</th><th>Rule</th><th>Severity</th><th>What we found</th><th>How to fix</th><th>Row decision</th></tr>

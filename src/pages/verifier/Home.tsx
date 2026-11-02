@@ -4,7 +4,7 @@ import {
   Play, Search, ShieldAlert, Sparkles, UploadCloud, Users
 } from 'lucide-react';
 import { api } from '../../api/client';
-import { Alert, AsOf, Empty, ErrorState, Field, Loading, Meter, PageHeader, Panel, Spinner, StatusTag } from '../../components/ui';
+import { Alert, AsOf, DataCard, Empty, ErrorState, Field, Loading, Meter, PageHeader, Panel, Spinner, StatusTag } from '../../components/ui';
 import { QrCameraScanner } from '../../components/QrCameraScanner';
 import { fmtDateTime } from '../../lib/format';
 import { Link, useRouter } from '../../lib/router';
@@ -106,11 +106,11 @@ export function VerifierHome() {
       />
 
       {/* Mode Switcher Tabs */}
-      <div className="flex items-center gap-2 border-b border-line mb-6">
+      <div className="flex items-center gap-2 border-b border-line mb-6 overflow-x-auto no-scrollbar scroll-fade flex-nowrap min-w-0">
         <button
           type="button"
           onClick={() => setActiveTab('single')}
-          className={`pb-3 px-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+          className={`pb-3 px-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'single'
               ? 'border-brand text-brand'
               : 'border-transparent text-muted hover:text-ink'
@@ -123,7 +123,7 @@ export function VerifierHome() {
         <button
           type="button"
           onClick={() => setActiveTab('bulk')}
-          className={`pb-3 px-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+          className={`pb-3 px-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'bulk'
               ? 'border-brand text-brand'
               : 'border-transparent text-muted hover:text-ink'
@@ -232,7 +232,46 @@ export function VerifierHome() {
             ) : (
               <>
                 {withdraw.error && <div className="p-3"><Alert tone="bad">{withdraw.error}</Alert></div>}
-                <div className="table-wrap">
+                {/* Mobile Dual Pattern: Compact Data Cards */}
+                <div className="p-3 space-y-3 md:hidden">
+                  {data.requests.map((r) => (
+                    <DataCard
+                      key={r.request_id}
+                      title={`Request #${r.request_id.slice(0, 8).toUpperCase()}`}
+                      subtitle={fmtDateTime(r.created_at)}
+                      badge={{
+                        label: r.status,
+                        tone: r.status === 'VALID' ? 'ok' : r.status === 'REVOKED' || r.status === 'EXPIRED' ? 'bad' : 'warn',
+                      }}
+                      fields={[
+                        { label: 'Purpose', value: r.purpose },
+                        { label: 'Sent', value: fmtDateTime(r.created_at) },
+                      ]}
+                      actions={
+                        <>
+                          {['VALID', 'REVOKED', 'EXPIRED'].includes(r.status) && (
+                            <Link to={`/verifier/requests/${r.token}`} className="btn btn-secondary btn-sm w-full text-center flex items-center justify-center">
+                              View Result
+                            </Link>
+                          )}
+                          {r.status === 'AWAITING_CONSENT' && (
+                            <button
+                              type="button"
+                              className="btn btn-ghost btn-sm w-full text-bad"
+                              disabled={withdraw.pending}
+                              onClick={async () => { if (await withdraw.run(r.token)) void reload(); }}
+                            >
+                              Withdraw Request
+                            </button>
+                          )}
+                        </>
+                      }
+                    />
+                  ))}
+                </div>
+
+                {/* Desktop Full Table */}
+                <div className="hidden md:block table-wrap">
                   <table className="data-table">
                     <thead><tr><th>Request</th><th>Purpose</th><th>Sent</th><th>Status</th><th></th></tr></thead>
                     <tbody>
@@ -395,9 +434,9 @@ export function VerifierHome() {
                 )}
 
                 {/* Controls and Export Action */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-                  <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[240px]">
-                    <div className="relative flex-1 max-w-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 flex-1 w-full min-w-0">
+                    <div className="relative w-full sm:max-w-xs">
                       <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
                       <input
                         type="text"
@@ -408,13 +447,13 @@ export function VerifierHome() {
                       />
                     </div>
 
-                    <div className="flex items-center gap-1 bg-wash border border-line rounded p-0.5 text-xs">
+                    <div className="flex items-center gap-1 bg-wash border border-line rounded p-0.5 text-xs overflow-x-auto no-scrollbar scroll-fade">
                       {(['ALL', 'VALID', 'AWAITING_CONSENT', 'INVALID_CHECKSUM'] as const).map((filter) => (
                         <button
                           key={filter}
                           type="button"
                           onClick={() => setStatusFilter(filter)}
-                          className={`px-2 py-1 rounded transition-colors text-[11px] font-semibold cursor-pointer ${
+                          className={`px-2 py-1 rounded transition-colors text-[11px] font-semibold cursor-pointer whitespace-nowrap ${
                             statusFilter === filter
                               ? 'bg-white shadow-xs text-ink font-bold'
                               : 'text-muted hover:text-ink'
@@ -429,7 +468,7 @@ export function VerifierHome() {
                   <button
                     type="button"
                     onClick={() => exportAttestationReportCsv(bulkRecords, data?.organisation.name || 'Tata Consultancy Services')}
-                    className="btn btn-secondary btn-sm flex items-center gap-1.5 font-semibold text-ink"
+                    className="btn btn-secondary btn-sm flex items-center justify-center gap-1.5 font-semibold text-ink w-full sm:w-auto"
                     title="Export tamper-evident HR Verification Attestation CSV conforming to Indian Evidence Act §65B"
                   >
                     <Download size={14} />
@@ -437,8 +476,57 @@ export function VerifierHome() {
                   </button>
                 </div>
 
-                {/* Results Table */}
-                <div className="table-wrap border border-line-soft rounded-lg">
+                {/* Mobile Dual Pattern: Compact Data Cards */}
+                <div className="p-3 space-y-3 md:hidden">
+                  {filteredRecords.map((r) => {
+                    const isValid = r.status === 'VALID';
+                    const isPending = r.status === 'AWAITING_CONSENT';
+
+                    return (
+                      <DataCard
+                        key={r.id}
+                        title={r.candidate_name}
+                        subtitle={`${r.programme} · AY ${r.academic_year}`}
+                        badge={{
+                          label: isValid ? 'VALID' : isPending ? 'AWAITING CONSENT' : 'BOGUS CHECKSUM',
+                          tone: isValid ? 'ok' : isPending ? 'warn' : 'bad',
+                        }}
+                        fields={[
+                          { label: 'APAAR ID', value: r.apaar_id, isMono: true },
+                          { label: 'Institution', value: r.institution },
+                          { label: 'Batch ID', value: r.id, isMono: true },
+                        ]}
+                        expandableContent={
+                          <div className="space-y-2 text-xs pt-1">
+                            <div>
+                              <div className="text-muted font-medium">Statutory Notes:</div>
+                              <div className="text-ink mt-0.5">{r.notes}</div>
+                            </div>
+                            <div>
+                              <div className="text-muted font-medium mb-1">Cryptographic Proof:</div>
+                              <div className="mono text-[11px] bg-slate-100 dark:bg-slate-800 p-2 rounded break-all select-all">
+                                {r.proof_hash}
+                              </div>
+                            </div>
+                          </div>
+                        }
+                        actions={
+                          <button
+                            type="button"
+                            onClick={() => handleCopyHash(r.proof_hash)}
+                            className="btn btn-secondary btn-sm w-full flex items-center justify-center gap-1.5"
+                          >
+                            <Copy size={13} className={copiedHash === r.proof_hash ? 'text-ok' : ''} />
+                            {copiedHash === r.proof_hash ? 'Copied SHA-256 Hash!' : 'Copy Merkle Proof'}
+                          </button>
+                        }
+                      />
+                    );
+                  })}
+                </div>
+
+                {/* Desktop Full Results Table */}
+                <div className="hidden md:block table-wrap border border-line-soft rounded-lg">
                   <table className="data-table">
                     <thead>
                       <tr>

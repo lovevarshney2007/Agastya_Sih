@@ -72,19 +72,19 @@ export function Drawer({
       }}
       role="presentation"
     >
-      <div className={`fixed inset-y-0 ${side === 'right' ? 'right-0' : 'left-0'} flex max-w-full`}>
+      <div className={`fixed inset-y-0 ${side === 'right' ? 'right-0' : 'left-0'} flex max-w-full w-full sm:w-auto`}>
         <div
           ref={drawerRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
           aria-describedby={subtitle ? descId : undefined}
-          className={`w-screen ${width} bg-white shadow-xl border-l border-slate-300 flex flex-col text-slate-900`}
+          className={`w-full sm:w-screen ${width} bg-white shadow-xl border-l border-slate-300 flex flex-col text-slate-900 max-w-full`}
         >
           {/* Header */}
-          <div className="px-5 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-3">
+          <div className="px-4 sm:px-5 py-3 sm:py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <h2 id={titleId} className="text-base font-bold text-[#0e2448] truncate">
+              <h2 id={titleId} className="text-sm sm:text-base font-bold text-[#0e2448] truncate">
                 {title}
               </h2>
               {subtitle && (
@@ -96,7 +96,7 @@ export function Drawer({
             <button
               type="button"
               onClick={onClose}
-              className="text-slate-500 hover:text-slate-900 hover:bg-slate-200/70 p-1.5 rounded-md transition-colors focus-visible:outline-2 focus-visible:outline-brand"
+              className="text-slate-500 hover:text-slate-900 hover:bg-slate-200/70 p-2 sm:p-1.5 rounded-md transition-colors focus-visible:outline-2 focus-visible:outline-brand min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center shrink-0"
               aria-label="Close drawer"
             >
               <X size={18} aria-hidden="true" />
@@ -104,13 +104,13 @@ export function Drawer({
           </div>
 
           {/* Body */}
-          <div className="flex-1 p-5 overflow-y-auto">
+          <div className="flex-1 p-4 sm:p-5 overflow-y-auto">
             {children}
           </div>
 
           {/* Footer */}
           {footer && (
-            <div className="px-5 py-3.5 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-end gap-2.5">
+            <div className="px-4 sm:px-5 py-3 sm:py-3.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-end gap-2.5 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:pb-3.5">
               {footer}
             </div>
           )}

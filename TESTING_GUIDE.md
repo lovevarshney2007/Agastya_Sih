@@ -5,7 +5,7 @@ Mark the **Result** column ✅ pass or ❌ fail and note anything odd.
 
 | | |
 |---|---|
-| Website | https://agastya-chi.vercel.app (or http://localhost:5173 when running locally) |
+| Website | https://team-agastya.vercel.app (or http://localhost:5173 when running locally) |
 | Backend API docs | https://sih.monu14.me/docs |
 | Demo password (all accounts) | `Aicte@2026!` |
 | One-time code at sign-in | any 6 digits (prototype) |

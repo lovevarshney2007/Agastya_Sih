@@ -56,19 +56,24 @@ export function MeriPehchaanModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#0e2448]/60 flex items-center justify-center p-3 sm:p-5">
-      <div className="relative w-full max-w-lg bg-white rounded-lg shadow-md border border-line overflow-hidden flex flex-col my-auto text-ink">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#0e2448]/60 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="relative w-full sm:max-w-lg bg-white rounded-t-2xl sm:rounded-lg shadow-xl border border-line overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[90vh] my-0 sm:my-auto text-ink pb-safe">
+        {/* Mobile Drag Handle */}
+        <div className="sm:hidden pt-2.5 pb-1 flex justify-center bg-navy" aria-hidden="true">
+          <div className="w-10 h-1 bg-white/40 rounded-full" />
+        </div>
+
         {/* Tricolour Accent */}
-        <div className="tricolour h-1.5" />
+        <div className="tricolour h-1.5 shrink-0" />
 
         {/* MeriPehchaan National Header */}
-        <div className="p-4 sm:p-5 bg-navy text-white flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="p-4 sm:p-5 bg-navy text-white flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 rounded-lg bg-white p-1 flex items-center justify-center shrink-0">
               <img src="/aicte-logo.png" alt="MeriPehchaan" className="w-8 h-8 object-contain" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-300 bg-white/10 px-2 py-0.5 rounded">
                   MeriPehchaan NSSO
                 </span>
@@ -76,7 +81,7 @@ export function MeriPehchaanModal({
                   <ShieldCheck size={11} /> DigiLocker Gateway
                 </span>
               </div>
-              <h3 className="text-base font-bold text-white mt-0.5">
+              <h3 className="text-sm sm:text-base font-bold text-white mt-0.5 truncate">
                 मेरी पहचान · National Single Sign-On
               </h3>
             </div>
@@ -85,7 +90,8 @@ export function MeriPehchaanModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-md text-white/70 hover:text-white hover:bg-white/10 cursor-pointer"
+            className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-white/70 hover:text-white hover:bg-white/10 cursor-pointer shrink-0 ml-2"
+            aria-label="Close dialog"
           >
             <X size={18} />
           </button>

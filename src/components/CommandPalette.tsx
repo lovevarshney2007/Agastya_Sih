@@ -335,7 +335,7 @@ export function CommandPalette({ isOpen, onClose }: { isOpen: boolean; onClose: 
                   data-active={isSelected}
                   onClick={() => void item.action()}
                   onMouseEnter={() => setSelectedIndex(index)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors min-h-[44px] ${
                     isSelected ? 'bg-brand-wash text-navy font-medium' : 'hover:bg-wash text-ink'
                   }`}
                 >

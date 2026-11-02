@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { api } from '../../api/client';
 import type { CaseStatus } from '../../api/types';
-import { AsOf, Empty, ErrorState, Loading, PageHeader, Panel, StatusTag } from '../../components/ui';
+import { AsOf, DataCard, Empty, ErrorState, Loading, PageHeader, Panel, StatusTag } from '../../components/ui';
 import { fmtDate } from '../../lib/format';
 import { Link, useRouter } from '../../lib/router';
 import { useApi } from '../../lib/useApi';
@@ -35,10 +35,10 @@ export function Cases() {
         actions={<AsOf at={loadedAt} onRefresh={reload} loading={loading} />}
       />
 
-      <div className="flex flex-wrap gap-1 border-b border-line mb-4" role="tablist">
+      <div className="flex flex-wrap gap-1 border-b border-line mb-4 overflow-x-auto no-scrollbar scroll-fade" role="tablist">
         {VIEWS.map((v) => (
           <button key={v.id} type="button" role="tab" aria-selected={view === v.id} onClick={() => setView(v.id)}
-                  className={`px-4 py-2 text-sm border-0 bg-transparent cursor-pointer border-b-[3px] -mb-px ${view === v.id ? 'border-brand font-semibold' : 'border-transparent text-muted hover:text-ink'}`}>
+                  className={`px-3 sm:px-4 py-2 text-sm border-0 bg-transparent cursor-pointer border-b-[3px] -mb-px whitespace-nowrap min-h-[44px] ${view === v.id ? 'border-brand font-semibold text-navy' : 'border-transparent text-muted hover:text-ink'}`}>
             {v.label} <span className="text-muted font-normal">({counts[v.id] ?? 0})</span>
           </button>
         ))}
@@ -47,32 +47,84 @@ export function Cases() {
       {error && !data ? <ErrorState message={error} onRetry={reload} /> : (
         <Panel bodyClassName="">
           <div className="px-4 py-3 border-b border-line-soft bg-wash">
-            <input className="input !w-72 !py-1" placeholder="Case number or institution" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Search cases" />
+            <input className="input w-full sm:w-72 !py-1" placeholder="Case number or institution" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Search cases" />
           </div>
           {!data ? <div className="p-4"><Loading /></div> : rows.length === 0 ? (
             <Empty title={view === 'open' ? 'No open cases' : 'No cases here'}>{view === 'open' ? 'Every flagged record has been reviewed.' : undefined}</Empty>
           ) : (
-            <div className="table-wrap">
-              <table className="data-table">
-                <thead>
-                  <tr><th>Case</th><th>Type</th><th>Institutions</th><th>Rule</th><th>Severity</th><th>State</th><th>Flagged</th><th className="num">Age</th></tr>
-                </thead>
-                <tbody>
-                  {rows.map((c) => (
-                    <tr key={c.case_id} className="clickable" onClick={() => navigate(`/aicte/cases/${c.case_id}`)}>
-                      <td><Link to={`/aicte/cases/${c.case_id}`} className="mono font-semibold" onClick={(e) => e.stopPropagation()}>{c.case_number}</Link></td>
-                      <td className="whitespace-nowrap">Cross-institution duplicate</td>
-                      <td className="min-w-[240px]">{c.institutions_involved.map((i) => <div key={i}>{i}</div>)}</td>
-                      <td className="mono whitespace-nowrap">{c.rule_id} <span className="text-faint">v{c.rule_version}</span></td>
-                      <td><StatusTag value={c.severity} /></td>
-                      <td><StatusTag value={c.status} /></td>
-                      <td className="whitespace-nowrap">{fmtDate(c.created_at)}</td>
-                      <td className={`num whitespace-nowrap ${c.overdue ? 'text-bad font-semibold' : ''}`}>{c.age_days} d{c.overdue ? ' · overdue' : ''}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <>
+              {/* Mobile Data Cards (< 768px) */}
+              <div className="p-3 space-y-3 md:hidden">
+                {rows.map((c) => (
+                  <DataCard
+                    key={c.case_id}
+                    title={c.case_number}
+                    subtitle={`Cross-institution duplicate · Rule ${c.rule_id} v${c.rule_version}`}
+                    badge={
+                      <div className="flex items-center gap-1">
+                        <StatusTag value={c.severity} />
+                        <StatusTag value={c.status} />
+                      </div>
+                    }
+                    onClick={() => navigate(`/aicte/cases/${c.case_id}`)}
+                    fields={[
+                      { label: 'Flagged on', value: fmtDate(c.created_at) },
+                      {
+                        label: 'Age',
+                        value: (
+                          <span className={c.overdue ? 'text-bad font-bold' : ''}>
+                            {c.age_days} d{c.overdue ? ' · Overdue' : ''}
+                          </span>
+                        ),
+                      },
+                    ]}
+                    expandedContent={
+                      <div>
+                        <div className="text-[11px] text-muted font-medium mb-1">Institutions Involved:</div>
+                        <div className="space-y-1">
+                          {c.institutions_involved.map((inst) => (
+                            <div key={inst} className="text-xs font-semibold text-navy bg-slate-50 p-1.5 rounded border border-slate-200/60">
+                              {inst}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    }
+                    actions={
+                      <Link
+                        to={`/aicte/cases/${c.case_id}`}
+                        className="btn btn-secondary btn-sm w-full no-underline"
+                      >
+                        Inspect Evidence &amp; Adjudicate
+                      </Link>
+                    }
+                  />
+                ))}
+              </div>
+
+              {/* Desktop Full Table (>= 768px) */}
+              <div className="table-wrap hidden md:block">
+                <table className="data-table">
+                  <thead>
+                    <tr><th>Case</th><th>Type</th><th>Institutions</th><th>Rule</th><th>Severity</th><th>State</th><th>Flagged</th><th className="num">Age</th></tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((c) => (
+                      <tr key={c.case_id} className="clickable" onClick={() => navigate(`/aicte/cases/${c.case_id}`)}>
+                        <td><Link to={`/aicte/cases/${c.case_id}`} className="mono font-semibold" onClick={(e) => e.stopPropagation()}>{c.case_number}</Link></td>
+                        <td className="whitespace-nowrap">Cross-institution duplicate</td>
+                        <td className="min-w-[240px]">{c.institutions_involved.map((i) => <div key={i}>{i}</div>)}</td>
+                        <td className="mono whitespace-nowrap">{c.rule_id} <span className="text-faint">v{c.rule_version}</span></td>
+                        <td><StatusTag value={c.severity} /></td>
+                        <td><StatusTag value={c.status} /></td>
+                        <td className="whitespace-nowrap">{fmtDate(c.created_at)}</td>
+                        <td className={`num whitespace-nowrap ${c.overdue ? 'text-bad font-semibold' : ''}`}>{c.age_days} d{c.overdue ? ' · overdue' : ''}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </Panel>
       )}

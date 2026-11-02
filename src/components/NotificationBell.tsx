@@ -92,14 +92,14 @@ export function NotificationBell() {
       {/* Bell Icon Button */}
       <button
         type="button"
-        className="relative p-2 rounded-md hover:bg-wash text-ink transition-colors cursor-pointer flex items-center justify-center focus:outline-none"
+        className="relative p-2 rounded-md hover:bg-wash text-ink transition-colors cursor-pointer flex items-center justify-center focus:outline-none min-h-[44px] min-w-[44px]"
         onClick={() => setOpen(!open)}
         title="Regulatory Alerts & Notifications"
         aria-label="Open notifications"
       >
         <Bell size={18} className={unreadCount > 0 ? 'text-brand' : 'text-muted'} />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 bg-bad text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full min-w-[16px] text-center shadow-xs animate-pop">
+          <span className="absolute top-1 right-1 bg-bad text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full min-w-[16px] text-center shadow-xs animate-pop">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -107,7 +107,7 @@ export function NotificationBell() {
 
       {/* Dropdown Menu */}
       {open && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-xl bg-white border border-gray-200 shadow-2xl z-50 overflow-hidden text-xs ring-1 ring-black/10 animate-fade-in">
+        <div className="fixed inset-x-3 sm:inset-x-auto sm:absolute sm:right-0 top-14 sm:top-auto sm:mt-2 sm:w-96 rounded-xl bg-white border border-gray-200 shadow-2xl z-50 overflow-hidden text-xs ring-1 ring-black/10 animate-fade-in max-w-[calc(100vw-1.5rem)]">
           {/* Header */}
           <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
             <div className="flex items-center gap-2">

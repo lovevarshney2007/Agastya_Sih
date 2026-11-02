@@ -1,6 +1,6 @@
 # 🧪 AICTE APAAR Platform — Live API Verification Guide
 
-This guide allows anyone (evaluators, hackathon judges, developers) to verify that **every single backend API endpoint** is working seamlessly through your **deployed frontend application** (`https://<your-vercel-domain>.vercel.app` or `http://localhost:5173`).
+This guide allows anyone (evaluators, hackathon judges, developers) to verify that **every single backend API endpoint** is working seamlessly through your **deployed frontend application** (`https://team-agastya.vercel.app` or `http://localhost:5173`).
 
 ---
 
@@ -8,7 +8,7 @@ This guide allows anyone (evaluators, hackathon judges, developers) to verify th
 
 | Service | URL | Status / Documentation |
 |---|---|---|
-| **Frontend Deployed** | `https://<your-app>.vercel.app` | Vite + React SPA |
+| **Frontend Deployed** | `https://team-agastya.vercel.app` | Vite + React SPA |
 | **Backend Deployed** | `https://sih.monu14.me` | FastAPI ([Swagger Docs](https://sih.monu14.me/docs)) |
 | **API Base Route** | `https://sih.monu14.me/api/v1` | Bearer JWT Protected |
 
