@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Award, Camera, CircleCheck, CircleX, FileText, Printer, ShieldAlert, X } from 'lucide-react';
+import { Award, Camera, CircleCheck, CircleX, Code, FileText, Printer, ShieldAlert, X } from 'lucide-react';
 import { api } from '../api/client';
 import { ErrorState, KeyValue, Loading } from '../components/ui';
 import { QrCameraScanner } from '../components/QrCameraScanner';
 import { fmtDateTime, fmtTime, humanize } from '../lib/format';
 import { useRouter } from '../lib/router';
 import { useApi } from '../lib/useApi';
+import { downloadW3cCredentialJson } from '../utils/w3cCredential';
 
 /** Page 2 — the QR target. Minimal output and one neutral message for anything that is not valid or revoked. */
 export function PublicVerify({ token }: { token?: string }) {
@@ -137,13 +138,33 @@ export function PublicVerify({ token }: { token?: string }) {
               <span className="text-muted">Last checked {fmtTime(data.checked_at)}</span>
               <div className="flex items-center gap-2">
                 {data.status === 'VALID' && (
-                  <button
-                    type="button"
-                    className="btn btn-secondary btn-sm flex items-center gap-1"
-                    onClick={() => setCertModalOpen(true)}
-                  >
-                    <FileText size={14} /> Certificate (A4)
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm flex items-center gap-1"
+                      onClick={() => setCertModalOpen(true)}
+                    >
+                      <FileText size={14} /> Certificate (A4)
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm flex items-center gap-1"
+                      onClick={() => {
+                        downloadW3cCredentialJson({
+                          credential_id: data.credential_id,
+                          institution: data.claims?.institution,
+                          programme: data.claims?.programme,
+                          academic_year: data.claims?.academic_year,
+                          status: data.claims?.status,
+                          verified_at: data.verified_at,
+                          signature: data.signature,
+                        }, `w3c-vc-${data.credential_id || 'verified'}.json`);
+                      }}
+                      title="Download W3C Verifiable Credential in JSON-LD format"
+                    >
+                      <Code size={14} /> W3C JSON-LD
+                    </button>
+                  </>
                 )}
                 <button type="button" className="btn btn-secondary btn-sm" onClick={reload} disabled={loading}>Check again</button>
               </div>
@@ -191,6 +212,24 @@ function OfficialCertificateModal({
             <span className="font-bold text-xs sm:text-sm text-navy truncate">AICTE Verification Attestation</span>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm flex items-center gap-1.5"
+              onClick={() => {
+                downloadW3cCredentialJson({
+                  credential_id: data.credential_id,
+                  institution: claims.institution,
+                  programme: claims.programme,
+                  academic_year: claims.academic_year,
+                  status: claims.status,
+                  verified_at: data.verified_at,
+                  signature: data.signature,
+                }, `w3c-vc-${data.credential_id}.json`);
+              }}
+              title="Download W3C Verifiable Credential in JSON-LD format"
+            >
+              <Code size={14} /> <span className="hidden sm:inline">W3C JSON</span>
+            </button>
             <button
               type="button"
               className="btn btn-primary btn-sm flex items-center gap-1.5"

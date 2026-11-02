@@ -6,6 +6,7 @@ import { ROLE_LABEL, useSession, type Portal } from '../lib/session';
 import { useI18n, LanguageToggle } from '../lib/i18n';
 import { CommandPalette } from './CommandPalette';
 import { JuryTourWidget } from './JuryTourWidget';
+import { NationalLedgerModal } from './NationalLedgerModal';
 import { NotificationBell } from './NotificationBell';
 import { RegulatoryCopilot } from './RegulatoryCopilot';
 
@@ -71,6 +72,7 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
   const { t } = useI18n();
   const [menuOpen, setMenuOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
+  const [ledgerModalOpen, setLedgerModalOpen] = useState(false);
   const [fontSize, setFontSizeState] = useState(() => (typeof window !== 'undefined' ? localStorage.getItem('agastya_font_size') || '15px' : '15px'));
   const [highContrast, setHighContrast] = useState(() => (typeof window !== 'undefined' ? localStorage.getItem('agastya_high_contrast') === 'true' : false));
 
@@ -122,12 +124,26 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
       <div className="bg-navy-dark text-[#c9d4e5] text-xs no-print">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 py-1.5 flex justify-between items-center gap-2">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <span className="truncate max-w-[130px] sm:max-w-none">{t('gov_india')}</span>
-            <span className="hidden md:inline text-white/30">|</span>
-            <span className="hidden md:inline-flex items-center gap-1.5 text-[11px] text-emerald-300">
+            <span className="truncate max-w-[120px] sm:max-w-none">{t('gov_india')}</span>
+            <span className="text-white/30">|</span>
+            <button
+              type="button"
+              onClick={() => setLedgerModalOpen(true)}
+              className="hidden md:inline-flex items-center gap-1.5 text-[11px] text-emerald-300 hover:text-white transition-colors cursor-pointer bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded border border-emerald-400/30"
+              title="Click to view AICTE National Depository Root Ledger Consensus Status"
+            >
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 beacon-pulse text-emerald-400 shrink-0" />
-              APAAR National Depository · Ledger Live
-            </span>
+              <span>{t('ledger_badge', 'APAAR National Depository · Ledger Live')}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setLedgerModalOpen(true)}
+              className="md:hidden inline-flex items-center gap-1 text-[10px] text-emerald-300 bg-white/5 px-1.5 py-0.5 rounded border border-emerald-400/20 shrink-0"
+              title="Ledger Live Status"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 beacon-pulse shrink-0" />
+              <span>Ledger Live</span>
+            </button>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
             {/* GIGW Text Resizer */}
@@ -296,6 +312,7 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
       <RegulatoryCopilot onNavigate={(route) => navigate(route)} userRole={user?.role} />
       <JuryTourWidget />
       <CommandPalette isOpen={commandOpen} onClose={() => setCommandOpen(false)} />
+      <NationalLedgerModal isOpen={ledgerModalOpen} onClose={() => setLedgerModalOpen(false)} />
     </div>
   );
 }

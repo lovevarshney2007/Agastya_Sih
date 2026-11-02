@@ -60,6 +60,73 @@ const DICTIONARY: Record<Language, Record<string, string>> = {
     footer_privacy: 'Privacy & DPDP',
     footer_privacy_desc: 'No Aadhaar numbers are collected. APAAR IDs are encrypted and shown masked. Every access is written to a tamper-evident log.',
     footer_help: 'Helpdesk & API',
+
+    // Common & UI Actions
+    action_search: 'Search',
+    action_filter: 'Filter',
+    action_export: 'Export',
+    action_download: 'Download',
+    action_verify: 'Verify',
+    action_cancel: 'Cancel',
+    action_confirm: 'Confirm',
+    action_close: 'Close',
+    action_copy: 'Copy',
+    action_copied: 'Copied!',
+    action_refresh: 'Refresh',
+    action_view_all: 'View all',
+    action_back: 'Back',
+    action_next: 'Next',
+    action_prev: 'Previous',
+    action_restart: 'Restart',
+
+    // Status Badges
+    status_valid: 'VALID',
+    status_invalid: 'NOT VALID',
+    status_revoked: 'REVOKED',
+    status_pending: 'Pending',
+    status_approved: 'Approved',
+    status_compliant: 'Compliant',
+    status_violation: 'Violation Intercepted',
+
+    // Root Ledger Sync
+    ledger_badge: 'APAAR National Depository · Ledger Live',
+    ledger_popover_title: 'AICTE National Depository Root Ledger',
+    ledger_popover_subtitle: 'Consensus Active · 32 Institutional Validator Nodes',
+    ledger_block_height: 'Block Height',
+    ledger_merkle_root: 'Merkle Root Hash',
+    ledger_latency: 'API Latency',
+    ledger_consensus: 'Consensus Model',
+    ledger_cryptography: 'Cryptographic Standard',
+    ledger_compliance: 'Statutory Compliance',
+    ledger_open_audit: 'Open Full Audit Ledger',
+    ledger_test_sandbox: 'Security Sandbox Exploit Test',
+    ledger_copy_root: 'Copy Root Hash',
+
+    // W3C Credentials & DigiLocker
+    vc_title: 'AICTE APAAR Digital Identity Smart Card',
+    vc_w3c_badge: 'Statutory Verifiable Credential',
+    vc_download_json: 'W3C JSON-LD',
+    vc_cert_a4: 'Official Certificate (A4)',
+    vc_signed_by: 'Signed by AICTE Root Authority',
+
+    // Role Switcher & Tour
+    tour_launcher_full: 'Role Switcher & Tour',
+    tour_launcher_mobile: 'Role Tour',
+    tour_executive_demo: 'Executive Demonstration',
+    tour_active_persona: 'Active Demo Persona:',
+    tour_auto_pitch: 'Auto-Play Pitch',
+    tour_pause_pitch: 'Pause Pitch',
+    tour_next_in: 'Auto-advancing in',
+
+    // Command Palette
+    cmd_placeholder: 'Type a command, institution, or student...',
+    cmd_cat_navigation: 'Navigation',
+    cmd_cat_regulatory: 'Regulatory Action',
+    cmd_cat_audit: 'Auditing & Security',
+    cmd_cat_roles: 'Role Switch',
+    cmd_shortcut_move: 'Move',
+    cmd_shortcut_select: 'Select',
+    cmd_shortcut_exit: 'Exit',
   },
   hi: {
     // Header & Gov branding
@@ -112,6 +179,73 @@ const DICTIONARY: Record<Language, Record<string, string>> = {
     footer_privacy: 'गोपनीयता और DPDP 2023',
     footer_privacy_desc: 'कोई आधार नंबर संग्रहीत नहीं होता। अपार आईडी एन्क्रिप्टेड और सुरक्षित है। हर एक्सेस का छेड़छाड़-मुक्त ऑडिट रखा जाता है।',
     footer_help: 'सहायता केंद्र और एपीआई',
+
+    // Common & UI Actions
+    action_search: 'खोजें',
+    action_filter: 'फ़िल्टर',
+    action_export: 'निर्यात करें',
+    action_download: 'डाउनलोड',
+    action_verify: 'सत्यापित करें',
+    action_cancel: 'रद्द करें',
+    action_confirm: 'पुष्टि करें',
+    action_close: 'बंद करें',
+    action_copy: 'प्रतिलिपि बनाएं',
+    action_copied: 'कॉपी हो गया!',
+    action_refresh: 'ताज़ा करें',
+    action_view_all: 'सभी देखें',
+    action_back: 'वापस',
+    action_next: 'आगे',
+    action_prev: 'पिछला',
+    action_restart: 'पुनः आरंभ',
+
+    // Status Badges
+    status_valid: 'सत्यापित (वैध)',
+    status_invalid: 'अमान्य',
+    status_revoked: 'निरस्त',
+    status_pending: 'लंबित',
+    status_approved: 'स्वीकृत',
+    status_compliant: 'अनुपालन पूर्ण',
+    status_violation: 'उल्लंघन पाया गया',
+
+    // Root Ledger Sync
+    ledger_badge: 'अपार राष्ट्रीय रिपॉजिटरी · लाइव लेजर',
+    ledger_popover_title: 'एआईसीटीई राष्ट्रीय अपार रूट लेजर',
+    ledger_popover_subtitle: 'सक्रिय सर्वसम्मति · 32 संस्थागत सत्यापनकर्ता नोड्स',
+    ledger_block_height: 'ब्लॉक ऊंचाई (Height)',
+    ledger_merkle_root: 'मर्कल रूट हैश',
+    ledger_latency: 'एपीआई लेटेंसी',
+    ledger_consensus: 'सर्वसम्मति मॉडल',
+    ledger_cryptography: 'क्रिप्टोग्राफिक मानक',
+    ledger_compliance: 'वैधानिक अनुपालन',
+    ledger_open_audit: 'संपूर्ण ऑडिट लेजर खोलें',
+    ledger_test_sandbox: 'सुरक्षा सैंडबॉक्स परीक्षण',
+    ledger_copy_root: 'रूट हैश कॉपी करें',
+
+    // W3C Credentials & DigiLocker
+    vc_title: 'एआईसीटीई अपार डिजिटल पहचान स्मार्ट कार्ड',
+    vc_w3c_badge: 'वैधानिक सत्यापन योग्य प्रमाण-पत्र (W3C)',
+    vc_download_json: 'W3C JSON-LD',
+    vc_cert_a4: 'आधिकारिक प्रमाण-पत्र (A4)',
+    vc_signed_by: 'एआईसीटीई रूट प्राधिकारी द्वारा हस्ताक्षरित',
+
+    // Role Switcher & Tour
+    tour_launcher_full: 'भूमिका स्विचर व टूर',
+    tour_launcher_mobile: 'रोल टूर',
+    tour_executive_demo: 'कार्यकारी प्रस्तुति (डेमो)',
+    tour_active_persona: 'सक्रिय डेमो भूमिका:',
+    tour_auto_pitch: 'ऑटो-प्ले पिच (3 मिनट)',
+    tour_pause_pitch: 'पिच रोकें',
+    tour_next_in: 'अगला चरण',
+
+    // Command Palette
+    cmd_placeholder: 'कोई कमांड, संस्थान या छात्र खोजें...',
+    cmd_cat_navigation: 'नेविगेशन',
+    cmd_cat_regulatory: 'नियामक कार्रवाई',
+    cmd_cat_audit: 'ऑडिट व सुरक्षा',
+    cmd_cat_roles: 'भूमिका बदलें',
+    cmd_shortcut_move: 'चयन बदलें',
+    cmd_shortcut_select: 'खोलें',
+    cmd_shortcut_exit: 'बाहर निकलें',
   }
 };
 

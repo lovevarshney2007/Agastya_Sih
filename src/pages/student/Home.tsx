@@ -4,8 +4,9 @@ import { Alert, ErrorState, KeyValue, Loading, Modal, PageHeader, Panel, StatusT
 import { humanize } from '../../lib/format';
 import { Link } from '../../lib/router';
 import { useApi } from '../../lib/useApi';
-import { ShieldCheck, ArrowUpRight, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, ArrowUpRight, CheckCircle2, Code } from 'lucide-react';
 import { ApaarSmartCard } from '../../components/ApaarSmartCard';
+import { downloadW3cCredentialJson } from '../../utils/w3cCredential';
 
 const IDENTITY_TEXT: Record<string, string> = {
   VERIFIED: 'Your APAAR ID matched the national registry. Nothing to do.',
@@ -129,7 +130,29 @@ export function StudentHome() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm inline-flex items-center gap-1.5"
+            onClick={() => {
+              const enr = data.enrolments[0];
+              if (enr) {
+                downloadW3cCredentialJson({
+                  credential_id: enr.enrolment_id,
+                  student_name: data.student.name,
+                  masked_apaar: data.student.masked_apaar,
+                  institution: enr.institution,
+                  programme: enr.course,
+                  academic_year: enr.academic_year,
+                  status: enr.status,
+                }, `w3c-vc-${data.student.masked_apaar}.json`);
+              }
+            }}
+            title="Download official W3C-compliant Verifiable Credential in raw JSON-LD format"
+          >
+            <Code size={14} />
+            <span>W3C JSON</span>
+          </button>
           {dlStatus?.is_linked ? (
             <button
               type="button"
