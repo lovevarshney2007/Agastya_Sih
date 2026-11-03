@@ -9,6 +9,7 @@ export function Activate() {
   const { signIn } = useSession();
   const [form, setForm] = useState({ aicte_permanent_id: '', nodal_officer_email: '', otp: '', password: '', confirm_password: '' });
   const [otpSent, setOtpSent] = useState(false);
+  const [infoMsg, setInfoMsg] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -21,7 +22,24 @@ export function Activate() {
         setError('The Permanent ID looks like 1-1234567. It is printed on your AICTE approval letter.');
         return;
       }
-      setOtpSent(true);
+      setPending(true);
+      try {
+        const res = await api.auth.requestActivationOtp({
+          aicte_permanent_id: form.aicte_permanent_id.trim(),
+          nodal_officer_email: form.nodal_officer_email.trim(),
+        });
+        setOtpSent(true);
+        if (res.dev_otp) {
+          setInfoMsg(`${res.message} (Dev OTP: ${res.dev_otp})`);
+          setForm((f) => ({ ...f, otp: res.dev_otp! }));
+        } else {
+          setInfoMsg(res.message);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to send verification code.');
+      } finally {
+        setPending(false);
+      }
       return;
     }
     if (form.password !== form.confirm_password) {
@@ -63,8 +81,8 @@ export function Activate() {
         {otpSent && (
           <>
             <Alert tone="info">
-              Enter the one-time code for {form.nodal_officer_email}. <span className="text-xs">(Demo code: 123456)</span>{' '}
-              <button type="button" className="underline text-brand bg-transparent border-0 p-0 cursor-pointer" onClick={() => setOtpSent(false)}>Change details</button>
+              {infoMsg || `Enter the one-time code sent to ${form.nodal_officer_email}.`}{' '}
+              <button type="button" className="underline text-brand bg-transparent border-0 p-0 cursor-pointer" onClick={() => { setOtpSent(false); setInfoMsg(null); }}>Change details</button>
             </Alert>
             <Field label="One-time code" htmlFor="act-otp">
               <input id="act-otp" className="input mono max-w-[180px]" inputMode="numeric" maxLength={6} required value={form.otp} onChange={set('otp')} />

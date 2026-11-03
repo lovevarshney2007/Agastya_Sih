@@ -9,7 +9,7 @@ import type {
 
 // In development Vite proxies /api to the local backend (see vite.config.ts).
 // A deployed build uses VITE_API_BASE_URL, falling back to the team's hosted backend.
-export const API_ORIGIN = (import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? '' : 'https://sih.monu14.me')).replace(/\/$/, '');
+export const API_ORIGIN = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 export const API_BASE = `${API_ORIGIN}/api/v1`;
 
 const TOKEN_KEY = 'apaar.session.token';
@@ -377,6 +377,12 @@ export const api = {
         throw err;
       }
     },
+    requestActivationOtp: (body: { aicte_permanent_id: string; nodal_officer_email: string }) =>
+      json<{ status: string; message: string; dev_otp?: string }>('/auth/institution/request-activation-otp', {
+        method: 'POST',
+        body,
+        auth: false,
+      }),
     activate: (body: { aicte_permanent_id: string; nodal_officer_email: string; otp: string; password: string; confirm_password: string }) =>
       json<LoginResponse>('/auth/institution/activate', { method: 'POST', body, auth: false }),
     me: () => json<SessionUser>('/auth/me'),

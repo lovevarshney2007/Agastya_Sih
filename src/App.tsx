@@ -1,6 +1,6 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, Suspense, lazy, type ReactNode } from 'react';
 import { Layout } from './components/Layout';
-import { Alert } from './components/ui';
+import { Alert, Loading } from './components/ui';
 import { Link, matchPath, RouterProvider, useRouter } from './lib/router';
 import { portalHome, SessionProvider, useSession, type Portal } from './lib/session';
 import { Home } from './pages/Home';
@@ -8,7 +8,6 @@ import { SignIn } from './pages/SignIn';
 import { Activate } from './pages/Activate';
 import { PublicVerify } from './pages/PublicVerify';
 import { InstitutionDashboard } from './pages/institution/Dashboard';
-import { UploadWizard } from './pages/institution/Upload';
 import { BatchList } from './pages/institution/Batches';
 import { BatchDetail } from './pages/institution/BatchDetail';
 import { Registry } from './pages/institution/Registry';
@@ -17,10 +16,8 @@ import { NationalOverview } from './pages/aicte/Overview';
 import { Cases } from './pages/aicte/Cases';
 import { CaseDetailPage } from './pages/aicte/CaseDetail';
 import { RiskRankingPage } from './pages/aicte/Risk';
-import { MLIntelligencePage } from './pages/aicte/MLIntelligence';
 import { Institutions } from './pages/aicte/Institutions';
 import { InstitutionProfile } from './pages/aicte/InstitutionProfile';
-import { AuditLedgerPage } from './pages/aicte/Audit';
 import { VerifierHome } from './pages/verifier/Home';
 import { VerificationResult } from './pages/verifier/Result';
 import { StudentHome } from './pages/student/Home';
@@ -28,12 +25,17 @@ import { ConsentCentre } from './pages/student/Consent';
 import { ShareRecord } from './pages/student/Share';
 import { GuardianConsent } from './pages/student/GuardianConsent';
 import { DataRights } from './pages/student/DataRights';
-import { RulesConfig } from './pages/aicte/RulesConfig';
-import { VerifierApprovals } from './pages/aicte/VerifierApprovals';
-import { SecuritySandboxPage } from './pages/aicte/SecuritySandbox';
-import { DualKeyApprovalsPage } from './pages/aicte/DualKeyApprovals';
-import { PublicDashboard } from './pages/PublicDashboard';
 import { I18nProvider } from './lib/i18n';
+
+// Code-split heavy secondary portals to optimize initial bundle size
+const PublicDashboard = lazy(() => import('./pages/PublicDashboard').then((m) => ({ default: m.PublicDashboard })));
+const UploadWizard = lazy(() => import('./pages/institution/Upload').then((m) => ({ default: m.UploadWizard })));
+const MLIntelligencePage = lazy(() => import('./pages/aicte/MLIntelligence').then((m) => ({ default: m.MLIntelligencePage })));
+const SecuritySandboxPage = lazy(() => import('./pages/aicte/SecuritySandbox').then((m) => ({ default: m.SecuritySandboxPage })));
+const DualKeyApprovalsPage = lazy(() => import('./pages/aicte/DualKeyApprovals').then((m) => ({ default: m.DualKeyApprovalsPage })));
+const AuditLedgerPage = lazy(() => import('./pages/aicte/Audit').then((m) => ({ default: m.AuditLedgerPage })));
+const RulesConfig = lazy(() => import('./pages/aicte/RulesConfig').then((m) => ({ default: m.RulesConfig })));
+const VerifierApprovals = lazy(() => import('./pages/aicte/VerifierApprovals').then((m) => ({ default: m.VerifierApprovals })));
 
 interface Route {
   pattern: string;
@@ -117,7 +119,13 @@ function Routes() {
         );
       }
     }
-    return <Layout wide={route.wide} full={route.full}>{route.render(params)}</Layout>;
+    return (
+      <Layout wide={route.wide} full={route.full}>
+        <Suspense fallback={<div className="panel p-6"><Loading rows={5} label="Loading page..." /></div>}>
+          {route.render(params)}
+        </Suspense>
+      </Layout>
+    );
   }
 
   return (

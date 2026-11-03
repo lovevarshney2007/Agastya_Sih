@@ -17,6 +17,7 @@ export interface W3cCredentialPayload {
     valid: boolean;
     key_id: string;
     algorithm?: string;
+    signature?: string;
   } | null;
 }
 
@@ -71,11 +72,11 @@ export function buildW3cCredentialJson(payload: W3cCredentialPayload) {
       }
     ],
     proof: {
-      type: 'Ed25519Signature2020',
+      type: payload.signature?.algorithm === 'Ed25519' ? 'Ed25519Signature2020' : 'JsonWebSignature2020',
       created: issuanceDate,
       verificationMethod: payload.signature?.key_id || 'did:apaar:aicte-national-root#key-1',
       proofPurpose: 'assertionMethod',
-      proofValue: 'z3hG9...signed-by-aicte-root-authority'
+      proofValue: payload.signature?.signature || 'z3hG9...signed-by-aicte-root-authority'
     }
   };
 }

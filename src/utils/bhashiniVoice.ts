@@ -74,7 +74,7 @@ class BhashiniVoiceEngine {
     const cleanText = text
       .replace(/\*\*(.*?)\*\*/g, '$1')
       .replace(/#{1,6}\s?/g, '')
-      .replace(/[•\-\*]\s+/g, ', ')
+      .replace(/[•\-*]\s+/g, ', ')
       .replace(/`{1,3}[^`]*`{1,3}/g, '')
       .replace(/\n+/g, '. ')
       .trim();
