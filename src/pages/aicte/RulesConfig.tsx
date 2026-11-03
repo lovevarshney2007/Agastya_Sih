@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Modal, Panel, StatusTag } from '../../components/ui';
+import { Alert, DataCard, Modal, Panel, StatusTag } from '../../components/ui';
 import { api } from '../../api/client';
 import { useApi } from '../../lib/useApi';
 import { CheckCircle2, Play, Sliders } from 'lucide-react';
@@ -150,11 +150,11 @@ export function RulesConfig() {
       </Alert>
 
       {/* Tabs */}
-      <div className="border-b border-line flex gap-4">
+      <div className="border-b border-line flex gap-4 overflow-x-auto no-scrollbar scroll-fade whitespace-nowrap min-w-0">
         <button
           type="button"
           onClick={() => setActiveTab('rules')}
-          className={`pb-2.5 text-sm font-semibold border-b-2 transition-colors ${
+          className={`pb-2.5 text-sm font-semibold border-b-2 transition-colors shrink-0 min-h-[44px] ${
             activeTab === 'rules' ? 'border-navy text-navy' : 'border-transparent text-muted hover:text-ink'
           }`}
         >
@@ -163,7 +163,7 @@ export function RulesConfig() {
         <button
           type="button"
           onClick={() => setActiveTab('categories')}
-          className={`pb-2.5 text-sm font-semibold border-b-2 transition-colors ${
+          className={`pb-2.5 text-sm font-semibold border-b-2 transition-colors shrink-0 min-h-[44px] ${
             activeTab === 'categories' ? 'border-navy text-navy' : 'border-transparent text-muted hover:text-ink'
           }`}
         >
@@ -172,7 +172,7 @@ export function RulesConfig() {
         <button
           type="button"
           onClick={() => setActiveTab('simulator')}
-          className={`pb-2.5 text-sm font-semibold border-b-2 transition-colors flex items-center gap-1.5 ${
+          className={`pb-2.5 text-sm font-semibold border-b-2 transition-colors flex items-center gap-1.5 shrink-0 min-h-[44px] ${
             activeTab === 'simulator' ? 'border-navy text-navy font-bold' : 'border-transparent text-muted hover:text-ink'
           }`}
         >
@@ -187,7 +187,38 @@ export function RulesConfig() {
       {/* Rules Table */}
       {activeTab === 'rules' && data && (
         <Panel>
-          <div className="table-wrap">
+          {/* Mobile Data Cards (md:hidden) */}
+          <div className="md:hidden divide-y divide-border">
+            {data.rules.map((r: RuleItem) => (
+              <DataCard
+                key={r.rule_id}
+                title={r.name}
+                subtitle={r.description}
+                badge={<StatusTag value={r.severity} />}
+                fields={[
+                  { label: 'Rule ID', value: r.rule_id, mono: true },
+                  { label: 'Category', value: r.category },
+                  { label: 'Active Version', value: r.version, mono: true },
+                ]}
+                actions={
+                  <button
+                    type="button"
+                    onClick={() => handleToggleRule(r)}
+                    className={`w-full text-xs px-2.5 py-2.5 rounded font-semibold transition-colors min-h-[44px] ${
+                      r.enabled
+                        ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {r.enabled ? 'ACTIVE (ENFORCED)' : 'BYPASS (OFF)'}
+                  </button>
+                }
+              />
+            ))}
+          </div>
+
+          {/* Desktop Table (hidden md:block) */}
+          <div className="hidden md:block table-wrap">
             <table className="table-base">
               <thead>
                 <tr>
@@ -240,7 +271,48 @@ export function RulesConfig() {
       {/* Seat Categories Table */}
       {activeTab === 'categories' && data && (
         <Panel>
-          <div className="table-wrap">
+          {/* Mobile Data Cards (md:hidden) */}
+          <div className="md:hidden divide-y divide-border">
+            {data.seat_categories.map((c: SeatCategoryItem) => (
+              <DataCard
+                key={c.category_code}
+                title={c.category_name}
+                subtitle={c.description}
+                badge={
+                  c.is_over_and_above ? (
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800">
+                      Over &amp; Above Base Intake
+                    </span>
+                  ) : (
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded bg-blue-100 text-blue-800">
+                      Within Approved Intake
+                    </span>
+                  )
+                }
+                fields={[
+                  { label: 'Category Code', value: c.category_code, mono: true },
+                  { label: 'Regulatory Cap', value: `${c.cap_percentage}%`, mono: true },
+                  { label: 'Effective Year', value: c.effective_year },
+                ]}
+                actions={
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm w-full min-h-[44px]"
+                    onClick={() => {
+                      setEditingCategory(c);
+                      setNewCap(c.cap_percentage);
+                      setOverAndAbove(c.is_over_and_above);
+                    }}
+                  >
+                    Edit Cap
+                  </button>
+                }
+              />
+            ))}
+          </div>
+
+          {/* Desktop Table (hidden md:block) */}
+          <div className="hidden md:block table-wrap">
             <table className="table-base">
               <thead>
                 <tr>

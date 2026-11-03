@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { api } from '../../api/client';
-import { Alert, Modal, PageHeader, Panel, StatusTag } from '../../components/ui';
+import { Alert, DataCard, Modal, PageHeader, Panel, StatusTag } from '../../components/ui';
 import { fmtDate } from '../../lib/format';
 import { useApi } from '../../lib/useApi';
 import { Download, FileCheck, HelpCircle, Shield, AlertCircle } from 'lucide-react';
@@ -215,7 +215,45 @@ export function DataRights() {
         {loading && <p className="text-sm text-muted">Loading your requests...</p>}
         {error && <Alert tone="warn" title="Error loading requests">{error}</Alert>}
 
-        <div className="table-wrap mt-2">
+        {/* Mobile Data Cards (md:hidden) */}
+        {!requests || requests.length === 0 ? (
+          <div className="md:hidden p-6 text-center text-muted">
+            You have not submitted any data rights requests yet.
+          </div>
+        ) : (
+          <div className="md:hidden divide-y divide-border mt-2">
+            {requests.map((r) => (
+              <DataCard
+                key={r.request_id}
+                title={r.subject}
+                subtitle={`Req ID: ${r.request_number}`}
+                badge={<StatusTag value={r.status} />}
+                fields={[
+                  { label: 'Right Type', value: <StatusTag value={r.request_type} /> },
+                  { label: 'Submitted On', value: fmtDate(r.created_at) },
+                  { label: 'Resolution', value: r.resolution_notes || 'Pending DPO evaluation' }
+                ]}
+                expandableContent={
+                  <div className="space-y-2 text-xs">
+                    <div>
+                      <span className="font-semibold text-muted block">Request Description:</span>
+                      <p className="text-ink mt-0.5">{r.description}</p>
+                    </div>
+                    {r.evidence_notes && (
+                      <div>
+                        <span className="font-semibold text-muted block">Attached Notes / Citations:</span>
+                        <p className="text-ink mt-0.5">{r.evidence_notes}</p>
+                      </div>
+                    )}
+                  </div>
+                }
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Desktop Table (hidden md:block) */}
+        <div className="hidden md:block table-wrap mt-2">
           <table className="table-base">
             <thead>
               <tr>

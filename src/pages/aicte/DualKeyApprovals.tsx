@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { CheckCircle2, FileCheck, FileSignature, KeyRound, Lock, Plus, Printer, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { api } from '../../api/client';
-import { Alert, Modal, PageHeader, Panel, Spinner, StatusTag } from '../../components/ui';
+import { Alert, DataCard, Modal, PageHeader, Panel, Spinner, StatusTag } from '../../components/ui';
 import { fmtDateTime, shortHash } from '../../lib/format';
 import { useSession } from '../../lib/session';
 import { useApi } from '../../lib/useApi';
@@ -182,22 +182,83 @@ export function DualKeyApprovalsPage() {
         )}
 
         {!loading && data && data.sanctions.length > 0 && (
-          <div className="table-wrap">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Sanction ID</th>
-                  <th>Institution</th>
-                  <th>Sanction Type & Penalty</th>
-                  <th>Status</th>
-                  <th>Dual-Key Signatures</th>
-                  <th>Date</th>
-                  <th className="text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="stagger-rows">
-                {data.sanctions.map((s: SanctionItem) => (
-                  <tr key={s.sanction_id}>
+          <>
+            {/* Mobile Data Cards (md:hidden) */}
+            <div className="md:hidden divide-y divide-border">
+              {data.sanctions.map((s: SanctionItem) => (
+                <DataCard
+                  key={s.sanction_id}
+                  title={s.institution_name}
+                  subtitle={s.institution_id}
+                  badge={<StatusTag value={s.status} />}
+                  fields={[
+                    { label: 'Sanction ID', value: s.sanction_id, mono: true },
+                    { label: 'Penalty', value: s.penalty_value },
+                    { label: 'Legal Clause', value: s.legal_clause },
+                    { label: 'Proposed Date', value: fmtDateTime(s.proposed_at) },
+                    {
+                      label: 'Dual-Key Quorum',
+                      value: (
+                        <div className="space-y-1 text-xs">
+                          <div className="flex items-center gap-1.5 text-emerald-700 font-medium">
+                            <CheckCircle2 size={12} /> Maker: {s.maker_name}
+                          </div>
+                          {s.status === 'EXECUTED_DUAL_SIGNED' && s.checker_name ? (
+                            <div className="flex items-center gap-1.5 text-indigo-700 font-medium">
+                              <CheckCircle2 size={12} /> Checker: {s.checker_name}
+                            </div>
+                          ) : s.status === 'PENDING_CHECKER_SIGNATURE' ? (
+                            <div className="flex items-center gap-1 text-amber-700 font-medium">
+                              <Lock size={12} /> Awaiting 2nd Key (Checker)
+                            </div>
+                          ) : (
+                            <div className="text-slate-500 italic">Rejected by Checker</div>
+                          )}
+                        </div>
+                      )
+                    }
+                  ]}
+                  actions={
+                    <div className="flex items-center gap-2 w-full pt-1">
+                      {s.status === 'PENDING_CHECKER_SIGNATURE' && canCheck && (
+                        <button
+                          type="button"
+                          className="btn btn-primary btn-sm flex-1 flex items-center justify-center gap-1 min-h-[44px]"
+                          onClick={() => { setSignOffModal(s); setCheckerNote(''); setSignErr(null); }}
+                        >
+                          <FileSignature size={14} /> Multi-Sign
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm flex-1 flex items-center justify-center gap-1 min-h-[44px]"
+                        onClick={() => setViewOrderModal(s)}
+                      >
+                        <FileCheck size={14} /> View Order
+                      </button>
+                    </div>
+                  }
+                />
+              ))}
+            </div>
+
+            {/* Desktop Table (hidden md:block) */}
+            <div className="hidden md:block table-wrap">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Sanction ID</th>
+                    <th>Institution</th>
+                    <th>Sanction Type & Penalty</th>
+                    <th>Status</th>
+                    <th>Dual-Key Signatures</th>
+                    <th>Date</th>
+                    <th className="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="stagger-rows">
+                  {data.sanctions.map((s: SanctionItem) => (
+                    <tr key={s.sanction_id}>
                       <td className="mono font-bold text-xs">{s.sanction_id}</td>
                       <td>
                         <div className="font-semibold text-sm">{s.institution_name}</div>
@@ -252,10 +313,11 @@ export function DualKeyApprovalsPage() {
                         </div>
                       </td>
                     </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </Panel>
 

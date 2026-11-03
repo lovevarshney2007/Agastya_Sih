@@ -36,16 +36,20 @@ export function NationalLedgerModal({ isOpen, onClose }: NationalLedgerModalProp
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#0e2448]/60 no-print"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-[#0e2448]/60 no-print"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg shadow-md border border-line w-full max-w-lg overflow-hidden text-ink"
+        className="bg-white rounded-t-2xl sm:rounded-lg shadow-xl border border-line w-full max-w-lg max-h-[90vh] sm:max-h-[85vh] overflow-y-auto text-ink pb-[env(safe-area-inset-bottom)]"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="ledger-title"
       >
+        {/* Mobile bottom sheet drag indicator */}
+        <div className="sm:hidden flex justify-center pt-2 pb-1 bg-navy" aria-hidden="true">
+          <div className="w-10 h-1 rounded-full bg-white/30" />
+        </div>
         {/* Tricolour Accent */}
         <div className="tricolour h-1" aria-hidden="true" />
 
@@ -170,7 +174,7 @@ export function NationalLedgerModal({ isOpen, onClose }: NationalLedgerModalProp
                 onClose();
                 navigate('/aicte/audit');
               }}
-              className="w-full sm:flex-1 btn btn-secondary btn-sm flex items-center justify-center gap-1.5 font-bold"
+              className="w-full sm:flex-1 btn btn-secondary btn-sm min-h-[44px] flex items-center justify-center gap-1.5 font-bold"
             >
               <ExternalLink size={13} />
               <span>{t('ledger_open_audit', 'Open Full Audit Ledger')}</span>
@@ -181,7 +185,7 @@ export function NationalLedgerModal({ isOpen, onClose }: NationalLedgerModalProp
                 onClose();
                 navigate('/aicte/security-sandbox');
               }}
-              className="w-full sm:flex-1 btn btn-primary btn-sm flex items-center justify-center gap-1.5 font-bold"
+              className="w-full sm:flex-1 btn btn-primary btn-sm min-h-[44px] flex items-center justify-center gap-1.5 font-bold"
             >
               <ShieldCheck size={13} />
               <span>{t('ledger_test_sandbox', 'Security Sandbox Exploit Test')}</span>

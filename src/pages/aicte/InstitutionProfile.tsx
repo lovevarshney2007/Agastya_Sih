@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { api } from '../../api/client';
-import { Alert, Empty, ErrorState, Field, KeyValue, Loading, Meter, Modal, PageHeader, Pagination, Panel, Stat, StatusTag } from '../../components/ui';
+import { Alert, DataCard, Empty, ErrorState, Field, KeyValue, Loading, Meter, Modal, PageHeader, Pagination, Panel, Stat, StatusTag } from '../../components/ui';
 import { fmtNum, humanize } from '../../lib/format';
 import { Link } from '../../lib/router';
 import { useApi } from '../../lib/useApi';
@@ -87,7 +87,26 @@ export function InstitutionProfile({ institutionId }: { institutionId: string })
           : students.data.total === 0 ? <Empty title="No students reported" /> : (
             <>
               <div className="px-4 py-2 text-xs text-muted border-b border-line-soft bg-wash">Opened for: {accessGranted}. This access is logged.</div>
-              <div className="table-wrap">
+              {/* Mobile Data Cards (md:hidden) */}
+              <div className="md:hidden divide-y divide-border">
+                {students.data.students.map((s) => (
+                  <DataCard
+                    key={s.enrolment_id}
+                    title={s.course}
+                    subtitle={`Student ID: ${s.student_id_no}`}
+                    badge={<StatusTag value={s.status} />}
+                    fields={[
+                      { label: 'APAAR ID', value: s.masked_apaar, mono: true },
+                      { label: 'Seat Category', value: humanize(s.seat_category) },
+                      { label: 'Identity', value: <StatusTag value={s.identity_status} /> },
+                      { label: 'Verification', value: <StatusTag value={s.verification_status} /> },
+                    ]}
+                  />
+                ))}
+              </div>
+
+              {/* Desktop Table (hidden md:block) */}
+              <div className="hidden md:block table-wrap">
                 <table className="data-table">
                   <thead><tr><th>Student ID</th><th>APAAR</th><th>Programme</th><th>Seat</th><th>Enrolment</th><th>Identity</th><th>Verification</th></tr></thead>
                   <tbody>

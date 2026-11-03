@@ -462,10 +462,10 @@ export function UploadWizard() {
                       </Alert>
                     )}
 
-                    <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
                       <button
                         type="button"
-                        className="btn btn-secondary btn-sm flex items-center gap-1.5"
+                        className="btn btn-secondary btn-sm flex items-center justify-center gap-1.5 w-full sm:w-auto min-h-[44px]"
                         onClick={() => setShowInspector((prev) => !prev)}
                       >
                         {showInspector ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -474,7 +474,7 @@ export function UploadWizard() {
 
                       <button
                         type="button"
-                        className="btn btn-secondary btn-sm flex items-center gap-1.5 text-brand"
+                        className="btn btn-secondary btn-sm flex items-center justify-center gap-1.5 text-brand w-full sm:w-auto min-h-[44px]"
                         onClick={() => file && downloadCleanCsv(preFlight, file.name)}
                       >
                         <CheckCheck size={14} /> Sanitize & Download Clean CSV
@@ -530,17 +530,17 @@ export function UploadWizard() {
                 {upload.pending ? (
                   <div className="mt-4 text-sm flex items-center gap-2"><Spinner /> Checking every row. Large files can take a minute — you can leave this page and find the result under Uploads.</div>
                 ) : (
-                  <div className="flex flex-wrap items-center gap-3 mt-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-4">
                     <button
                       type="button"
-                      className="btn btn-primary"
+                      className="btn btn-primary w-full sm:w-auto min-h-[44px]"
                       disabled={!file || (preFlight ? preFlight.hasAadhaarLeak : false)}
                       onClick={() => runUpload(false)}
                     >
                       Upload and check
                     </button>
-                    <span className="text-sm text-muted">or</span>
-                    <button type="button" className="btn btn-ghost" onClick={() => runUpload(true)}>Use the sample file</button>
+                    <span className="text-sm text-muted text-center sm:text-left">or</span>
+                    <button type="button" className="btn btn-ghost w-full sm:w-auto min-h-[44px]" onClick={() => runUpload(true)}>Use the sample file</button>
                   </div>
                 )}
                 <p className="hint">The sample file has 15 rows that trigger each rule once — useful for a walkthrough.</p>

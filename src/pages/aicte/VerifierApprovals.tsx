@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Modal, Panel, StatusTag } from '../../components/ui';
+import { Alert, DataCard, Modal, Panel, StatusTag } from '../../components/ui';
 import { api } from '../../api/client';
 import { useApi } from '../../lib/useApi';
 import { RefreshCw } from 'lucide-react';
@@ -127,8 +127,126 @@ export function VerifierApprovals() {
       {error && <Alert tone="warn" title="Error loading verifiers">{error}</Alert>}
 
       {/* Verifier Directory Table */}
+      {/* Verifier Directory Table */}
       <Panel title="Registered Verifier Organisations Directory">
-        <div className="table-wrap mt-2">
+        {/* Mobile Data Cards (md:hidden) */}
+        {!orgs || orgs.length === 0 ? (
+          <div className="md:hidden p-6 text-center text-muted">No verifier organisations found.</div>
+        ) : (
+          <div className="md:hidden divide-y divide-border">
+            {orgs.map((org: VerifierOrg) => {
+              const usagePct = Math.round((org.used_this_month / org.monthly_quota) * 100);
+              return (
+                <DataCard
+                  key={org.org_id}
+                  title={org.org_name}
+                  subtitle={`${org.org_id} · ${org.contact_email}`}
+                  badge={<StatusTag value={org.status} />}
+                  fields={[
+                    { label: 'Type / Reg', value: `${org.org_type} (${org.registration_no || 'N/A'})` },
+                    {
+                      label: 'Allowed Purposes',
+                      value: (
+                        <div className="flex flex-wrap gap-1">
+                          {org.allowed_purposes?.map((p: string, i: number) => (
+                            <span key={i} className="px-1.5 py-0.5 rounded bg-surface border border-line text-[11px] text-muted">
+                              {p}
+                            </span>
+                          ))}
+                        </div>
+                      )
+                    },
+                    {
+                      label: 'Monthly Quota',
+                      value: (
+                        <div className="w-full space-y-1">
+                          <div className="flex justify-between text-xs font-mono">
+                            <span>{org.used_this_month} / {org.monthly_quota}</span>
+                            <span className={usagePct > 80 ? 'text-danger font-bold' : 'text-muted'}>{usagePct}%</span>
+                          </div>
+                          <div className="w-full bg-surface border border-line rounded-full h-1.5 overflow-hidden">
+                            <div
+                              className={`h-full ${usagePct > 80 ? 'bg-danger' : 'bg-navy'}`}
+                              style={{ width: `${Math.min(usagePct, 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      )
+                    },
+                    ...(org.suspension_reason ? [{ label: 'Suspension Reason', value: <span className="text-danger">{org.suspension_reason}</span> }] : [])
+                  ]}
+                  actions={
+                    <div className="flex flex-wrap gap-2 w-full pt-1">
+                      {org.status === 'PENDING' && (
+                        <>
+                          <button
+                            type="button"
+                            className="btn btn-primary btn-sm flex-1 min-h-[44px]"
+                            onClick={() => {
+                              setSelectedOrg(org);
+                              setTargetStatus('APPROVED');
+                            }}
+                          >
+                            Approve
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm flex-1 min-h-[44px]"
+                            onClick={() => {
+                              setSelectedOrg(org);
+                              setTargetStatus('REJECTED');
+                            }}
+                          >
+                            Reject
+                          </button>
+                        </>
+                      )}
+                      {org.status === 'APPROVED' && (
+                        <>
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm flex-1 min-h-[44px]"
+                            onClick={() => {
+                              setQuotaOrg(org);
+                              setNewQuota(org.monthly_quota);
+                            }}
+                          >
+                            Quota
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm flex-1 min-h-[44px] text-danger hover:text-danger"
+                            onClick={() => {
+                              setSelectedOrg(org);
+                              setTargetStatus('SUSPENDED');
+                            }}
+                          >
+                            Kill-Switch
+                          </button>
+                        </>
+                      )}
+                      {org.status === 'SUSPENDED' && (
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm w-full min-h-[44px]"
+                          onClick={() => {
+                            setSelectedOrg(org);
+                            setTargetStatus('APPROVED');
+                          }}
+                        >
+                          Reactivate
+                        </button>
+                      )}
+                    </div>
+                  }
+                />
+              );
+            })}
+          </div>
+        )}
+
+        {/* Desktop Table (hidden md:block) */}
+        <div className="hidden md:block table-wrap mt-2">
           <table className="table-base">
             <thead>
               <tr>

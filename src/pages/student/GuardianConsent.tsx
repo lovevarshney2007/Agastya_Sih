@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { api } from '../../api/client';
-import { Alert, Modal, PageHeader, Panel, StatusTag } from '../../components/ui';
+import { Alert, DataCard, Modal, PageHeader, Panel, StatusTag } from '../../components/ui';
 import { fmtDate } from '../../lib/format';
 import { useApi } from '../../lib/useApi';
 import { CheckCircle2, Shield } from 'lucide-react';
@@ -178,11 +178,11 @@ export function GuardianConsent() {
         </div>
       </Panel>
 
-      <div className="border-b border-line flex gap-4">
+      <div className="border-b border-line flex gap-4 overflow-x-auto no-scrollbar scroll-fade whitespace-nowrap min-w-0">
         <button
           type="button"
           onClick={() => setActiveTab('pending')}
-          className={`pb-2.5 text-sm font-semibold border-b-2 transition-colors ${
+          className={`pb-2.5 text-sm font-semibold border-b-2 transition-colors shrink-0 min-h-[44px] ${
             activeTab === 'pending' ? 'border-brand text-brand' : 'border-transparent text-muted hover:text-ink'
           }`}
         >
@@ -191,7 +191,7 @@ export function GuardianConsent() {
         <button
           type="button"
           onClick={() => setActiveTab('active')}
-          className={`pb-2.5 text-sm font-semibold border-b-2 transition-colors ${
+          className={`pb-2.5 text-sm font-semibold border-b-2 transition-colors shrink-0 min-h-[44px] ${
             activeTab === 'active' ? 'border-brand text-brand' : 'border-transparent text-muted hover:text-ink'
           }`}
         >
@@ -254,7 +254,43 @@ export function GuardianConsent() {
 
       {activeTab === 'active' && (
         <Panel title="Parental Consent History">
-          <div className="table-wrap">
+          {/* Mobile Data Cards (md:hidden) */}
+          {activeList.length === 0 ? (
+            <div className="md:hidden p-6 text-center text-muted">No historical guardian records found.</div>
+          ) : (
+            <div className="md:hidden divide-y divide-border">
+              {activeList.map((r) => (
+                <DataCard
+                  key={r.guardian_consent_id}
+                  title={r.verifier_name}
+                  subtitle={r.purpose}
+                  badge={<StatusTag value={r.status} />}
+                  fields={[
+                    { label: 'Guardian', value: `${r.guardian_name || 'Guardian'} (${r.relation})` },
+                    { label: 'Responded On', value: fmtDate(r.responded_at) },
+                    ...(r.receipt_token ? [{ label: 'Receipt Token', value: r.receipt_token, mono: true }] : [])
+                  ]}
+                  actions={
+                    r.status === 'APPROVED' ? (
+                      <div className="flex items-center gap-2 w-full pt-1">
+                        <span className="mono text-xs text-brand font-semibold flex-1 truncate">{r.receipt_token}</span>
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm min-h-[44px] px-4"
+                          onClick={() => handleRevoke(r)}
+                        >
+                          Revoke
+                        </button>
+                      </div>
+                    ) : undefined
+                  }
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Desktop Table (hidden md:block) */}
+          <div className="hidden md:block table-wrap">
             <table className="table-base">
               <thead>
                 <tr>

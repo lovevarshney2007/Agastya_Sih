@@ -158,16 +158,20 @@ export function JuryRubricModal({ isOpen, onClose }: JuryRubricModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-[#0e2448]/60 no-print"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-5 bg-[#0e2448]/60 no-print"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg shadow-md border border-line w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden text-ink"
+        className="bg-white rounded-t-2xl sm:rounded-lg shadow-xl border border-line w-full max-w-3xl max-h-[90vh] sm:max-h-[85vh] flex flex-col overflow-hidden text-ink pb-[env(safe-area-inset-bottom)]"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="rubric-modal-title"
       >
+        {/* Mobile bottom sheet drag indicator */}
+        <div className="sm:hidden flex justify-center pt-2 pb-1 bg-navy" aria-hidden="true">
+          <div className="w-10 h-1 rounded-full bg-white/30" />
+        </div>
         {/* Tricolour Accent */}
         <div className="tricolour h-1.5" aria-hidden="true" />
 
@@ -265,12 +269,12 @@ export function JuryRubricModal({ isOpen, onClose }: JuryRubricModalProps) {
                     <span>Statutory Rule Enforced &amp; Tested</span>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                     <button
                       type="button"
                       onClick={() => handleQuickVerify(item)}
                       disabled={isTesting || testingAll}
-                      className="btn btn-secondary btn-xs flex items-center gap-1 font-semibold text-xs cursor-pointer"
+                      className="btn btn-secondary btn-xs flex-1 sm:flex-none flex items-center justify-center gap-1 font-semibold text-xs cursor-pointer min-h-[36px]"
                       title="Run instantaneous mathematical & statutory verification check"
                     >
                       <Zap size={11} className={isVerified ? 'text-ok fill-current' : 'text-brand'} />
@@ -281,7 +285,7 @@ export function JuryRubricModal({ isOpen, onClose }: JuryRubricModalProps) {
                       type="button"
                       onClick={() => handleTestRequirement(item)}
                       disabled={switchingId === item.id}
-                      className="btn btn-primary btn-xs flex items-center gap-1.5 font-bold cursor-pointer shadow-xs"
+                      className="btn btn-primary btn-xs flex-1 sm:flex-none flex items-center justify-center gap-1.5 font-bold cursor-pointer shadow-xs min-h-[36px]"
                       title="Switch role and navigate directly to this module"
                     >
                       <span>{switchingId === item.id ? 'Loading...' : item.actionText}</span>
@@ -295,14 +299,14 @@ export function JuryRubricModal({ isOpen, onClose }: JuryRubricModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="bg-wash px-5 py-3 border-t border-line flex items-center justify-between text-xs shrink-0">
-          <span className="text-muted">
+        <div className="bg-wash px-4 sm:px-5 py-3 border-t border-line flex flex-col sm:flex-row items-center justify-between gap-2 text-xs shrink-0">
+          <span className="text-muted text-center sm:text-left">
             Ministry of Education · AICTE National Depository Ledger Architecture
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="btn btn-secondary btn-sm font-semibold"
+            className="w-full sm:w-auto btn btn-secondary btn-sm font-semibold min-h-[44px]"
           >
             Close Rubric
           </button>

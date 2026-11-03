@@ -84,11 +84,11 @@ export function MLIntelligencePage() {
       />
 
       {/* Navigation Tabs */}
-      <div className="flex border-b border-line-soft mb-6 space-x-4">
+      <div className="flex border-b border-line-soft mb-6 space-x-4 overflow-x-auto no-scrollbar scroll-fade whitespace-nowrap min-w-0">
         <button
           type="button"
           onClick={() => setActiveTab('forecast')}
-          className={`pb-3 px-2 font-medium text-sm flex items-center gap-2 border-b-2 transition-colors ${
+          className={`pb-3 px-2 font-medium text-sm flex items-center gap-2 border-b-2 transition-colors shrink-0 min-h-[44px] ${
             activeTab === 'forecast'
               ? 'border-brand text-brand font-semibold'
               : 'border-transparent text-muted hover:text-ink'
@@ -100,7 +100,7 @@ export function MLIntelligencePage() {
         <button
           type="button"
           onClick={() => setActiveTab('dedup')}
-          className={`pb-3 px-2 font-medium text-sm flex items-center gap-2 border-b-2 transition-colors ${
+          className={`pb-3 px-2 font-medium text-sm flex items-center gap-2 border-b-2 transition-colors shrink-0 min-h-[44px] ${
             activeTab === 'dedup'
               ? 'border-brand text-brand font-semibold'
               : 'border-transparent text-muted hover:text-ink'
@@ -112,7 +112,7 @@ export function MLIntelligencePage() {
         <button
           type="button"
           onClick={() => setActiveTab('cohort')}
-          className={`pb-3 px-2 font-medium text-sm flex items-center gap-2 border-b-2 transition-colors ${
+          className={`pb-3 px-2 font-medium text-sm flex items-center gap-2 border-b-2 transition-colors shrink-0 min-h-[44px] ${
             activeTab === 'cohort'
               ? 'border-brand text-brand font-semibold'
               : 'border-transparent text-muted hover:text-ink'

@@ -127,7 +127,7 @@ export function PublicVerify({ token }: { token?: string }) {
       {data && (
         <div className="panel overflow-hidden card-lift shadow-xl border border-line">
           {data.status === 'VALID' && (
-            <div className="bg-ok text-white px-5 py-4 flex items-center justify-between gap-3">
+            <div className="bg-ok text-white px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <CircleCheck size={30} className="animate-pop shrink-0" aria-hidden="true" />
                 <div>
@@ -137,7 +137,7 @@ export function PublicVerify({ token }: { token?: string }) {
               </div>
               <button
                 type="button"
-                className="btn btn-sm bg-white text-ok hover:bg-ok-wash font-semibold flex items-center gap-1.5 shrink-0 shadow-xs"
+                className="btn btn-sm bg-white text-ok hover:bg-ok-wash font-semibold flex items-center justify-center gap-1.5 shrink-0 shadow-xs min-h-[44px] w-full sm:w-auto"
                 onClick={() => setCertModalOpen(true)}
               >
                 <Award size={15} /> Official Certificate
@@ -187,21 +187,21 @@ export function PublicVerify({ token }: { token?: string }) {
               </p>
             )}
 
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-line-soft text-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-line-soft text-sm">
               <span className="text-muted">Last checked {fmtTime(data.checked_at)}</span>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                 {data.status === 'VALID' && (
                   <>
                     <button
                       type="button"
-                      className="btn btn-secondary btn-sm flex items-center gap-1"
+                      className="btn btn-secondary btn-sm flex-1 sm:flex-none flex items-center justify-center gap-1 min-h-[44px]"
                       onClick={() => setCertModalOpen(true)}
                     >
                       <FileText size={14} /> Certificate (A4)
                     </button>
                     <button
                       type="button"
-                      className="btn btn-secondary btn-sm flex items-center gap-1"
+                      className="btn btn-secondary btn-sm flex-1 sm:flex-none flex items-center justify-center gap-1 min-h-[44px]"
                       onClick={() => {
                         downloadW3cCredentialJson({
                           credential_id: data.credential_id,
@@ -219,7 +219,7 @@ export function PublicVerify({ token }: { token?: string }) {
                     </button>
                   </>
                 )}
-                <button type="button" className="btn btn-secondary btn-sm" onClick={reload} disabled={loading}>Check again</button>
+                <button type="button" className="btn btn-secondary btn-sm flex-1 sm:flex-none min-h-[44px]" onClick={reload} disabled={loading}>Check again</button>
               </div>
             </div>
           </div>
@@ -253,13 +253,18 @@ function OfficialCertificateModal({
   const claims = data.claims || { institution: '', programme: '', academic_year: '', status: '' };
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-[#0e2448]/60 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-[#0e2448]/60 overflow-y-auto no-print"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-3xl bg-white rounded-lg shadow-md border border-line overflow-hidden my-4 sm:my-6 relative"
+        className="w-full max-w-3xl bg-white rounded-t-2xl sm:rounded-lg shadow-xl border border-line overflow-hidden max-h-[92vh] sm:max-h-[90vh] overflow-y-auto my-0 sm:my-6 relative pb-[env(safe-area-inset-bottom)]"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Mobile bottom sheet drag indicator */}
+        <div className="sm:hidden flex justify-center pt-2 pb-1 bg-wash" aria-hidden="true">
+          <div className="w-10 h-1 rounded-full bg-slate-400" />
+        </div>
+
         {/* Modal Controls Bar */}
         <div className="no-print bg-wash border-b border-line px-3 sm:px-5 py-2.5 sm:py-3 flex items-center justify-between">
           <div className="flex items-center gap-1.5 sm:gap-2">
@@ -269,7 +274,7 @@ function OfficialCertificateModal({
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
-              className="btn btn-secondary btn-sm flex items-center gap-1.5"
+              className="btn btn-secondary btn-sm flex items-center gap-1.5 min-h-[38px]"
               onClick={() => {
                 downloadW3cCredentialJson({
                   credential_id: data.credential_id,
@@ -287,14 +292,14 @@ function OfficialCertificateModal({
             </button>
             <button
               type="button"
-              className="btn btn-primary btn-sm flex items-center gap-1.5"
+              className="btn btn-primary btn-sm flex items-center gap-1.5 min-h-[38px]"
               onClick={() => window.print()}
             >
               <Printer size={14} /> <span className="hidden sm:inline">Print / Save PDF</span><span className="sm:hidden">Print</span>
             </button>
             <button
               type="button"
-              className="btn btn-secondary btn-sm p-1.5"
+              className="btn btn-secondary btn-sm p-2 min-h-[38px] min-w-[38px] flex items-center justify-center"
               onClick={onClose}
               aria-label="Close certificate preview"
             >
