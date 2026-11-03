@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-display: "Plus Jakarta Sans", "Inter", -apple-system, sans-serif;
+  --font-sans: "Inter", "Manrope", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Manrope", "Inter", -apple-system, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
 
   /* Institutional Enterprise Palette (GovTech UK / Digital India / Stripe Standards) */
@@ -299,63 +299,321 @@
   }
 }
 
-/* ── GIGW High-Contrast Mode ────────────────────────── */
+/* ── HIGH-CONTRAST ENTERPRISE GOVERNMENT SAAS DESIGN SYSTEM ────────── */
 html.high-contrast {
-  --color-page: #000000;
-  --color-panel: #0a0e1a;
-  --color-wash: #141b2d;
-  --color-ink: #ffffff;
-  --color-muted: #e2e8f0;
-  --color-faint: #94a3b8;
-  --color-line: #ffd700;
-  --color-line-soft: #475569;
-  --color-navy: #000000;
-  --color-navy-dark: #000000;
-  --color-brand: #ffd700;
-  --color-brand-wash: #1e1b00;
+  /* High-Contrast Palette */
+  --color-page: #080B12;
+  --color-wash: #101725;
+  --color-panel: #151F30;
+  --color-surface: #151F30;
+  --color-surface-hover: #1C293B;
+  --color-elevated: #1C293B;
+  --color-line: #35445A;
+  --color-line-soft: #233145;
+
+  --color-ink: #F8FAFC;
+  --color-text-primary: #F8FAFC;
+  --color-text-secondary: #C0CAD8;
+  --color-muted: #929FB0;
+  --color-faint: #64748B;
+
+  --color-brand: #FFD400;
+  --color-brand-wash: #1C293B;
+  --color-navy: #101725;
+  --color-navy-dark: #080B12;
+
+  --color-saffron: #FFD400;
+  --color-accent-gold: #FFD400;
+  --color-accent-cyan: #00D9E8;
+
+  --color-ok: #00D68F;
+  --color-ok-wash: rgba(0, 214, 143, 0.16);
+  --color-ok-border: #00D68F;
+
+  --color-warn: #FFB020;
+  --color-warn-wash: rgba(255, 176, 32, 0.16);
+  --color-warn-border: #FFB020;
+
+  --color-bad: #FF5263;
+  --color-bad-wash: rgba(255, 82, 99, 0.16);
+  --color-bad-border: #FF5263;
+
+  --color-hold: #00D9E8;
+  --color-hold-wash: rgba(0, 217, 232, 0.16);
 }
 
 html.high-contrast body {
-  background-color: #000000 !important;
-  color: #ffffff !important;
+  background-color: #080B12 !important;
+  color: #F8FAFC !important;
+  font-family: var(--font-sans);
 }
 
+/* Headings & Text Hierarchy */
+html.high-contrast h1,
+html.high-contrast h2,
+html.high-contrast h3,
+html.high-contrast h4,
+html.high-contrast h5,
+html.high-contrast h6,
+html.high-contrast .text-navy,
+html.high-contrast .text-navy-dark,
+html.high-contrast .text-slate-900,
+html.high-contrast .text-slate-800,
+html.high-contrast .text-slate-700,
+html.high-contrast .text-ink {
+  color: #F8FAFC !important;
+}
+
+html.high-contrast p,
+html.high-contrast .text-slate-600,
+html.high-contrast .text-secondary {
+  color: #C0CAD8 !important;
+}
+
+html.high-contrast .text-slate-500,
+html.high-contrast .text-muted,
+html.high-contrast .text-faint,
+html.high-contrast .text-slate-400 {
+  color: #929FB0 !important;
+}
+
+/* Institutional Card Surfaces */
 html.high-contrast .panel,
-html.high-contrast header,
+html.high-contrast .data-card,
 html.high-contrast .bg-white {
-  background-color: #0c1220 !important;
-  color: #ffffff !important;
-  border-color: #ffd700 !important;
+  background-color: #151F30 !important;
+  border-color: #35445A !important;
+  color: #F8FAFC !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.45) !important;
+}
+
+html.high-contrast .bg-surface {
+  background-color: #1C293B !important;
+  border-color: #35445A !important;
+  color: #F8FAFC !important;
+}
+
+html.high-contrast .bg-wash,
+html.high-contrast .bg-slate-50,
+html.high-contrast .bg-brand-wash {
+  background-color: #101725 !important;
+}
+
+html.high-contrast .panel-head {
+  background-color: #1C293B !important;
+  border-bottom: 1px solid #35445A !important;
+}
+
+html.high-contrast .panel-head h2 {
+  color: #F8FAFC !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+}
+
+/* Top bar, Header & Nav */
+html.high-contrast .bg-navy-dark {
+  background-color: #080B12 !important;
+  border-bottom: 1px solid #35445A !important;
+  color: #C0CAD8 !important;
+}
+
+html.high-contrast .bg-navy {
+  background-color: #101725 !important;
+  color: #F8FAFC !important;
+}
+
+html.high-contrast [role="dialog"] {
+  background-color: #151F30 !important;
+  border-color: #35445A !important;
+  color: #F8FAFC !important;
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.7) !important;
+}
+
+html.high-contrast [data-active="true"] {
+  background-color: #1C293B !important;
+  color: #F8FAFC !important;
+}
+html.high-contrast [data-active="true"] .text-navy {
+  color: #FFD400 !important;
+}
+
+html.high-contrast header {
+  background-color: #101725 !important;
+  border-bottom: 1px solid #35445A !important;
+  color: #F8FAFC !important;
 }
 
 html.high-contrast nav {
-  background-color: #000000 !important;
-  border-bottom: 2px solid #ffd700 !important;
+  background-color: #080B12 !important;
+  border-bottom: 2px solid #35445A !important;
 }
 
-html.high-contrast a {
-  color: #00e5ff !important;
+/* Universal Borders */
+html.high-contrast .border-line,
+html.high-contrast .border-line-soft,
+html.high-contrast .border-slate-200,
+html.high-contrast .border-slate-100 {
+  border-color: #35445A !important;
 }
 
+html.high-contrast .divide-line-soft > :not([hidden]) ~ :not([hidden]),
+html.high-contrast .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
+html.high-contrast .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #35445A !important;
+}
+
+/* Links */
+html.high-contrast a:not(.btn):not(.tag) {
+  color: #00D9E8 !important;
+}
+html.high-contrast a:not(.btn):not(.tag):hover {
+  color: #FFD400 !important;
+}
+
+/* Buttons */
 html.high-contrast .btn-primary {
-  background-color: #ffd700 !important;
-  color: #000000 !important;
+  background-color: #FFD400 !important;
+  color: #080B12 !important;
   font-weight: 700 !important;
-  border: 1px solid #ffd700 !important;
+  border: 1px solid #FFD400 !important;
+  box-shadow: 0 2px 8px rgba(255, 212, 0, 0.3) !important;
+}
+html.high-contrast .btn-primary:hover:not(:disabled) {
+  background-color: #FFE033 !important;
+  border-color: #FFE033 !important;
+  color: #080B12 !important;
 }
 
 html.high-contrast .btn-secondary {
-  background-color: #1a202c !important;
-  color: #ffffff !important;
-  border: 1px solid #ffffff !important;
+  background-color: #1C293B !important;
+  color: #F8FAFC !important;
+  border: 1px solid #35445A !important;
+}
+html.high-contrast .btn-secondary:hover:not(:disabled) {
+  background-color: #233145 !important;
+  border-color: #FFD400 !important;
+  color: #FFD400 !important;
 }
 
-html.high-contrast .text-ink {
-  color: #ffffff !important;
+html.high-contrast .btn-saffron {
+  background-color: #FFD400 !important;
+  color: #080B12 !important;
+  font-weight: 700 !important;
+  border: 1px solid #FFD400 !important;
+}
+html.high-contrast .btn-saffron:hover:not(:disabled) {
+  background-color: #FFE033 !important;
 }
 
-html.high-contrast .text-muted {
-  color: #cbd5e1 !important;
+html.high-contrast .btn-ghost {
+  color: #C0CAD8 !important;
+}
+html.high-contrast .btn-ghost:hover:not(:disabled) {
+  background-color: #1C293B !important;
+  color: #FFD400 !important;
+}
+
+html.high-contrast .btn-danger {
+  background-color: #FF5263 !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+  border: 1px solid #FF5263 !important;
+  box-shadow: 0 2px 8px rgba(255, 82, 99, 0.35) !important;
+}
+html.high-contrast .btn-danger:hover:not(:disabled) {
+  background-color: #FF6E7C !important;
+  border-color: #FF6E7C !important;
+}
+
+/* Form Controls */
+html.high-contrast .input,
+html.high-contrast .select,
+html.high-contrast .textarea {
+  background-color: #101725 !important;
+  color: #F8FAFC !important;
+  border: 1px solid #35445A !important;
+}
+html.high-contrast .input:focus,
+html.high-contrast .select:focus,
+html.high-contrast .textarea:focus {
+  border-color: #00D9E8 !important;
+  box-shadow: 0 0 0 3px rgba(0, 217, 232, 0.25) !important;
+}
+
+/* Status Tags & Semantic Badges */
+html.high-contrast .tag-ok,
+html.high-contrast .bg-emerald-50,
+html.high-contrast .bg-emerald-50\/70 {
+  background-color: rgba(0, 214, 143, 0.16) !important;
+  color: #00D68F !important;
+  border-color: rgba(0, 214, 143, 0.45) !important;
+}
+
+html.high-contrast .tag-warn,
+html.high-contrast .bg-amber-50,
+html.high-contrast .bg-amber-50\/70 {
+  background-color: rgba(255, 176, 32, 0.16) !important;
+  color: #FFB020 !important;
+  border-color: rgba(255, 176, 32, 0.45) !important;
+}
+
+html.high-contrast .tag-bad,
+html.high-contrast .bg-rose-50,
+html.high-contrast .bg-rose-50\/70 {
+  background-color: rgba(255, 82, 99, 0.16) !important;
+  color: #FF5263 !important;
+  border-color: rgba(255, 82, 99, 0.45) !important;
+}
+
+html.high-contrast .tag-hold,
+html.high-contrast .bg-blue-50,
+html.high-contrast .bg-blue-50\/70 {
+  background-color: rgba(0, 217, 232, 0.16) !important;
+  color: #00D9E8 !important;
+  border-color: rgba(0, 217, 232, 0.45) !important;
+}
+
+html.high-contrast .tag-neutral,
+html.high-contrast .bg-slate-100 {
+  background-color: rgba(146, 159, 176, 0.16) !important;
+  color: #C0CAD8 !important;
+  border-color: #35445A !important;
+}
+
+/* Tables */
+html.high-contrast .data-table th {
+  background-color: #101725 !important;
+  color: #929FB0 !important;
+  border-bottom: 1px solid #35445A !important;
+}
+html.high-contrast .data-table td {
+  color: #C0CAD8 !important;
+  border-bottom: 1px solid #233145 !important;
+}
+html.high-contrast .data-table tr:hover td {
+  background-color: #1C293B !important;
+}
+
+/* Shimmer Skeleton */
+html.high-contrast .skeleton {
+  background: linear-gradient(90deg, #151F30 25%, #1C293B 50%, #151F30 75%) !important;
+  background-size: 200% 100% !important;
+}
+
+/* Custom Scrollbars */
+html.high-contrast ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+html.high-contrast ::-webkit-scrollbar-track {
+  background: #080B12;
+}
+html.high-contrast ::-webkit-scrollbar-thumb {
+  background: #35445A;
+  border-radius: 4px;
+}
+html.high-contrast ::-webkit-scrollbar-thumb:hover {
+  background: #4A5F7E;
 }
 
 @media print {

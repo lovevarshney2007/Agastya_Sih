@@ -185,15 +185,15 @@ export function JuryTourWidget() {
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className={`bg-navy hover:bg-navy-dark text-white px-2.5 py-2 sm:px-3.5 sm:py-2.5 rounded-full shadow-xl flex items-center gap-1.5 sm:gap-2 border-2 ${
-            isAutoPlay ? 'border-amber-400 ring-2 ring-amber-300' : 'border-saffron'
+          className={`bg-[#101725] hover:bg-[#1C293B] text-[#F8FAFC] px-3 py-2 sm:px-4 sm:py-2.5 rounded-full shadow-2xl flex items-center gap-2 border-2 ${
+            isAutoPlay ? 'border-[#FFD400] ring-4 ring-[#FFD400]/25' : 'border-[#FFD400]'
           } text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer`}
           title="Open interactive multi-role platform walkthrough"
         >
           {isAutoPlay ? (
-            <span className="w-2 h-2 rounded-full bg-saffron animate-ping shrink-0" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#FFD400] animate-ping shrink-0" />
           ) : (
-            <Compass size={14} className="text-saffron shrink-0" />
+            <Compass size={15} className="text-[#FFD400] shrink-0" />
           )}
           <span className="hidden sm:inline">
             {isAutoPlay ? `Auto-Pitching (${autoPlaySecondsLeft}s)` : t('tour_launcher_full', 'Role Switcher & Tour')}
@@ -201,21 +201,21 @@ export function JuryTourWidget() {
           <span className="sm:hidden">
             {isAutoPlay ? `Auto (${autoPlaySecondsLeft}s)` : t('tour_launcher_mobile', 'Role Tour')}
           </span>
-          <span className="bg-saffron text-navy text-[10px] font-extrabold px-1.5 py-0.5 rounded-full font-mono">
+          <span className="bg-[#FFD400] text-[#080B12] text-[10px] font-extrabold px-1.5 py-0.5 rounded-full font-mono">
             {currentStepIdx + 1}/{TOUR_STEPS.length}
           </span>
         </button>
       ) : (
-        <div className="bg-white rounded-xl shadow-2xl border border-line w-[calc(100vw-1.5rem)] sm:w-96 max-w-[calc(100vw-1.5rem)] overflow-hidden transition-all animate-fade-up">
+        <div className="bg-[#151F30] rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.7)] border border-[#35445A] w-[calc(100vw-1.5rem)] sm:w-96 max-w-[calc(100vw-1.5rem)] overflow-hidden transition-all animate-fade-up">
           {/* Header */}
-          <div className="bg-navy text-white px-4 py-3 flex items-center justify-between gap-2">
+          <div className="bg-[#101725] text-[#F8FAFC] px-4 py-3 flex items-center justify-between gap-2 border-b border-[#35445A]">
             <div className="flex items-center gap-2 min-w-0">
-              <Compass size={16} className="text-saffron shrink-0" />
+              <Compass size={16} className="text-[#FFD400] shrink-0" />
               <div className="min-w-0">
-                <h4 className="text-[10px] font-bold uppercase tracking-wider text-saffron truncate">
+                <h4 className="text-[10px] font-extrabold uppercase tracking-wider text-[#FFD400] truncate">
                   {t('tour_executive_demo', 'Executive Demonstration')}
                 </h4>
-                <div className="text-xs font-bold leading-none truncate">
+                <div className="text-xs font-bold leading-none text-[#F8FAFC] truncate mt-0.5">
                   {t('tour_launcher_full', 'Role Switcher & Workflow Tour')}
                 </div>
               </div>
@@ -231,12 +231,12 @@ export function JuryTourWidget() {
                 }}
                 className={`px-2 py-1 rounded text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
                   isAutoPlay
-                    ? 'bg-saffron text-navy shadow-md ring-2 ring-saffron/50 font-extrabold'
-                    : 'bg-white/10 hover:bg-white/20 text-white'
+                    ? 'bg-[#FFD400] text-[#080B12] shadow-md ring-2 ring-[#FFD400]/50 font-extrabold'
+                    : 'bg-[#1C293B] hover:bg-[#233145] text-[#F8FAFC] border border-[#35445A]'
                 }`}
                 title="Auto-advance through all 9 demo steps every 12 seconds for hands-free pitching"
               >
-                {isAutoPlay ? <Pause size={10} className="fill-current" /> : <Play size={10} className="fill-current" />}
+                {isAutoPlay ? <Pause size={10} className="fill-current text-[#080B12]" /> : <Play size={10} className="fill-current text-[#FFD400]" />}
                 <span>{isAutoPlay ? `${autoPlaySecondsLeft}s` : t('tour_auto_pitch', 'Auto Pitch')}</span>
               </button>
               <button
@@ -245,7 +245,7 @@ export function JuryTourWidget() {
                   setIsOpen(false);
                   setIsAutoPlay(false);
                 }}
-                className="text-gray-300 hover:text-white p-1 rounded-md transition-colors cursor-pointer"
+                className="text-[#929FB0] hover:text-[#F8FAFC] p-1 rounded-md hover:bg-[#1C293B] transition-colors cursor-pointer"
                 aria-label={t('action_close', 'Close')}
               >
                 <X size={16} />
@@ -254,51 +254,51 @@ export function JuryTourWidget() {
           </div>
 
           {/* Progress Bar & Live Countdown */}
-          <div className="w-full bg-gray-100 h-1.5">
+          <div className="w-full bg-[#1C293B] h-1.5">
             <div
-              className="bg-saffron h-1.5 transition-all duration-300"
+              className="bg-[#FFD400] h-1.5 transition-all duration-300 shadow-[0_0_8px_rgba(255,212,0,0.5)]"
               style={{ width: `${((currentStepIdx + 1) / TOUR_STEPS.length) * 100}%` }}
             />
           </div>
           {isAutoPlay && (
-            <div className="bg-amber-50 px-3 py-1 border-b border-amber-200 text-[10px] text-amber-900 font-medium flex items-center justify-between">
+            <div className="bg-[#1C293B] px-3 py-1.5 border-b border-[#35445A] text-[10px] text-[#FFB020] font-medium flex items-center justify-between">
               <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#FFB020] animate-pulse" />
                 <span>Hands-free Pitch Mode: Step advances in</span>
               </span>
-              <span className="font-mono font-bold bg-amber-200/80 px-1.5 py-0.2 rounded text-amber-950">
+              <span className="font-mono font-bold bg-[#101725] px-1.5 py-0.2 rounded border border-[#35445A] text-[#FFD400]">
                 {autoPlaySecondsLeft}s
               </span>
             </div>
           )}
 
           {/* Body */}
-          <div className="p-4 space-y-3">
+          <div className="p-4 space-y-3.5 bg-[#151F30]">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-navy">{currentStep.title}</span>
-              <span className="text-muted font-mono">
+              <span className="font-bold text-[#F8FAFC]">{currentStep.title}</span>
+              <span className="text-[#00D9E8] font-mono font-bold text-[11px] bg-[#101725] px-2 py-0.5 rounded border border-[#35445A]">
                 Step {currentStep.step} of {TOUR_STEPS.length}
               </span>
             </div>
 
-            <div className="bg-surface p-2.5 rounded-lg border border-line">
-              <div className="text-[11px] font-bold text-muted uppercase">
+            <div className="bg-[#101725] p-3 rounded-lg border border-[#35445A]">
+              <div className="text-[10px] font-extrabold text-[#929FB0] uppercase tracking-wider">
                 {t('tour_active_persona', 'Active Demo Persona:')}
               </div>
-              <div className="text-xs font-bold text-navy mt-0.5">{currentStep.roleTitle}</div>
+              <div className="text-xs font-bold text-[#00D9E8] mt-0.5">{currentStep.roleTitle}</div>
             </div>
 
             <div>
-              <h5 className="text-xs font-bold text-ink">{currentStep.headline}</h5>
-              <p className="text-xs text-muted mt-1 leading-relaxed">{currentStep.description}</p>
+              <h5 className="text-xs font-bold text-[#F8FAFC]">{currentStep.headline}</h5>
+              <p className="text-xs text-[#C0CAD8] mt-1 leading-relaxed">{currentStep.description}</p>
             </div>
 
-            {/* Step Action Button */}
+            {/* Step Action Button: Prominent Institutional Gold CTA */}
             <button
               type="button"
               onClick={() => handleExecuteStep(currentStep)}
               disabled={switching}
-              className="w-full btn btn-primary btn-sm flex items-center justify-center gap-2 py-2 font-bold shadow-md cursor-pointer"
+              className="w-full btn btn-primary flex items-center justify-center gap-2 py-2.5 font-bold shadow-lg cursor-pointer bg-[#FFD400] text-[#080B12] hover:bg-[#FFE033] hover:shadow-[0_4px_20px_rgba(255,212,0,0.4)] transition-all"
             >
               <Play size={14} className="fill-current" />
               <span>{switching ? 'Switching Persona...' : currentStep.highlightAction}</span>
@@ -316,10 +316,10 @@ export function JuryTourWidget() {
                     void handleExecuteStep(s);
                   }}
                   title={s.title}
-                  className={`py-1 text-[11px] font-bold rounded border transition-colors cursor-pointer ${
+                  className={`py-1 text-[11px] font-bold rounded border transition-all cursor-pointer ${
                     idx === currentStepIdx
-                      ? 'bg-navy text-white border-navy ring-1 ring-saffron'
-                      : 'bg-surface text-muted border-line hover:border-navy'
+                      ? 'bg-[#FFD400] text-[#080B12] border-[#FFD400] font-extrabold shadow-sm'
+                      : 'bg-[#1C293B] text-[#C0CAD8] border-[#35445A] hover:border-[#FFD400] hover:text-[#F8FAFC]'
                   }`}
                 >
                   {s.step}
@@ -328,12 +328,12 @@ export function JuryTourWidget() {
             </div>
 
             {/* Navigation buttons */}
-            <div className="flex items-center justify-between pt-2 border-t border-line text-xs">
+            <div className="flex items-center justify-between pt-2.5 border-t border-[#35445A] text-xs">
               <button
                 type="button"
                 onClick={handlePrev}
                 disabled={currentStepIdx === 0 || switching}
-                className="flex items-center gap-1 font-semibold text-muted hover:text-navy disabled:opacity-30 cursor-pointer"
+                className="flex items-center gap-1 font-semibold text-[#C0CAD8] hover:text-[#F8FAFC] disabled:opacity-30 cursor-pointer transition-colors"
               >
                 <ChevronLeft size={14} />
                 <span>{t('action_prev', 'Prev')}</span>
@@ -343,7 +343,7 @@ export function JuryTourWidget() {
                 type="button"
                 onClick={handleReset}
                 title="Restart walkthrough from Step 1"
-                className="flex items-center gap-1 font-semibold text-muted hover:text-navy cursor-pointer"
+                className="flex items-center gap-1 font-semibold text-[#929FB0] hover:text-[#FFD400] cursor-pointer transition-colors"
               >
                 <RotateCcw size={12} />
                 <span>{t('action_restart', 'Restart')}</span>
@@ -353,7 +353,7 @@ export function JuryTourWidget() {
                 type="button"
                 onClick={handleNext}
                 disabled={currentStepIdx === TOUR_STEPS.length - 1 || switching}
-                className="flex items-center gap-1 font-semibold text-navy hover:text-navy-dark disabled:opacity-30 cursor-pointer"
+                className="flex items-center gap-1 font-bold text-[#00D9E8] hover:text-[#FFD400] disabled:opacity-30 cursor-pointer transition-colors"
               >
                 <span>{t('action_next', 'Next')}</span>
                 <ChevronRight size={14} />

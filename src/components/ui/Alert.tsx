@@ -22,28 +22,28 @@ const TONE_CONFIG: Record<
   }
 > = {
   info: {
-    container: 'bg-blue-50/70 border-blue-300 text-blue-900',
+    container: 'bg-[#151F30] border-[#35445A] border-l-[#00D9E8] text-[#F8FAFC]',
     icon: Info,
-    iconClass: 'text-blue-600',
-    titleColor: 'text-blue-950',
+    iconClass: 'text-[#00D9E8]',
+    titleColor: 'text-[#00D9E8]',
   },
   ok: {
-    container: 'bg-emerald-50/70 border-emerald-300 text-emerald-900',
+    container: 'bg-[#151F30] border-[#35445A] border-l-[#00D68F] text-[#F8FAFC]',
     icon: CircleCheck,
-    iconClass: 'text-emerald-600',
-    titleColor: 'text-emerald-950',
+    iconClass: 'text-[#00D68F]',
+    titleColor: 'text-[#00D68F]',
   },
   warn: {
-    container: 'bg-amber-50/70 border-amber-300 text-amber-900',
+    container: 'bg-[#151F30] border-[#35445A] border-l-[#FFB020] text-[#F8FAFC]',
     icon: TriangleAlert,
-    iconClass: 'text-amber-600',
-    titleColor: 'text-amber-950',
+    iconClass: 'text-[#FFB020]',
+    titleColor: 'text-[#FFB020]',
   },
   bad: {
-    container: 'bg-rose-50/70 border-rose-300 text-rose-900',
+    container: 'bg-[#151F30] border-[#35445A] border-l-[#FF5263] text-[#F8FAFC]',
     icon: CircleAlert,
-    iconClass: 'text-rose-600',
-    titleColor: 'text-rose-950',
+    iconClass: 'text-[#FF5263]',
+    titleColor: 'text-[#FF5263]',
   },
 };
 
@@ -65,7 +65,7 @@ export function Alert({
   return (
     <div
       role={tone === 'bad' ? 'alert' : 'status'}
-      className={`border-l-4 border rounded-r-md px-4 py-3 flex gap-3 text-xs sm:text-sm leading-relaxed ${conf.container} ${className}`}
+      className={`border-l-4 border rounded-r-lg px-4 py-3.5 flex gap-3 text-xs sm:text-sm leading-relaxed shadow-md ${conf.container} ${className}`}
     >
       <IconComponent
         size={18}
@@ -74,14 +74,14 @@ export function Alert({
       />
       <div className="flex-1 min-w-0">
         {title && <div className={`font-semibold ${conf.titleColor}`}>{title}</div>}
-        {children && <div className={title ? 'mt-1 text-slate-700' : 'text-slate-800'}>{children}</div>}
+        {children && <div className={title ? 'mt-1 text-[#C0CAD8]' : 'text-[#F8FAFC]'}>{children}</div>}
         {action && <div className="mt-2">{action}</div>}
       </div>
       {onClose && (
         <button
           type="button"
           onClick={onClose}
-          className="text-slate-500 hover:text-slate-800 p-0.5 rounded transition-colors shrink-0 focus-visible:outline-2 focus-visible:outline-brand"
+          className="text-[#929FB0] hover:text-[#F8FAFC] p-0.5 rounded transition-colors shrink-0 focus-visible:outline-2 focus-visible:outline-[#FFD400]"
           aria-label="Dismiss notification"
         >
           <X size={16} aria-hidden="true" />

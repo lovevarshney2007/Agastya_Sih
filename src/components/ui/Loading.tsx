@@ -116,17 +116,17 @@ export function AsOf({
   loading?: boolean;
 }) {
   return (
-    <span className="inline-flex items-center gap-2 text-xs text-slate-500">
-      <span>As of {fmtTime(at)}</span>
+    <span className="inline-flex items-center gap-2.5 text-xs text-[#929FB0]">
+      <span className="font-mono">As of {fmtTime(at)}</span>
       {onRefresh && (
         <button
           type="button"
-          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs text-brand hover:bg-brand-wash transition-colors cursor-pointer disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-[#1C293B] border border-[#35445A] text-[#C0CAD8] hover:text-[#FFD400] hover:border-[#FFD400] hover:bg-[#233145] transition-all cursor-pointer disabled:opacity-50 shadow-xs active:scale-95"
           onClick={onRefresh}
           disabled={loading}
           aria-label="Refresh record"
         >
-          <RefreshCw size={12} className={loading ? 'animate-spin' : ''} aria-hidden="true" />
+          <RefreshCw size={12} className={loading ? 'animate-spin text-[#FFD400]' : 'text-[#FFD400]'} aria-hidden="true" />
           <span>Refresh</span>
         </button>
       )}

@@ -62,28 +62,28 @@ const LABEL_MAP: Record<string, string> = {
 
 const STYLE_MAP: Record<Tone, { badge: string; iconClass: string; Icon: typeof CircleCheck }> = {
   ok: {
-    badge: 'bg-emerald-50 text-emerald-800 border-emerald-300',
-    iconClass: 'text-emerald-700',
+    badge: 'bg-[rgba(0,214,143,0.15)] text-[#00D68F] border-[rgba(0,214,143,0.45)]',
+    iconClass: 'text-[#00D68F]',
     Icon: CircleCheck,
   },
   warn: {
-    badge: 'bg-amber-50 text-amber-900 border-amber-300',
-    iconClass: 'text-amber-700',
+    badge: 'bg-[rgba(255,176,32,0.15)] text-[#FFB020] border-[rgba(255,176,32,0.45)]',
+    iconClass: 'text-[#FFB020]',
     Icon: TriangleAlert,
   },
   bad: {
-    badge: 'bg-rose-50 text-rose-900 border-rose-300',
-    iconClass: 'text-rose-700',
+    badge: 'bg-[rgba(255,82,99,0.15)] text-[#FF5263] border-[rgba(255,82,99,0.45)]',
+    iconClass: 'text-[#FF5263]',
     Icon: CircleAlert,
   },
   hold: {
-    badge: 'bg-blue-50 text-blue-900 border-blue-300',
-    iconClass: 'text-blue-700',
+    badge: 'bg-[rgba(0,217,232,0.15)] text-[#00D9E8] border-[rgba(0,217,232,0.45)]',
+    iconClass: 'text-[#00D9E8]',
     Icon: Clock,
   },
   neutral: {
-    badge: 'bg-slate-100 text-slate-700 border-slate-300',
-    iconClass: 'text-slate-600',
+    badge: 'bg-[#1C293B] text-[#C0CAD8] border-[#35445A]',
+    iconClass: 'text-[#929FB0]',
     Icon: ShieldCheck,
   },
 };

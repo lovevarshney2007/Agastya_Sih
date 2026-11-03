@@ -24,11 +24,11 @@ export function PageHeader({
   meta,
 }: PageHeaderProps) {
   return (
-    <div className="mb-6 border-b border-slate-200/80 pb-4">
+    <div className="mb-6 border-b border-[#35445A] pb-5">
       {back && (
         <Link
           to={back.to}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 no-underline py-1 mb-2 transition-colors focus-visible:outline-2 focus-visible:outline-brand"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#C0CAD8] hover:text-[#FFD400] no-underline py-1 mb-2 transition-colors focus-visible:outline-2 focus-visible:outline-[#FFD400]"
         >
           <ArrowLeft size={13} aria-hidden="true" />
           <span>{back.label}</span>
@@ -37,18 +37,18 @@ export function PageHeader({
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 font-sans">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl sm:text-[26px] font-bold tracking-tight text-[#F8FAFC] font-sans">
               {title}
             </h1>
             {badge && <div className="shrink-0">{badge}</div>}
           </div>
           {description && (
-            <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-4xl leading-normal">
+            <div className="text-xs sm:text-sm text-[#C0CAD8] mt-1.5 max-w-4xl leading-normal">
               {description}
-            </p>
+            </div>
           )}
-          {meta && <div className="mt-2">{meta}</div>}
+          {meta && <div className="mt-2.5">{meta}</div>}
         </div>
 
         {actions && (

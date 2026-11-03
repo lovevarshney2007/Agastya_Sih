@@ -6,11 +6,12 @@ export interface MicroSparklineProps {
 }
 
 const STROKE_COLORS: Record<string, string> = {
-  brand: '#163464',
-  ok: '#059669',
-  warn: '#d97706',
-  bad: '#dc2626',
-  saffron: '#d97706',
+  brand: '#00D9E8', // Cyan for sovereign high-contrast analytics
+  ok: '#00D68F',    // Success emerald
+  warn: '#FFB020',  // Warning gold/amber
+  bad: '#FF5263',   // Critical crimson
+  saffron: '#FFD400', // Institutional gold
+  cyan: '#00D9E8',
 };
 
 /**

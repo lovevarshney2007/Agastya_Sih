@@ -107,20 +107,20 @@ export function NotificationBell() {
 
       {/* Dropdown Menu */}
       {open && (
-        <div className="fixed inset-x-3 sm:inset-x-auto sm:absolute sm:right-0 top-14 sm:top-auto sm:mt-2 sm:w-96 rounded-xl bg-white border border-gray-200 shadow-2xl z-50 overflow-hidden text-xs ring-1 ring-black/10 animate-fade-in max-w-[calc(100vw-1.5rem)]">
+        <div className="fixed inset-x-3 sm:inset-x-auto sm:absolute sm:right-0 top-14 sm:top-auto sm:mt-2 sm:w-96 rounded-xl bg-[#151F30] border border-[#35445A] shadow-2xl z-50 overflow-hidden text-xs animate-fade-in max-w-[calc(100vw-1.5rem)]">
           {/* Header */}
-          <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+          <div className="px-4 py-3 border-b border-[#35445A] bg-[#1C293B] flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-gray-900 text-sm">Regulatory Alerts</span>
+              <span className="font-bold text-[#F8FAFC] text-sm">Regulatory Alerts</span>
               {unreadCount > 0 && (
-                <span className="bg-red-100 text-red-700 text-[10px] py-0.5 px-2 rounded-full font-bold">{unreadCount} unread</span>
+                <span className="bg-[#FF5263]/20 border border-[#FF5263]/40 text-[#FF5263] text-[10px] py-0.5 px-2 rounded-full font-bold">{unreadCount} unread</span>
               )}
             </div>
 
             {unreadCount > 0 && (
               <button
                 type="button"
-                className="text-brand hover:text-brand-dark hover:underline font-bold text-xs flex items-center gap-1 cursor-pointer"
+                className="text-[#00D9E8] hover:text-[#FFD400] font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors"
                 onClick={handleMarkAllRead}
               >
                 <Check size={13} /> Mark all read
@@ -129,12 +129,12 @@ export function NotificationBell() {
           </div>
 
           {/* List */}
-          <div className="max-h-[340px] overflow-y-auto divide-y divide-gray-100 bg-white">
+          <div className="max-h-[340px] overflow-y-auto divide-y divide-[#35445A]/50 bg-[#151F30]">
             {notifications.length === 0 ? (
-              <div className="p-6 text-center text-gray-500 space-y-1">
-                <Bell size={24} className="mx-auto text-gray-400 opacity-60 mb-2" />
-                <div className="font-semibold text-gray-800">All caught up!</div>
-                <div className="text-[11px] text-gray-500">No active regulatory notifications for your account.</div>
+              <div className="p-6 text-center text-[#929FB0] space-y-1">
+                <Bell size={24} className="mx-auto text-[#929FB0] opacity-60 mb-2" />
+                <div className="font-semibold text-[#F8FAFC]">All caught up!</div>
+                <div className="text-[11px] text-[#929FB0]">No active regulatory notifications for your account.</div>
               </div>
             ) : (
               notifications.map((n) => {
@@ -148,40 +148,40 @@ export function NotificationBell() {
                     onClick={() => void handleMarkRead(n.id, n.action_link)}
                     className={`p-3.5 transition-colors cursor-pointer flex items-start gap-3 border-l-4 ${
                       !n.is_read
-                        ? 'bg-blue-50/90 hover:bg-blue-100/80 border-l-brand'
-                        : 'bg-white hover:bg-gray-50 border-l-transparent'
+                        ? 'bg-[#1C293B] hover:bg-[#233145] border-l-[#FFD400]'
+                        : 'bg-[#151F30] hover:bg-[#1C293B] border-l-transparent'
                     }`}
                   >
                     <div className="mt-0.5 shrink-0">
                       {isUrgent ? (
-                        <AlertTriangle size={16} className="text-bad" />
+                        <AlertTriangle size={16} className="text-[#FF5263]" />
                       ) : isWarning ? (
-                        <AlertCircle size={16} className="text-amber-600" />
+                        <AlertCircle size={16} className="text-[#FFB020]" />
                       ) : isSuccess ? (
-                        <CheckCircle2 size={16} className="text-ok" />
+                        <CheckCircle2 size={16} className="text-[#00D68F]" />
                       ) : n.category === 'SECURITY' ? (
-                        <ShieldAlert size={16} className="text-brand" />
+                        <ShieldAlert size={16} className="text-[#00D9E8]" />
                       ) : (
-                        <Info size={16} className="text-brand" />
+                        <Info size={16} className="text-[#00D9E8]" />
                       )}
                     </div>
 
                     <div className="min-w-0 flex-1 space-y-0.5">
                       <div className="flex items-center justify-between gap-1">
-                        <span className={`text-[13px] truncate block ${!n.is_read ? 'font-bold text-gray-950' : 'font-semibold text-gray-800'}`}>
+                        <span className={`text-[13px] truncate block ${!n.is_read ? 'font-bold text-[#F8FAFC]' : 'font-semibold text-[#C0CAD8]'}`}>
                           {n.title}
                         </span>
-                        <span className="text-[10px] text-gray-500 font-medium shrink-0 tabular-nums">
+                        <span className="text-[10px] text-[#929FB0] font-mono shrink-0 tabular-nums">
                           {fmtRelative(n.created_at)}
                         </span>
                       </div>
-                      <p className={`text-xs line-clamp-2 leading-relaxed m-0 mt-0.5 ${!n.is_read ? 'text-gray-800 font-medium' : 'text-gray-600'}`}>
+                      <p className={`text-xs line-clamp-2 leading-relaxed m-0 mt-0.5 ${!n.is_read ? 'text-[#C0CAD8] font-medium' : 'text-[#929FB0]'}`}>
                         {n.message}
                       </p>
                     </div>
 
                     {n.action_link && (
-                      <ChevronRight size={14} className="text-gray-400 shrink-0 mt-1" />
+                      <ChevronRight size={14} className="text-[#929FB0] shrink-0 mt-1" />
                     )}
                   </div>
                 );
@@ -190,7 +190,7 @@ export function NotificationBell() {
           </div>
 
           {/* Footer */}
-          <div className="py-2.5 px-3 border-t border-gray-200 bg-gray-50 text-center text-[11px] text-gray-600 font-mono font-medium">
+          <div className="py-2.5 px-3 border-t border-[#35445A] bg-[#101725] text-center text-[11px] text-[#929FB0] font-mono font-medium">
             Synchronized with AICTE Central Ledger
           </div>
         </div>

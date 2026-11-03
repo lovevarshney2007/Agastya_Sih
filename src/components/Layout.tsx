@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Award, LogOut, Menu, Search } from 'lucide-react';
+import {
+  Award, LogOut, Menu, Search,
+  LayoutDashboard, UploadCloud, FileSpreadsheet, Users, ShieldCheck
+} from 'lucide-react';
 import { API_ORIGIN } from '../api/client';
 import { Link, useRouter } from '../lib/router';
 import { ROLE_LABEL, useSession, type Portal } from '../lib/session';
@@ -17,6 +20,7 @@ interface NavLinkItem {
   to: string;
   label: string;
   key?: string;
+  icon?: any;
 }
 
 const PORTAL_NAV: Record<Portal, { titleKey: string; defaultTitle: string; links: NavLinkItem[] }> = {
@@ -24,11 +28,11 @@ const PORTAL_NAV: Record<Portal, { titleKey: string; defaultTitle: string; links
     titleKey: 'portal_institution',
     defaultTitle: 'Institution portal',
     links: [
-      { to: '/institution', label: 'Dashboard', key: 'nav_dashboard' },
-      { to: '/institution/upload', label: 'Upload data', key: 'nav_upload_data' },
-      { to: '/institution/batches', label: 'Uploads & reports', key: 'nav_uploads_reports' },
-      { to: '/institution/registry', label: 'Student registry', key: 'nav_registry' },
-      { to: '/institution/compliance', label: 'Intake compliance', key: 'nav_compliance' },
+      { to: '/institution', label: 'Dashboard', key: 'nav_dashboard', icon: LayoutDashboard },
+      { to: '/institution/upload', label: 'Upload data', key: 'nav_upload_data', icon: UploadCloud },
+      { to: '/institution/batches', label: 'Uploads & reports', key: 'nav_uploads_reports', icon: FileSpreadsheet },
+      { to: '/institution/registry', label: 'Student registry', key: 'nav_registry', icon: Users },
+      { to: '/institution/compliance', label: 'Intake compliance', key: 'nav_compliance', icon: ShieldCheck },
     ],
   },
   aicte: {
@@ -121,53 +125,55 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
   }, [path]);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:px-3 focus:py-2">Skip to main content</a>
+    <div className="min-h-screen flex flex-col bg-[#080B12] text-[#F8FAFC]">
+      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-[#FFD400] focus:text-[#080B12] focus:px-4 focus:py-2 focus:font-bold">Skip to main content</a>
 
       <div className="tricolour h-1 no-print" aria-hidden="true" />
-      <div className="bg-navy-dark text-[#c9d4e5] text-xs no-print">
+      
+      {/* 3. Top Government Status Bar */}
+      <div className="bg-[#080B12] border-b border-[#35445A] text-[#C0CAD8] text-xs no-print">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 py-1.5 flex justify-between items-center gap-2">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <span className="truncate max-w-[120px] sm:max-w-none">{t('gov_india')}</span>
-            <span className="text-white/30">|</span>
+            <span className="truncate max-w-[140px] sm:max-w-none font-medium text-[#F8FAFC]">{t('gov_india')}</span>
+            <span className="text-[#35445A]">|</span>
             <button
               type="button"
               onClick={() => setLedgerModalOpen(true)}
-              className="hidden md:inline-flex items-center gap-1.5 text-[11px] text-emerald-300 hover:text-white transition-colors cursor-pointer bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded border border-emerald-400/30"
+              className="hidden md:inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#00D68F] hover:text-white transition-all cursor-pointer bg-[#101725] hover:bg-[#1C293B] px-2.5 py-0.5 rounded border border-[#00D68F]/40 shadow-xs"
               title="Click to view AICTE National Depository Root Ledger Consensus Status"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 beacon-pulse text-emerald-400 shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-[#00D68F] beacon-pulse text-[#00D68F] shrink-0" />
               <span>{t('ledger_badge', 'APAAR National Depository · Ledger Live')}</span>
             </button>
             <button
               type="button"
               onClick={() => setLedgerModalOpen(true)}
-              className="md:hidden inline-flex items-center gap-1 text-[10px] text-emerald-300 bg-white/5 px-1.5 py-0.5 rounded border border-emerald-400/20 shrink-0"
+              className="md:hidden inline-flex items-center gap-1 text-[10px] font-semibold text-[#00D68F] bg-[#101725] px-2 py-0.5 rounded border border-[#00D68F]/30 shrink-0"
               title="Ledger Live Status"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 beacon-pulse shrink-0" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00D68F] beacon-pulse shrink-0" />
               <span>Ledger Live</span>
             </button>
-            <span className="text-white/30 hidden sm:inline">|</span>
+            <span className="text-[#35445A] hidden sm:inline">|</span>
             <button
               type="button"
               onClick={() => setRubricOpen(true)}
-              className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-300 hover:text-white transition-colors cursor-pointer bg-amber-500/15 hover:bg-amber-500/25 px-2 py-0.5 rounded border border-amber-400/35 shrink-0"
+              className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#FFD400] hover:text-white transition-all cursor-pointer bg-[#FFD400]/10 hover:bg-[#FFD400]/20 px-2.5 py-0.5 rounded border border-[#FFD400]/40 shadow-xs shrink-0"
               title="Open SIH26263 Statutory Rubric & Architecture Compliance Matrix"
             >
-              <Award size={12} className="text-amber-400 shrink-0" />
+              <Award size={13} className="text-[#FFD400] shrink-0" />
               <span className="hidden sm:inline">SIH Rubric (7/7 ✅)</span>
               <span className="sm:hidden">Rubric</span>
             </button>
           </div>
-          <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             {/* GIGW Text Resizer */}
-            <div className="flex items-center gap-0.5 bg-white/10 px-1.5 py-0.5 rounded text-xs">
-              <span className="text-white/60 mr-1 hidden sm:inline">Text:</span>
+            <div className="flex items-center gap-0.5 bg-[#151F30] border border-[#35445A] px-1.5 py-0.5 rounded text-xs">
+              <span className="text-[#929FB0] mr-1 hidden sm:inline text-[11px]">Text:</span>
               <button
                 type="button"
                 onClick={() => setFontSize('14px')}
-                className={`px-1.5 py-0.5 rounded hover:text-white transition-colors ${fontSize === '14px' ? 'bg-white/20 text-white font-bold' : 'text-white/70'}`}
+                className={`px-1.5 py-0.5 rounded transition-colors text-[11px] ${fontSize === '14px' ? 'bg-[#FFD400] text-[#080B12] font-bold' : 'text-[#C0CAD8] hover:text-white'}`}
                 title="Decrease font size (A-)"
               >
                 A-
@@ -175,7 +181,7 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
               <button
                 type="button"
                 onClick={() => setFontSize('15px')}
-                className={`px-1.5 py-0.5 rounded hover:text-white transition-colors ${fontSize === '15px' ? 'bg-white/20 text-white font-bold' : 'text-white/70'}`}
+                className={`px-1.5 py-0.5 rounded transition-colors text-[11px] ${fontSize === '15px' ? 'bg-[#FFD400] text-[#080B12] font-bold' : 'text-[#C0CAD8] hover:text-white'}`}
                 title="Normal font size (A)"
               >
                 A
@@ -183,7 +189,7 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
               <button
                 type="button"
                 onClick={() => setFontSize('16px')}
-                className={`px-1.5 py-0.5 rounded hover:text-white transition-colors ${fontSize === '16px' ? 'bg-white/20 text-white font-bold' : 'text-white/70'}`}
+                className={`px-1.5 py-0.5 rounded transition-colors text-[11px] ${fontSize === '16px' ? 'bg-[#FFD400] text-[#080B12] font-bold' : 'text-[#C0CAD8] hover:text-white'}`}
                 title="Increase font size (A+)"
               >
                 A+
@@ -194,48 +200,53 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
             <button
               type="button"
               onClick={toggleContrast}
-              className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-xs transition-colors ${
-                highContrast ? 'bg-saffron text-navy font-bold' : 'bg-white/10 text-white/80 hover:text-white'
+              className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs transition-all cursor-pointer ${
+                highContrast
+                  ? 'bg-[#FFD400] text-[#080B12] font-extrabold shadow-[0_0_12px_rgba(255,212,0,0.4)]'
+                  : 'bg-[#151F30] border border-[#35445A] text-[#C0CAD8] hover:text-white hover:border-[#FFD400]'
               }`}
-              title="Toggle High Contrast Mode (GIGW Compliant)"
+              title="Toggle High Contrast Mode (WCAG 2.2 AA / GIGW Compliant)"
             >
               <span className="font-mono text-xs">◐</span>
               <span className="hidden sm:inline">{highContrast ? 'Standard' : 'High Contrast'}</span>
             </button>
 
-            <span className="hidden sm:inline text-white/30">|</span>
-            <span className="hidden sm:inline">{t('aicte_full')}</span>
+            <span className="hidden sm:inline text-[#35445A]">|</span>
+            <span className="hidden sm:inline text-[#C0CAD8] font-medium">{t('aicte_full')}</span>
             <LanguageToggle />
           </div>
         </div>
       </div>
 
-      <header className="bg-white border-b border-line no-print sticky top-0 sm:static z-30">
-        <div className="relative max-w-7xl mx-auto px-3 sm:px-6 py-2 sm:py-3 flex items-center justify-between gap-2 sm:gap-3">
-          <Link to={user && portal ? `/${portal}` : '/'} className="flex items-center gap-2 sm:gap-3 no-underline text-ink min-w-0">
-            <img src="/aicte-logo.png" alt="AICTE Emblem" className="h-8 w-8 sm:h-11 sm:w-11 object-contain shrink-0" />
+      {/* Main Header */}
+      <header className="bg-[#101725] border-b border-[#35445A] no-print sticky top-0 sm:static z-30 shadow-md">
+        <div className="relative max-w-7xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between gap-3">
+          <Link to={user && portal ? `/${portal}` : '/'} className="flex items-center gap-3 no-underline text-[#F8FAFC] min-w-0 group">
+            <div className="p-1 rounded-lg bg-[#151F30] border border-[#35445A] group-hover:border-[#FFD400] transition-colors shrink-0">
+              <img src="/aicte-logo.png" alt="AICTE Emblem" className="h-8 w-8 sm:h-10 sm:w-10 object-contain" />
+            </div>
             <span className="leading-tight min-w-0">
-              <span className="block font-bold text-sm sm:text-base truncate text-navy">{t('app_title')}</span>
-              <span className="hidden sm:block text-xs text-muted truncate">{t('app_subtitle')}</span>
+              <span className="block font-bold text-sm sm:text-base truncate text-[#F8FAFC] tracking-tight">{t('app_title')}</span>
+              <span className="hidden sm:block text-xs text-[#929FB0] truncate">{t('app_subtitle')}</span>
               {user && (
-                <span className="sm:hidden text-[10px] text-muted truncate block">
+                <span className="sm:hidden text-[10px] text-[#929FB0] truncate block">
                   {ROLE_LABEL[user.role]}
                 </span>
               )}
             </span>
           </Link>
 
-          {/* Desktop Universal Command Palette Trigger */}
+          {/* Universal Search Command Bar */}
           <button
             type="button"
             onClick={() => setCommandOpen(true)}
-            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-md border border-line bg-wash text-muted text-xs hover:border-brand/40 hover:bg-brand-wash/40 hover:text-ink transition-all shadow-2xs cursor-pointer focus-visible:outline-2 focus-visible:outline-brand"
+            className="hidden md:flex items-center gap-2.5 px-3.5 py-1.5 rounded-lg border border-[#35445A] bg-[#151F30] text-[#929FB0] text-xs hover:border-[#00D9E8] hover:text-[#F8FAFC] transition-all shadow-inner cursor-pointer focus-visible:outline-2 focus-visible:outline-[#00D9E8]"
             title="Press Ctrl+K to search all portals & commands"
           >
-            <Search size={14} className="text-muted" />
-            <span className="hidden lg:inline">Search statutory portal, APAAR IDs, regulations...</span>
-            <span className="lg:hidden">Search...</span>
-            <kbd className="font-mono text-xs bg-white border border-line px-1.5 py-0.5 rounded text-faint ml-2 shadow-2xs">Ctrl K</kbd>
+            <Search size={14} className="text-[#00D9E8]" />
+            <span className="hidden lg:inline text-[#C0CAD8]">Search statutory portal, APAAR IDs, regulations...</span>
+            <span className="lg:hidden text-[#C0CAD8]">Search...</span>
+            <kbd className="font-mono text-[11px] bg-[#1C293B] border border-[#35445A] px-1.5 py-0.5 rounded text-[#FFD400] font-bold ml-2">Ctrl K</kbd>
           </button>
 
           {/* Mobile Right Controls: Notification Bell + Hamburger */}
@@ -243,7 +254,7 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
             {user && <NotificationBell />}
             <button
               type="button"
-              className="btn btn-ghost p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-navy hover:bg-brand-wash"
+              className="btn btn-ghost p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-[#F8FAFC] hover:bg-[#1C293B]"
               onClick={() => setMenuOpen(true)}
               aria-expanded={menuOpen}
               aria-label="Open mobile navigation drawer"
@@ -254,21 +265,21 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
 
           {/* Desktop Right Links & Profile */}
           <div className="hidden md:flex items-center gap-4 text-sm">
-            <Link to="/verify" className="no-underline hover:underline text-ink font-medium">{t('verify_record', 'Verify a record')}</Link>
-            <Link to="/public-dashboard" className="no-underline hover:underline text-ink font-medium">{t('live_seats', 'Live seats')}</Link>
+            <Link to="/verify" className="no-underline text-[#C0CAD8] hover:text-[#00D9E8] transition-colors font-medium text-xs sm:text-sm">{t('verify_record', 'Verify a record')}</Link>
+            <Link to="/public-dashboard" className="no-underline text-[#C0CAD8] hover:text-[#FFD400] transition-colors font-medium text-xs sm:text-sm">{t('live_seats', 'Live seats')}</Link>
             {user ? (
               <>
                 <NotificationBell />
-                <div className="text-right leading-tight border-l border-line pl-4">
-                  <div className="font-semibold text-xs text-ink">{user.full_name}</div>
-                  <div className="text-[11px] text-muted truncate max-w-[180px]">{ROLE_LABEL[user.role]}{user.org_name ? ` · ${user.org_name}` : ''}</div>
+                <div className="text-right leading-tight border-l border-[#35445A] pl-4">
+                  <div className="font-bold text-xs text-[#F8FAFC]">{user.full_name}</div>
+                  <div className="text-[11px] text-[#929FB0] truncate max-w-[180px]">{ROLE_LABEL[user.role]}{user.org_name ? ` · ${user.org_name}` : ''}</div>
                 </div>
                 <button
                   type="button"
-                  className="btn btn-secondary btn-sm"
+                  className="btn btn-secondary btn-sm flex items-center gap-1.5"
                   onClick={async () => { await signOut(); navigate('/sign-in?signedout=1'); }}
                 >
-                  <LogOut size={14} aria-hidden="true" /> {t('sign_out')}
+                  <LogOut size={13} aria-hidden="true" /> {t('sign_out')}
                 </button>
               </>
             ) : (
@@ -293,27 +304,31 @@ export function Layout({ children, wide = false, full = false }: { children: Rea
         toggleContrast={toggleContrast}
       />
 
-      {/* Sticky Role & Portal Switcher with smooth scroll-fade and touch-scrolling */}
+      {/* 4. Main Navigation with clear active states, visible hover effects, professional icons and high-contrast text */}
       {nav && (
-        <nav className="bg-navy sticky top-[49px] sm:top-0 z-20 shadow-[0_2px_6px_rgb(14_36_72/.18)] no-print" aria-label={t(nav.titleKey, nav.defaultTitle)}>
-          <div ref={navRef} className="max-w-7xl mx-auto px-2 sm:px-6 flex gap-1 overflow-x-auto no-scrollbar scroll-fade py-0.5">
+        <nav className="bg-[#080B12] sticky top-[49px] sm:top-0 z-20 border-b border-[#35445A] no-print shadow-[0_4px_16px_rgba(0,0,0,0.5)]" aria-label={t(nav.titleKey, nav.defaultTitle)}>
+          <div ref={navRef} className="max-w-7xl mx-auto px-2 sm:px-6 flex gap-1.5 overflow-x-auto no-scrollbar scroll-fade py-1">
             {nav.links.map((l) => {
               const active = isActive(path, l.to, `/${portal}`);
+              const IconComp = l.icon;
               return (
                 <Link
                   key={l.to}
                   to={l.to}
                   aria-current={active ? 'page' : undefined}
-                  className={`relative px-3 sm:px-3.5 py-2 sm:py-2.5 text-xs sm:text-sm no-underline whitespace-nowrap transition-all duration-200 min-h-[38px] flex items-center shrink-0 ${
+                  className={`relative px-3 sm:px-4 py-2 text-xs sm:text-sm no-underline whitespace-nowrap transition-all duration-150 min-h-[38px] flex items-center gap-2 rounded-t-lg shrink-0 font-medium ${
                     active
-                      ? 'text-white font-semibold'
-                      : 'text-[#c9d4e5] hover:text-white hover:bg-white/5'
+                      ? 'bg-[#151F30] text-[#F8FAFC] font-bold border-b-2 border-[#FFD400] shadow-[0_-2px_10px_rgba(0,0,0,0.2)]'
+                      : 'text-[#C0CAD8] hover:text-[#F8FAFC] hover:bg-[#151F30]/60'
                   }`}
                 >
-                  <span>{l.key ? t(l.key, l.label) : l.label}</span>
-                  {active && (
-                    <span className="absolute bottom-0 left-1.5 right-1.5 h-[3px] bg-saffron rounded-t-sm shadow-[0_-2px_6px_rgba(232,129,28,0.5)] animate-fade-up" />
+                  {IconComp && (
+                    <IconComp
+                      size={15}
+                      className={active ? 'text-[#FFD400]' : 'text-[#929FB0] group-hover:text-[#F8FAFC]'}
+                    />
                   )}
+                  <span>{l.key ? t(l.key, l.label) : l.label}</span>
                 </Link>
               );
             })}

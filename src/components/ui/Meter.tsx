@@ -17,12 +17,13 @@ export interface MeterProps {
 export function Meter({ value, max, label, showNumbers = true }: MeterProps) {
   const ratio = max > 0 ? value / max : 0;
   const width = Math.min(ratio, 1) * 100;
+  const pct = Math.round(ratio * 100);
   const color =
     ratio > 1
-      ? 'bg-rose-600'
+      ? 'bg-[#FF5263] shadow-[0_0_8px_rgba(255,82,99,0.5)]'
       : ratio >= 0.95
-      ? 'bg-amber-600'
-      : 'bg-emerald-600';
+      ? 'bg-[#FFB020] shadow-[0_0_8px_rgba(255,176,32,0.4)]'
+      : 'bg-[#00D68F] shadow-[0_0_8px_rgba(0,214,143,0.4)]';
 
   const [shown, setShown] = useState(0);
 
@@ -32,9 +33,9 @@ export function Meter({ value, max, label, showNumbers = true }: MeterProps) {
   }, [width]);
 
   return (
-    <div className="flex items-center gap-2 min-w-[140px]">
+    <div className="flex items-center gap-3 min-w-[140px]">
       <div
-        className="h-1.5 flex-1 rounded-full bg-slate-200 overflow-hidden"
+        className="h-2 flex-1 rounded-full bg-[#1C293B] border border-[#35445A] overflow-hidden"
         role="meter"
         aria-valuenow={value}
         aria-valuemin={0}
@@ -42,18 +43,23 @@ export function Meter({ value, max, label, showNumbers = true }: MeterProps) {
         aria-label={label ?? 'Intake capacity meter'}
       >
         <div
-          className={`h-full rounded-full ${color} transition-[width] duration-500 ease-out`}
+          className={`h-full rounded-full ${color} transition-[width] duration-700 ease-out`}
           style={{ width: `${shown}%` }}
         />
       </div>
       {showNumbers && (
-        <span
-          className={`text-xs tabular-nums w-[70px] text-right font-mono ${
-            ratio > 1 ? 'text-rose-700 font-bold' : 'text-slate-600'
-          }`}
-        >
-          {value} / {max}
-        </span>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-[11px] font-bold font-mono text-[#00D9E8] w-[42px] text-right">
+            {pct}%
+          </span>
+          <span
+            className={`text-xs tabular-nums text-right font-mono min-w-[70px] ${
+              ratio > 1 ? 'text-[#FF5263] font-bold' : 'text-[#F8FAFC]'
+            }`}
+          >
+            {value} / {max}
+          </span>
+        </div>
       )}
     </div>
   );
